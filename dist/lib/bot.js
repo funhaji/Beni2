@@ -3039,18 +3039,19 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, state) {
         });
         return true;
     }
-    if (state.state === "await_crypto_txid") {
-        const purchaseId = String(state.payload.purchaseId || "").trim();
-        const txid = text.trim();
-        if (!purchaseId || !txid || txid.length < 8) {
-            await tg("sendMessage", { chat_id: chatId, text: "TXID معتبر نیست. دوباره ارسال کنید." });
+    if (state.state === "await_crypto_receipt") {
+        if (!photoFileId) {
+            await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کنید." });
             return true;
         }
+        const purchaseId = String(state.payload.purchaseId || "").trim();
+        if (!purchaseId)
+            return true;
         const rows = await sql `
       UPDATE orders
-      SET crypto_txid = ${txid}, status = 'receipt_submitted'
+      SET receipt_file_id = ${photoFileId}, status = 'receipt_submitted'
       WHERE purchase_id = ${purchaseId} AND telegram_id = ${userId} AND status != 'denied'
-      RETURNING id, purchase_id, product_name_snapshot, final_price;
+      RETURNING id, purchase_id, product_name_snapshot, final_price, crypto_currency, crypto_network, crypto_amount, crypto_address;
     `;
         await clearState(userId);
         if (!rows.length) {
@@ -3058,13 +3059,28 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, state) {
             return true;
         }
         const orderId = Number(rows[0].id);
-        await tg("sendMessage", { chat_id: chatId, text: "TXID ثبت شد ✅\nبعد از بررسی ادمین، سفارش تکمیل می‌شود." });
-        await notifyAdmins(`🪙 درخواست تایید پرداخت کریپتو\nسفارش: ${rows[0].purchase_id}\nمحصول: ${rows[0].product_name_snapshot || "-"}\nمبلغ: ${formatPriceToman(Number(rows[0].final_price))} تومان\nTXID: ${txid}`, {
-            inline_keyboard: [
-                [{ text: "✅ تایید", callback_data: `crypto_accept_${orderId}` }],
-                [{ text: "❌ رد", callback_data: `crypto_deny_${orderId}` }]
-            ]
-        });
+        await tg("sendMessage", { chat_id: chatId, text: "اسکرین‌شات ثبت شد ✅\nبعد از بررسی ادمین، سفارش تکمیل می‌شود." });
+        const caption = `🪙 درخواست تایید پرداخت کریپتو\n` +
+            `سفارش: ${rows[0].purchase_id}\n` +
+            `محصول: ${rows[0].product_name_snapshot || "-"}\n` +
+            `مبلغ: ${formatPriceToman(Number(rows[0].final_price))} تومان\n` +
+            `ارز: ${rows[0].crypto_currency || "-"}\n` +
+            `شبکه: ${rows[0].crypto_network || "-"}\n` +
+            `مقدار: ${rows[0].crypto_amount || "-"}\n` +
+            `آدرس: ${shortAddr(String(rows[0].crypto_address || ""))}`;
+        for (const adminId of adminIds) {
+            await tg("sendPhoto", {
+                chat_id: adminId,
+                photo: photoFileId,
+                caption,
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: "✅ تایید", callback_data: `crypto_accept_${orderId}` }],
+                        [{ text: "❌ رد", callback_data: `crypto_deny_${orderId}` }]
+                    ]
+                }
+            }).catch(() => { });
+        }
         return true;
     }
     if (state.state === "await_wallet_receipt") {
@@ -6451,7 +6467,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 `🌐 شبکه: ${String(w.network)}\n` +
                 `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
                 `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
-                `بعد از پرداخت روی «بررسی پرداخت» بزنید و TXID را ارسال کنید.`,
+                `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`,
             reply_markup: {
                 inline_keyboard: [
                     [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
@@ -7475,7 +7491,7 @@ async function handleCallback(update) {
         }
         try {
             const orderRows = await sql `
-        SELECT payment_method, plisio_txn_id, crypto_txid
+        SELECT payment_method, plisio_txn_id, receipt_file_id
         FROM orders
         WHERE purchase_id = ${purchaseId}
         LIMIT 1;
@@ -7528,13 +7544,13 @@ async function handleCallback(update) {
                 isAccepted = s === "completed" || s === "mismatch";
             }
             else if (paymentMethod === "crypto") {
-                const existingTxid = String(orderRows[0].crypto_txid || "").trim();
-                if (existingTxid) {
-                    await tg("sendMessage", { chat_id: chatId, text: "TXID قبلاً ثبت شده و در انتظار تایید ادمین است." });
+                const existingReceipt = String(orderRows[0].receipt_file_id || "").trim() || "";
+                if (existingReceipt) {
+                    await tg("sendMessage", { chat_id: chatId, text: "قبلاً برای این سفارش اطلاعات پرداخت ثبت شده و در انتظار تایید ادمین است." });
                     return;
                 }
-                await setState(userId, "await_crypto_txid", { purchaseId });
-                await tg("sendMessage", { chat_id: chatId, text: "لطفاً TXID/Hash تراکنش را ارسال کنید (فقط متن):" });
+                await setState(userId, "await_crypto_receipt", { purchaseId });
+                await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کنید:" });
                 return;
             }
             if (isAccepted) {
