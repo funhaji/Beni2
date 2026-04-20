@@ -379,17 +379,27 @@ function isValidHttpUrl(raw) {
 async function getPlisioTomanPerUsdt() {
     const auto = await getBoolSetting("plisio_auto_rate", true);
     const extra = (await getNumberSetting("plisio_usdt_extra_toman")) || 0;
+    const manual = (await getNumberSetting("plisio_usdt_rate_fallback_toman")) ||
+        (await getNumberSetting("plisio_usd_rate_toman")) ||
+        0;
     if (!auto) {
-        const manual = (await getNumberSetting("plisio_usdt_rate_fallback_toman")) ||
-            (await getNumberSetting("plisio_usd_rate_toman")) ||
-            0;
         if (manual <= 0) {
             throw new Error("plisio_manual_rate_not_set");
         }
         return Math.max(1, manual + extra);
     }
-    const { rateTomanPerUsdt } = await getUsdtRateTomanCached();
-    return Math.max(1, rateTomanPerUsdt + extra);
+    try {
+        const { rateTomanPerUsdt, source } = await getUsdtRateTomanCached();
+        logInfo("plisio_rate_auto_ok", { source, rateTomanPerUsdt });
+        return Math.max(1, rateTomanPerUsdt + extra);
+    }
+    catch (error) {
+        if (manual > 0) {
+            logError("plisio_rate_auto_failed_using_fallback", error, { fallbackTomanPerUsdt: manual });
+            return Math.max(1, manual + extra);
+        }
+        throw error;
+    }
 }
 export async function fetchWithTimeout(url, init, timeoutMs = 8000) {
     const controller = new AbortController();

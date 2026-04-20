@@ -4,21 +4,55 @@ function fetchWithTimeout(url, timeoutMs = 6000) {
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
 }
+function snippet(raw, limit = 180) {
+    const s = raw.trim().slice(0, limit);
+    return s || "empty_response";
+}
 async function fetchUsdtTomanFromCoinGecko() {
     const url = "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=irr";
     const res = await fetchWithTimeout(url, 6000);
     const raw = await res.text();
     if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+        throw new Error(`coingecko_http_${res.status}:${snippet(raw)}`);
     }
-    const data = JSON.parse(raw);
+    let data;
+    try {
+        data = JSON.parse(raw);
+    }
+    catch {
+        throw new Error(`coingecko_parse_failed:${snippet(raw)}`);
+    }
     const irrPerUsdt = Number(data?.tether?.irr);
     if (!Number.isFinite(irrPerUsdt) || irrPerUsdt <= 0) {
-        throw new Error("invalid_rate_payload");
+        throw new Error(`coingecko_invalid_payload:${snippet(raw)}`);
     }
     const tomanPerUsdt = irrPerUsdt / 10;
     if (!Number.isFinite(tomanPerUsdt) || tomanPerUsdt <= 0) {
-        throw new Error("invalid_rate_value");
+        throw new Error(`coingecko_invalid_value:${String(tomanPerUsdt)}`);
+    }
+    return tomanPerUsdt;
+}
+async function fetchUsdtTomanFromCryptoCompare() {
+    const url = "https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=IRR";
+    const res = await fetchWithTimeout(url, 6000);
+    const raw = await res.text();
+    if (!res.ok) {
+        throw new Error(`cryptocompare_http_${res.status}:${snippet(raw)}`);
+    }
+    let data;
+    try {
+        data = JSON.parse(raw);
+    }
+    catch {
+        throw new Error(`cryptocompare_parse_failed:${snippet(raw)}`);
+    }
+    const irrPerUsdt = Number(data?.IRR);
+    if (!Number.isFinite(irrPerUsdt) || irrPerUsdt <= 0) {
+        throw new Error(`cryptocompare_invalid_payload:${snippet(raw)}`);
+    }
+    const tomanPerUsdt = irrPerUsdt / 10;
+    if (!Number.isFinite(tomanPerUsdt) || tomanPerUsdt <= 0) {
+        throw new Error(`cryptocompare_invalid_value:${String(tomanPerUsdt)}`);
     }
     return tomanPerUsdt;
 }
@@ -29,15 +63,25 @@ export async function getUsdtRateTomanCached(options) {
     if (usdtTomanCache && now - usdtTomanCache.updatedAt < cacheMs) {
         return { rateTomanPerUsdt: usdtTomanCache.value, source: "cache" };
     }
+    const errors = [];
     try {
         const rate = await fetchUsdtTomanFromCoinGecko();
         usdtTomanCache = { value: rate, updatedAt: now };
         return { rateTomanPerUsdt: rate, source: "coingecko" };
     }
     catch (error) {
+        errors.push(String(error?.message || error));
+    }
+    try {
+        const rate = await fetchUsdtTomanFromCryptoCompare();
+        usdtTomanCache = { value: rate, updatedAt: now };
+        return { rateTomanPerUsdt: rate, source: "cryptocompare" };
+    }
+    catch (error) {
+        errors.push(String(error?.message || error));
         if (usdtTomanCache && now - usdtTomanCache.updatedAt < allowStaleMs) {
             return { rateTomanPerUsdt: usdtTomanCache.value, source: "stale_cache" };
         }
-        throw error;
+        throw new Error(`rate_fetch_failed:${errors.join(" | ")}`);
     }
 }
