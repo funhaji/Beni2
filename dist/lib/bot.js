@@ -7836,12 +7836,12 @@ async function handleCallback(update) {
         if (!isConfirmed) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `⚠️ آیا از ریووک (Revoke) کانفیگ #${inventoryId} اطمینان دارید؟\nاین عمل باعث قطع دسترسی کاربر در پنل و دیتابیس می‌شود.`,
+                text: `⚠️ آیا از لغو دسترسی کانفیگ #${inventoryId} اطمینان دارید؟\nاین عمل دسترسی کاربر را در پنل و دیتابیس غیرفعال می‌کند.`,
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            { text: "✅ بله، ریووک شود", callback_data: `admin_lookup_revoke_inv_${inventoryId}_confirm` },
-                            { text: "❌ انصراف", callback_data: "admin_lookup_action_cancel" }
+                            cb("✅ تایید", `admin_lookup_revoke_inv_${inventoryId}_confirm`, "danger"),
+                            cb("❌ انصراف", "admin_lookup_action_cancel", "primary")
                         ]
                     ]
                 }
@@ -7864,7 +7864,7 @@ async function handleCallback(update) {
         const panelType = String(delivery.metadata?.panelType || "");
         const panelId = Number(row.panel_id || 0);
         const key = String(delivery.metadata?.username || delivery.metadata?.uuid || delivery.metadata?.email || delivery.metadata?.subId || "").trim();
-        let panelRevokeMessage = "ریووک پنل انجام نشد.";
+        let panelRevokeMessage = "لغو دسترسی در پنل انجام نشد.";
         if (panelId && panelType && key) {
             const panelRows = await sql `
         SELECT id, panel_type, base_url, username, password
@@ -7874,7 +7874,7 @@ async function handleCallback(update) {
       `;
             if (panelRows.length) {
                 const result = panelType === "marzban" ? await toggleMarzbanUser(panelRows[0], key, false) : await toggleSanaeiClient(panelRows[0], key, false);
-                panelRevokeMessage = result.ok ? "ریووک پنل موفق ✅" : `ریووک پنل ناموفق: ${result.message}`;
+                panelRevokeMessage = result.ok ? "لغو دسترسی در پنل موفق ✅" : `لغو دسترسی در پنل ناموفق: ${result.message}`;
             }
         }
         await recordInventoryForensicEvent(inventoryId, "admin_revoke", { adminId: userId, panelResult: panelRevokeMessage });
@@ -7888,7 +7888,7 @@ async function handleCallback(update) {
       )
       WHERE id = ${inventoryId};
     `;
-        await tg("sendMessage", { chat_id: chatId, text: `کانفیگ ریووک شد ✅\n${panelRevokeMessage}` });
+        await tg("sendMessage", { chat_id: chatId, text: `دسترسی کانفیگ قطع شد ✅\n${panelRevokeMessage}` });
         return;
     }
     if (data.startsWith("admin_lookup_direct_links_")) {
@@ -8363,12 +8363,12 @@ async function handleCallback(update) {
         if (!isConfirmed) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `⚠️ آیا از Revoke این مورد روی پنل اطمینان دارید؟`,
+                text: `⚠️ آیا از بازسازی لینک این کاربر روی پنل اطمینان دارید؟`,
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            { text: "✅ بله، ریووک شود", callback_data: `admin_panel_rv_${payloadRaw}_confirm` },
-                            { text: "❌ انصراف", callback_data: "admin_lookup_action_cancel" }
+                            cb("✅ تایید", `admin_panel_rv_${payloadRaw}_confirm`, "primary"),
+                            cb("❌ انصراف", "admin_lookup_action_cancel", "danger")
                         ]
                     ]
                 }
@@ -8386,13 +8386,13 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length || !key) {
-            await tg("sendMessage", { chat_id: chatId, text: "ورودی نامعتبر برای revoke پنل." });
+            await tg("sendMessage", { chat_id: chatId, text: "ورودی نامعتبر برای بازسازی لینک پنل." });
             return;
         }
         const panelType = String(rows[0].panel_type || "");
         const result = panelType === "marzban" ? await regenerateMarzbanUserLink(rows[0], key) : await regenerateSanaeiClientLink(rows[0], key);
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `ریووک پنل ناموفق: ${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `بازسازی لینک پنل ناموفق: ${result.message}` });
             return;
         }
         let newLinkMsg = "";
@@ -8429,7 +8429,7 @@ async function handleCallback(update) {
             configValue: null,
             metadata: { adminId: userId }
         });
-        await tg("sendMessage", { chat_id: chatId, text: `ریووک روی پنل انجام شد ✅\n\nلینک جدید:\n${newLinkMsg}` });
+        await tg("sendMessage", { chat_id: chatId, text: `لینک جدید ساخته شد ✅\n\n${newLinkMsg}` });
         return;
     }
     if (data.startsWith("admin_panel_del_")) {
@@ -9641,7 +9641,7 @@ async function handleCallback(update) {
             chat_id: chatId,
             text: "کانفیگ کامل، UUID، نام کاربر (تلگرام یا پنل) یا نام محصول را ارسال کنید.\n" +
                 "بعد از پیدا شدن نتیجه می‌توانید از همان پیام:\n" +
-                "➕ افزودن دیتا | ♻️ ریست دیتا | 📅 تنظیم/حذف انقضا | 🚫 ریووک | 🗑 حذف کامل"
+                "➕ افزودن دیتا | ♻️ ریست دیتا | 📅 تنظیم/حذف انقضا | 🚫 لغو دسترسی | 🗑 حذف کامل"
         });
         return;
     }
