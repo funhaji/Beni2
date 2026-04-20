@@ -306,11 +306,11 @@ export function ensureSchema() {
             await sql `ALTER TABLE wallet_topups ADD COLUMN IF NOT EXISTS crypto_expires_at TIMESTAMPTZ;`;
             await sql `
         INSERT INTO payment_methods (code, title, active)
-        VALUES ('tronado', 'TRON', TRUE), ('card2card', 'کارت‌به‌کارت', TRUE), ('tetrapay', 'تتراپی', TRUE), ('plisio', 'پلیسیو (کریپتو)', TRUE), ('crypto', 'کریپتو', TRUE)
+        VALUES ('tronado', 'TRON', TRUE), ('card2card', 'کارت‌به‌کارت', TRUE), ('tetrapay', 'تتراپی', TRUE), ('plisio', 'پلیسیو (کریپتو)', TRUE)
         ON CONFLICT (code) DO NOTHING;
       `;
             await sql `UPDATE payment_methods SET title = 'پلیسیو (کریپتو)' WHERE code = 'plisio';`;
-            await sql `UPDATE payment_methods SET title = 'کریپتو' WHERE code = 'crypto';`;
+            await sql `UPDATE payment_methods SET active = FALSE WHERE code = 'crypto';`;
             await sql `
         UPDATE products
         SET panel_config = jsonb_set(panel_config, '{data_limit_mb}', to_jsonb(size_mb), true)
