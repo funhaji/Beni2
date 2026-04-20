@@ -1080,7 +1080,7 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
         `نام محصول را بفرستید.` +
         (mode === "edit" ? `\nمقدار فعلی: ${String(payload.name || "-")}` : "") +
         keepHint,
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]] }
+      reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
     });
     return;
   }
@@ -1093,9 +1093,9 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
         (mode === "edit" ? `\nمقدار فعلی: ${productKind === "account" ? "اکانت" : "کانفیگ V2Ray"}` : ""),
       reply_markup: {
         inline_keyboard: [
-          [{ text: "📶 کانفیگ V2Ray", callback_data: "admin_product_wizard_kind_v2ray" }],
-          [{ text: "👤 اکانت (VPN/وبسایت)", callback_data: "admin_product_wizard_kind_account" }],
-          [{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]
+          [cb("📶 کانفیگ V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
+          [cb("👤 اکانت (VPN/وبسایت)", "admin_product_wizard_kind_account", "primary")],
+          [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
         ]
       }
     });
@@ -1109,7 +1109,7 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
         `حجم را بفرستید (MB یا GB). نمونه: 2048 یا 2GB` +
         (mode === "edit" ? `\nمقدار فعلی: ${String(payload.sizeMb || "-")}` : "") +
         keepHint,
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]] }
+      reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
     });
     return;
   }
@@ -1120,8 +1120,8 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
         text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 4 از 9\nبرای محصول اکانتی، قیمت باید دستی ثبت شود.`,
         reply_markup: {
           inline_keyboard: [
-            [{ text: "✍️ ثبت قیمت دستی", callback_data: "admin_product_wizard_price_manual" }],
-            [{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]
+            [cb("✍️ ثبت قیمت دستی", "admin_product_wizard_price_manual", "primary")],
+            [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
           ]
         }
       });
@@ -1132,9 +1132,9 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
       text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 4 از 9\nروش قیمت‌گذاری را انتخاب کنید:`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "🤖 خودکار", callback_data: "admin_product_wizard_price_auto" }],
-          [{ text: "✍️ دستی", callback_data: "admin_product_wizard_price_manual" }],
-          [{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]
+          [cb("🤖 خودکار", "admin_product_wizard_price_auto", "primary")],
+          [cb("✍️ دستی", "admin_product_wizard_price_manual", "primary")],
+          [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
         ]
       }
     });
@@ -1148,7 +1148,7 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
         `قیمت را به تومان بفرستید.` +
         (mode === "edit" ? `\nمقدار فعلی: ${String(payload.priceToman || "-")}` : "") +
         keepHint,
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]] }
+      reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
     });
     return;
   }
@@ -1158,9 +1158,9 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
       text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 6 از 9\nحالت فروش را انتخاب کنید:`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "فروش دستی", callback_data: "admin_product_wizard_sell_manual" }],
-          [{ text: "فروش از پنل", callback_data: "admin_product_wizard_sell_panel" }],
-          [{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]
+          [cb("فروش دستی", "admin_product_wizard_sell_manual", "primary")],
+          [cb("فروش از پنل", "admin_product_wizard_sell_panel", "primary")],
+          [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
         ]
       }
     });
@@ -1173,10 +1173,10 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
       reply_markup: {
         inline_keyboard: [
           [
-            { text: "✅ بله", callback_data: "admin_product_wizard_infinite_yes" },
-            { text: "❌ خیر", callback_data: "admin_product_wizard_infinite_no" }
+            confirmButton("admin_product_wizard_infinite_yes", "✅ بله"),
+            cb("❌ خیر", "admin_product_wizard_infinite_no", "danger")
           ],
-          [{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]
+          [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
         ]
       }
     });
@@ -1193,12 +1193,9 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
       return;
     }
     const keyboard = panels.map((panel) => [
-      {
-        text: `${panel.name}${panel.active && panel.allow_new_sales ? "" : " ⛔"}`,
-        callback_data: `admin_product_wizard_panel_${panel.id}`
-      }
+      cb(`${panel.name}${panel.active && panel.allow_new_sales ? "" : " ⛔"}`, `admin_product_wizard_panel_${panel.id}`, "primary")
     ]);
-    keyboard.push([{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]);
+    keyboard.push([cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]);
     await tg("sendMessage", {
       chat_id: chatId,
       text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 7 از 9\nپنل مقصد را انتخاب کنید:`,
@@ -1214,7 +1211,7 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
         `سقف فروش پنل را بفرستید.\n0 = بدون سقف` +
         (mode === "edit" ? `\nمقدار فعلی: ${payload.panelSellLimit ?? "بدون سقف"}` : "") +
         keepHint,
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]] }
+      reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
     });
     return;
   }
@@ -1228,11 +1225,11 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
       reply_markup: {
         inline_keyboard: [
           [
-            { text: "ساب + کانفیگ", callback_data: "admin_product_wizard_delivery_both" },
-            { text: "فقط ساب", callback_data: "admin_product_wizard_delivery_sub" },
-            { text: "فقط کانفیگ", callback_data: "admin_product_wizard_delivery_configs" }
+            cb("ساب + کانفیگ", "admin_product_wizard_delivery_both", "primary"),
+            cb("فقط ساب", "admin_product_wizard_delivery_sub", "primary"),
+            cb("فقط کانفیگ", "admin_product_wizard_delivery_configs", "primary")
           ],
-          [{ text: "❌ لغو", callback_data: `admin_product_wizard_cancel_${productId || 0}` }]
+          [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
         ]
       }
     });
@@ -1374,7 +1371,7 @@ async function promptCardWizardStep(chatId: number, payload: Record<string, unkn
   const step = String(payload.step || "label") as CardWizardStep;
   const cardId = Number(payload.cardId || 0);
   const keepHint = mode === "edit" ? "\nبرای نگه داشتن مقدار فعلی، - بفرستید." : "";
-  const cancel = { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_card_wizard_cancel_${cardId || 0}` }]] };
+  const cancel = { inline_keyboard: [[cancelButton(`admin_card_wizard_cancel_${cardId || 0}`)]] };
   if (step === "label") {
     await tg("sendMessage", {
       chat_id: chatId,
@@ -1440,9 +1437,9 @@ async function promptDiscountWizardStep(chatId: number, payload: Record<string, 
       text: "تخفیف جدید - مرحله 1 از 4\nروش کد را انتخاب کنید:",
       reply_markup: {
         inline_keyboard: [
-          [{ text: "🎲 کد تصادفی", callback_data: "admin_discount_wizard_code_random" }],
-          [{ text: "✍️ کد دستی", callback_data: "admin_discount_wizard_code_manual" }],
-          [{ text: "❌ لغو", callback_data: `admin_discount_wizard_cancel_${discountId || 0}` }]
+          [cb("🎲 کد تصادفی", "admin_discount_wizard_code_random", "primary")],
+          [cb("✍️ کد دستی", "admin_discount_wizard_code_manual", "primary")],
+          [cancelButton(`admin_discount_wizard_cancel_${discountId || 0}`)]
         ]
       }
     });
@@ -1452,7 +1449,7 @@ async function promptDiscountWizardStep(chatId: number, payload: Record<string, 
     await tg("sendMessage", {
       chat_id: chatId,
       text: "تخفیف جدید - مرحله 1 از 4\nکد تخفیف را بفرستید. مثلا: NOW10",
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_discount_wizard_cancel_${discountId || 0}` }]] }
+      reply_markup: { inline_keyboard: [[cancelButton(`admin_discount_wizard_cancel_${discountId || 0}`)]] }
     });
     return;
   }
@@ -1463,10 +1460,10 @@ async function promptDiscountWizardStep(chatId: number, payload: Record<string, 
       reply_markup: {
         inline_keyboard: [
           [
-            { text: "percent", callback_data: "admin_discount_wizard_type_percent" },
-            { text: "fixed", callback_data: "admin_discount_wizard_type_fixed" }
+            cb("percent", "admin_discount_wizard_type_percent", "primary"),
+            cb("fixed", "admin_discount_wizard_type_fixed", "primary")
           ],
-          [{ text: "❌ لغو", callback_data: `admin_discount_wizard_cancel_${discountId || 0}` }]
+          [cancelButton(`admin_discount_wizard_cancel_${discountId || 0}`)]
         ]
       }
     });
@@ -1480,7 +1477,7 @@ async function promptDiscountWizardStep(chatId: number, payload: Record<string, 
         `مقدار تخفیف را بفرستید.` +
         (mode === "edit" ? `\nفعلی: ${payload.amount || "-"}` : "") +
         keepHint,
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_discount_wizard_cancel_${discountId || 0}` }]] }
+      reply_markup: { inline_keyboard: [[cancelButton(`admin_discount_wizard_cancel_${discountId || 0}`)]] }
     });
     return;
   }
@@ -1491,7 +1488,7 @@ async function promptDiscountWizardStep(chatId: number, payload: Record<string, 
       `سقف استفاده را بفرستید. 0 = بدون سقف` +
       (mode === "edit" ? `\nفعلی: ${payload.usageLimit ?? "بدون سقف"}` : "") +
       keepHint,
-    reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_discount_wizard_cancel_${discountId || 0}` }]] }
+    reply_markup: { inline_keyboard: [[cancelButton(`admin_discount_wizard_cancel_${discountId || 0}`)]] }
   });
 }
 
@@ -1501,7 +1498,7 @@ async function startMessageUserWizard(chatId: number, userId: number) {
   await tg("sendMessage", {
     chat_id: chatId,
     text: "ارسال پیام - مرحله 1 از 2\nآیدی عددی یا یوزرنیم (با یا بدون @) را بفرستید.",
-    reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_message_user_wizard_cancel" }]] }
+    reply_markup: { inline_keyboard: [[cancelButton("admin_message_user_wizard_cancel")]] }
   });
 }
 
@@ -1517,7 +1514,7 @@ async function startDirectMigrateWizard(chatId: number, userId: number) {
   await tg("sendMessage", {
     chat_id: chatId,
     text: "انتقال مستقیم - مرحله 1 از 4\nشناسه inventory مبدا را بفرستید.",
-    reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_direct_migrate_wizard_cancel" }]] }
+    reply_markup: { inline_keyboard: [[cancelButton("admin_direct_migrate_wizard_cancel")]] }
   });
 }
 
@@ -1536,7 +1533,7 @@ async function startAdminConfigBuilderWizard(chatId: number, userId: number) {
   await tg("sendMessage", {
     chat_id: chatId,
     text: "ساخت کانفیگ سفارشی - مرحله 1 از 5\nآیدی عددی کاربر یا یوزرنیم (با یا بدون @) را ارسال کنید.",
-    reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_config_builder_cancel" }]] }
+    reply_markup: { inline_keyboard: [[cancelButton("admin_config_builder_cancel")]] }
   });
 }
 
@@ -1547,12 +1544,13 @@ async function promptAdminConfigBuilderPanel(chatId: number) {
     return;
   }
   const keyboard = rows.map((row) => [
-    {
-      text: `${row.name} (${panelTypeTitle(String(row.panel_type || ""))})${row.active && row.allow_new_sales ? "" : " ⛔"}`,
-      callback_data: `admin_config_builder_panel_${row.id}`
-    }
+    cb(
+      `${row.name} (${panelTypeTitle(String(row.panel_type || ""))})${row.active && row.allow_new_sales ? "" : " ⛔"}`,
+      `admin_config_builder_panel_${row.id}`,
+      "primary"
+    )
   ]);
-  keyboard.push([{ text: "❌ لغو", callback_data: "admin_config_builder_cancel" }]);
+  keyboard.push([cancelButton("admin_config_builder_cancel")]);
   await tg("sendMessage", {
     chat_id: chatId,
     text: "ساخت کانفیگ سفارشی - مرحله 2 از 5\nپنل مقصد را انتخاب کنید:",
@@ -1566,8 +1564,8 @@ async function promptDirectMigrateTargetPanel(chatId: number) {
     await tg("sendMessage", { chat_id: chatId, text: "هیچ پنلی ثبت نشده است." });
     return;
   }
-  const keyboard = rows.map((row) => [{ text: `${row.name}${row.active && row.allow_new_sales ? "" : " ⛔"}`, callback_data: `admin_direct_migrate_panel_${row.id}` }]);
-  keyboard.push([{ text: "❌ لغو", callback_data: "admin_direct_migrate_wizard_cancel" }]);
+  const keyboard = rows.map((row) => [cb(`${row.name}${row.active && row.allow_new_sales ? "" : " ⛔"}`, `admin_direct_migrate_panel_${row.id}`, "primary")]);
+  keyboard.push([cancelButton("admin_direct_migrate_wizard_cancel")]);
   await tg("sendMessage", {
     chat_id: chatId,
     text: "انتقال مستقیم - مرحله 2 از 4\nپنل مقصد را انتخاب کنید:",
@@ -1601,20 +1599,28 @@ async function showPanelDetails(chatId: number, panelId: number, notice?: string
     reply_markup: {
       inline_keyboard: [
         [
-          { text: "✏️ ویرایش", callback_data: `admin_panel_edit_${panel.id}` },
-          { text: "🧪 تست", callback_data: `admin_panel_test_${panel.id}` }
+          cb("✏️ ویرایش", `admin_panel_edit_${panel.id}`, "primary"),
+          cb("🧪 تست", `admin_panel_test_${panel.id}`, "primary")
         ],
         [
-          { text: panel.active ? "⛔ غیرفعال" : "✅ فعال", callback_data: `admin_panel_toggle_${panel.id}` },
-          { text: panel.allow_new_sales ? "🛑 بستن فروش" : "🟢 بازکردن فروش", callback_data: `admin_panel_toggle_sales_${panel.id}` }
+          cb(panel.active ? "⛔ غیرفعال" : "✅ فعال", `admin_panel_toggle_${panel.id}`, panel.active ? "danger" : "success"),
+          cb(
+            panel.allow_new_sales ? "🛑 بستن فروش" : "🟢 بازکردن فروش",
+            `admin_panel_toggle_sales_${panel.id}`,
+            panel.allow_new_sales ? "danger" : "success"
+          )
         ],
         [
-          { text: panel.allow_customer_migration ? "🔒 قفل مهاجرت" : "🔓 آزاد مهاجرت", callback_data: `admin_panel_toggle_move_${panel.id}` },
-          { text: "🗑 حذف", callback_data: `admin_panel_remove_${panel.id}` }
+          cb(
+            panel.allow_customer_migration ? "🔒 قفل مهاجرت" : "🔓 آزاد مهاجرت",
+            `admin_panel_toggle_move_${panel.id}`,
+            "primary"
+          ),
+          cb("🗑 حذف", `admin_panel_remove_${panel.id}`, "danger")
         ],
         [
-          { text: "📋 کش", callback_data: `admin_panel_cache_${panel.id}` },
-          { text: "🔙 لیست پنل‌ها", callback_data: "admin_panels" }
+          cb("📋 کش", `admin_panel_cache_${panel.id}`, "primary"),
+          backButton("admin_panels", "🔙 لیست پنل‌ها")
         ]
       ]
     }
@@ -1748,9 +1754,9 @@ async function showPanelAdminMenu(chatId: number, notice?: string) {
       text: "هنوز هیچ پنلی ثبت نشده است.",
       reply_markup: {
         inline_keyboard: [
-          [{ text: "➕ افزودن پنل", callback_data: "admin_panel_add" }],
-          [{ text: "📥 صف انتقال‌ها", callback_data: "admin_migrations" }],
-          [{ text: "🔙 بازگشت", callback_data: "admin_panel" }]
+          [cb("➕ افزودن پنل", "admin_panel_add", "success")],
+          [cb("📥 صف انتقال‌ها", "admin_migrations", "primary")],
+          [backButton("admin_panel")]
         ]
       }
     });
@@ -1767,23 +1773,23 @@ async function showPanelAdminMenu(chatId: number, notice?: string) {
       }
     ],
     [
-      { text: "ویرایش", callback_data: `admin_panel_edit_${p.id}` },
-      { text: p.active ? "غیرفعال" : "فعال", callback_data: `admin_panel_toggle_${p.id}` },
-      { text: p.allow_customer_migration ? "قفل مهاجرت" : "آزاد مهاجرت", callback_data: `admin_panel_toggle_move_${p.id}` }
+      cb("ویرایش", `admin_panel_edit_${p.id}`, "primary"),
+      cb(p.active ? "غیرفعال" : "فعال", `admin_panel_toggle_${p.id}`, p.active ? "danger" : "success"),
+      cb(p.allow_customer_migration ? "قفل مهاجرت" : "آزاد مهاجرت", `admin_panel_toggle_move_${p.id}`, "primary")
     ],
     [
-      { text: p.allow_new_sales ? "بستن فروش جدید" : "بازکردن فروش جدید", callback_data: `admin_panel_toggle_sales_${p.id}` },
-      { text: "تست اتصال", callback_data: `admin_panel_test_${p.id}` }
+      cb(p.allow_new_sales ? "بستن فروش جدید" : "بازکردن فروش جدید", `admin_panel_toggle_sales_${p.id}`, p.allow_new_sales ? "danger" : "success"),
+      cb("تست اتصال", `admin_panel_test_${p.id}`, "primary")
     ],
     [
-      { text: "وضعیت کش", callback_data: `admin_panel_cache_${p.id}` },
-      { text: "حذف", callback_data: `admin_panel_remove_${p.id}` }
+      cb("وضعیت کش", `admin_panel_cache_${p.id}`, "primary"),
+      cb("🗑 حذف", `admin_panel_remove_${p.id}`, "danger")
     ]
   ]);
-  keyboard.push([{ text: "🧪 تست همه پنل‌ها", callback_data: "admin_panel_test_all" }]);
-  keyboard.push([{ text: "➕ افزودن پنل", callback_data: "admin_panel_add" }]);
-  keyboard.push([{ text: "📥 صف انتقال‌ها", callback_data: "admin_migrations" }]);
-  keyboard.push([{ text: "🔙 بازگشت", callback_data: "admin_panel" }]);
+  keyboard.push([cb("🧪 تست همه پنل‌ها", "admin_panel_test_all", "primary")]);
+  keyboard.push([cb("➕ افزودن پنل", "admin_panel_add", "success")]);
+  keyboard.push([cb("📥 صف انتقال‌ها", "admin_migrations", "primary")]);
+  keyboard.push([backButton("admin_panel")]);
   await tg("sendMessage", {
     chat_id: chatId,
     text: `${notice ? `${notice}\n\n` : ""}مدیریت پنل‌های V2Ray:\nبرای دیدن جزئیات هر پنل، روی ردیف بالایی آن بزنید.`,
@@ -3500,8 +3506,8 @@ async function parseAndApplyState(
         caption,
         reply_markup: {
           inline_keyboard: [
-            [{ text: "✅ تایید", callback_data: `crypto_accept_${orderId}` }],
-            [{ text: "❌ رد", callback_data: `crypto_deny_${orderId}` }]
+            [confirmButton(`crypto_accept_${orderId}`, "✅ تایید")],
+            [cancelButton(`crypto_deny_${orderId}`, "❌ رد")]
           ]
         }
       }).catch(() => {});
@@ -3548,8 +3554,8 @@ async function parseAndApplyState(
           reply_markup: {
             inline_keyboard: [
               [
-                { text: "✅ تایید", callback_data: `wallet_accept_${topupId}` },
-                { text: "❌ رد", callback_data: `wallet_deny_${topupId}` }
+                confirmButton(`wallet_accept_${topupId}`, "✅ تایید"),
+                cancelButton(`wallet_deny_${topupId}`, "❌ رد")
               ]
             ]
           }
@@ -3660,9 +3666,9 @@ async function parseAndApplyState(
           reply_markup: {
             inline_keyboard: [
               [
-                { text: "✅ تایید", callback_data: `receipt_accept_${orderId}` },
-                { text: "❌ رد", callback_data: `receipt_deny_${orderId}` },
-                { text: "⛔ Ban", callback_data: `receipt_ban_${orderId}_${userId}` }
+                confirmButton(`receipt_accept_${orderId}`, "✅ تایید"),
+                cancelButton(`receipt_deny_${orderId}`, "❌ رد"),
+                cb("⛔ بن", `receipt_ban_${orderId}_${userId}`, "danger")
               ]
             ]
           }
@@ -3722,9 +3728,9 @@ async function parseAndApplyState(
           reply_markup: {
             inline_keyboard: [
               [
-                { text: "✅ تایید", callback_data: `topup_accept_${topupRequestId}` },
-                { text: "❌ رد", callback_data: `topup_deny_${topupRequestId}` },
-                { text: "⛔ Ban", callback_data: `topup_ban_${topupRequestId}_${userId}` }
+                confirmButton(`topup_accept_${topupRequestId}`, "✅ تایید"),
+                cancelButton(`topup_deny_${topupRequestId}`, "❌ رد"),
+                cb("⛔ بن", `topup_ban_${topupRequestId}_${userId}`, "danger")
               ]
             ]
           }
@@ -3962,7 +3968,7 @@ async function parseAndApplyState(
       await tg("sendMessage", {
         chat_id: chatId,
         text: "ارسال پیام - مرحله 2 از 2\nمتن پیام را بفرستید.",
-        reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_message_user_wizard_cancel" }]] }
+        reply_markup: { inline_keyboard: [[cancelButton("admin_message_user_wizard_cancel")]] }
       });
       return true;
     }
@@ -4023,7 +4029,7 @@ async function parseAndApplyState(
       await tg("sendMessage", {
         chat_id: chatId,
         text: "انتقال مستقیم - مرحله 4 از 4\nاگر کانفیگ جدید دارید بفرستید. برای انتقال با کانفیگ قبلی، - بفرستید.",
-        reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_direct_migrate_wizard_cancel" }]] }
+        reply_markup: { inline_keyboard: [[cancelButton("admin_direct_migrate_wizard_cancel")]] }
       });
       return true;
     }
@@ -4111,10 +4117,10 @@ async function parseAndApplyState(
       reply_markup: {
         inline_keyboard: [
           [
-            { text: "➕ افزایش موجودی", callback_data: `admin_wallet_add_${u.telegram_id}` },
-            { text: "➖ کسر موجودی", callback_data: `admin_wallet_sub_${u.telegram_id}` }
+            cb("➕ افزایش موجودی", `admin_wallet_add_${u.telegram_id}`, "success"),
+            cb("➖ کسر موجودی", `admin_wallet_sub_${u.telegram_id}`, "danger")
           ],
-          [{ text: "🔙 بازگشت", callback_data: "admin_panel" }]
+          [backButton("admin_panel")]
         ]
       }
     });
@@ -4882,25 +4888,27 @@ async function parseAndApplyState(
         const ownerLabel = Number(row.owner_telegram_id || 0) > 0 ? String(Number(row.owner_telegram_id)) : "-";
         const keyboard: Array<Array<{ text: string; callback_data: string }>> = [
           [
-            { text: revoked ? "✅ فعال‌سازی" : "🚫 غیرفعال‌سازی", callback_data: `admin_lookup_toggle_inv_${row.id}` },
-            { text: "🗑 حذف کامل", callback_data: `admin_lookup_delete_inv_${row.id}` }
+            revoked
+              ? confirmButton(`admin_lookup_toggle_inv_${row.id}`, "✅ فعال‌سازی")
+              : cb("🚫 غیرفعال‌سازی", `admin_lookup_toggle_inv_${row.id}`, "danger"),
+            cb("🗑 حذف کامل", `admin_lookup_delete_inv_${row.id}`, "danger")
           ],
           [
-            { text: "🔄 بازسازی لینک", callback_data: `admin_lookup_regen_link_${row.id}` }
+            cb("🔄 بازسازی لینک", `admin_lookup_regen_link_${row.id}`, "primary")
           ]
         ];
         if (isPanelConfig) {
           keyboard.push([
-            { text: "➕ افزودن دیتا", callback_data: `admin_lookup_add_data_${row.id}` },
-            { text: "✏️ تنظیم سقف دیتا", callback_data: `admin_lookup_set_data_${row.id}` }
+            cb("➕ افزودن دیتا", `admin_lookup_add_data_${row.id}`, "primary"),
+            cb("✏️ تنظیم سقف دیتا", `admin_lookup_set_data_${row.id}`, "primary")
           ]);
           keyboard.push([
-            { text: "♻️ ریست مصرف", callback_data: `admin_lookup_reset_data_${row.id}` },
-            { text: "🔗 دریافت لینک‌های مستقیم", callback_data: `admin_lookup_direct_links_${row.id}` }
+            cb("♻️ ریست مصرف", `admin_lookup_reset_data_${row.id}`, "primary"),
+            cb("🔗 لینک‌های مستقیم", `admin_lookup_direct_links_${row.id}`, "primary")
           ]);
           keyboard.push([
-            { text: "📅 تنظیم انقضا", callback_data: `admin_lookup_set_expiry_${row.id}` },
-            { text: "♾️ بدون انقضا", callback_data: `admin_lookup_set_expiry_${row.id}_0` }
+            cb("📅 تنظیم انقضا", `admin_lookup_set_expiry_${row.id}`, "primary"),
+            cb("♾️ بدون انقضا", `admin_lookup_set_expiry_${row.id}_0`, "primary")
           ]);
         }
         let prevConfigsText = "";
@@ -5024,20 +5032,22 @@ async function parseAndApplyState(
         inline_keyboard: [
           banBtn,
           [
-            { text: panelRevoked ? "✅ فعال‌سازی" : "🚫 غیرفعال‌سازی", callback_data: `admin_panel_toggle_${panelMatch.panelId}_${panelKey}` },
-            { text: "🗑 حذف کامل از پنل", callback_data: `admin_panel_del_${panelMatch.panelId}_${panelKey}` }
+            panelRevoked
+              ? confirmButton(`admin_panel_toggle_${panelMatch.panelId}_${panelKey}`, "✅ فعال‌سازی")
+              : cb("🚫 غیرفعال‌سازی", `admin_panel_toggle_${panelMatch.panelId}_${panelKey}`, "danger"),
+            cb("🗑 حذف کامل از پنل", `admin_panel_del_${panelMatch.panelId}_${panelKey}`, "danger")
           ],
           [
-            { text: "🔄 بازسازی لینک", callback_data: `admin_panel_rv_${panelMatch.panelId}_${panelKey}` }
+            cb("🔄 بازسازی لینک", `admin_panel_rv_${panelMatch.panelId}_${panelKey}`, "primary")
           ],
           [
-            { text: "➕ افزودن دیتا", callback_data: `admin_panel_add_data_${panelMatch.panelId}_${panelKey}` },
-            { text: "✏️ تنظیم سقف دیتا", callback_data: `admin_panel_set_data_${panelMatch.panelId}_${panelKey}` }
+            cb("➕ افزودن دیتا", `admin_panel_add_data_${panelMatch.panelId}_${panelKey}`, "primary"),
+            cb("✏️ تنظیم سقف دیتا", `admin_panel_set_data_${panelMatch.panelId}_${panelKey}`, "primary")
           ],
-          [{ text: "♻️ ریست مصرف", callback_data: `admin_panel_reset_data_${panelMatch.panelId}_${panelKey}` }],
+          [cb("♻️ ریست مصرف", `admin_panel_reset_data_${panelMatch.panelId}_${panelKey}`, "primary")],
           [
-            { text: "📅 تنظیم انقضا", callback_data: `admin_panel_set_expiry_${panelMatch.panelId}_${panelKey}` },
-            { text: "♾️ بدون انقضا", callback_data: `admin_panel_set_expiry_${panelMatch.panelId}_${panelKey}_days_0` }
+            cb("📅 تنظیم انقضا", `admin_panel_set_expiry_${panelMatch.panelId}_${panelKey}`, "primary"),
+            cb("♾️ بدون انقضا", `admin_panel_set_expiry_${panelMatch.panelId}_${panelKey}_days_0`, "primary")
           ]
         ]
       }
@@ -5521,7 +5531,7 @@ async function parseAndApplyState(
       await tg("sendMessage", {
         chat_id: chatId,
         text: "ساخت کانفیگ سفارشی - مرحله 4 از 5\nحجم دیتا را بفرستید (مثال: 2GB یا 2048MB).\nبرای نامحدود: unlimited",
-        reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_config_builder_cancel" }]] }
+        reply_markup: { inline_keyboard: [[cancelButton("admin_config_builder_cancel")]] }
       });
       return true;
     }
@@ -5542,7 +5552,7 @@ async function parseAndApplyState(
       await tg("sendMessage", {
         chat_id: chatId,
         text: "ساخت کانفیگ سفارشی - مرحله 5 از 5\nتعداد روز انقضا را بفرستید.\n0 = بدون انقضا",
-        reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_config_builder_cancel" }]] }
+        reply_markup: { inline_keyboard: [[cancelButton("admin_config_builder_cancel")]] }
       });
       return true;
     }
@@ -7006,7 +7016,7 @@ async function createOrder(
       text: cryptoText,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
+          [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
           [homeButton()]
         ]
       }
@@ -7142,7 +7152,7 @@ async function createOrder(
         reply_markup: {
           inline_keyboard: [
             [{ text: "💳 پرداخت با Plisio", url: invoice.invoiceUrl }],
-            [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
+            [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
             [homeButton()]
           ]
         }
@@ -7207,7 +7217,7 @@ async function createOrder(
       reply_markup: {
         inline_keyboard: [
           [{ text: "💳 پرداخت", url: token.paymentUrl }],
-          [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
+          [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
           [homeButton()]
         ]
       }
@@ -8611,8 +8621,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: "🔥 بله، حذف شود", callback_data: `admin_lookup_delete_inv_${inventoryId}_confirm` },
-              { text: "❌ انصراف", callback_data: "admin_lookup_action_cancel" }
+              cb("🔥 حذف کامل", `admin_lookup_delete_inv_${inventoryId}_confirm`, "danger"),
+              cb("❌ انصراف", "admin_lookup_action_cancel", "primary")
             ]
           ]
         }
@@ -8689,7 +8699,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "مقدار دیتای اضافه را ارسال کنید.\nمثال: 500MB یا 2GB",
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_lookup_action_cancel" }]] }
+      reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
     });
     return;
   }
@@ -8703,7 +8713,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "سقف دیتای جدید را ارسال کنید.\nمثال: 50GB یا 102400MB یا unlimited\nبرای نامحدود: unlimited یا 0",
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_lookup_action_cancel" }]] }
+      reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
     });
     return;
   }
@@ -8727,8 +8737,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: "✅ بله، ریست شود", callback_data: `admin_lookup_reset_data_${inventoryId}_confirm` },
-              { text: "❌ انصراف", callback_data: "admin_lookup_action_cancel" }
+              confirmButton(`admin_lookup_reset_data_${inventoryId}_confirm`, "✅ ریست شود"),
+              cb("❌ انصراف", "admin_lookup_action_cancel", "primary")
             ]
           ]
         }
@@ -8821,7 +8831,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "چند روز انقضا تنظیم شود؟\n0 = بدون انقضا",
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_lookup_action_cancel" }]] }
+      reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
     });
     return;
   }
@@ -8843,7 +8853,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "مقدار دیتای اضافه را ارسال کنید.\nمثال: 500MB یا 2GB",
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_lookup_action_cancel" }]] }
+      reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
     });
     return;
   }
@@ -8860,7 +8870,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "سقف دیتای جدید را ارسال کنید.\nمثال: 50GB یا 102400MB یا unlimited\nبرای نامحدود: unlimited یا 0",
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_lookup_action_cancel" }]] }
+      reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
     });
     return;
   }
@@ -8959,7 +8969,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "چند روز انقضا تنظیم شود؟\n0 = بدون انقضا",
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_lookup_action_cancel" }]] }
+      reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
     });
     return;
   }
@@ -9116,8 +9126,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: "🔥 بله، حذف شود", callback_data: `admin_panel_del_${payloadRaw}_confirm` },
-              { text: "❌ انصراف", callback_data: "admin_lookup_action_cancel" }
+              cb("🔥 حذف کامل", `admin_panel_del_${payloadRaw}_confirm`, "danger"),
+              cb("❌ انصراف", "admin_lookup_action_cancel", "primary")
             ]
           ]
         }
@@ -9287,7 +9297,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `پیام: ${p.last_check_message || "-"}\n` +
         `meta: ${JSON.stringify(p.cached_meta || {}, null, 2)}`,
       reply_markup: {
-        inline_keyboard: [[{ text: "🔙 بازگشت به پنل", callback_data: `admin_panel_open_${panelId}` }]]
+        inline_keyboard: [[backButton(`admin_panel_open_${panelId}`, "🔙 بازگشت به پنل")]]
       }
     });
     return;
@@ -9311,8 +9321,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: "✅ بله، حذف شود", callback_data: `admin_panel_remove_yes_${panelId}` },
-            { text: "❌ خیر", callback_data: `admin_panel_open_${panelId}` }
+            cb("🗑 حذف", `admin_panel_remove_yes_${panelId}`, "danger"),
+            cb("❌ خیر", `admin_panel_open_${panelId}`, "primary")
           ]
         ]
       }
@@ -9355,7 +9365,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         callback_data: `admin_migration_open_${m.id}`
       }
     ]);
-    keyboard.push([{ text: "🔙 بازگشت", callback_data: "admin_panels" }]);
+    keyboard.push([backButton("admin_panels")]);
     await tg("sendMessage", { chat_id: chatId, text: "صف انتقال‌ها:", reply_markup: { inline_keyboard: keyboard } });
     return;
   }
@@ -9391,10 +9401,10 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `${escapeHtml(String(r.source_config_snapshot || "-"))}`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "⚡ انتقال با همان کانفیگ", callback_data: `admin_migration_auto_${r.id}` }],
-          [{ text: "✍️ ثبت کانفیگ جدید", callback_data: `admin_migration_manual_${r.id}` }],
-          [{ text: "❌ رد درخواست", callback_data: `admin_migration_reject_${r.id}` }],
-          [{ text: "🔙 بازگشت", callback_data: "admin_migrations" }]
+          [cb("⚡ انتقال با همان کانفیگ", `admin_migration_auto_${r.id}`, "success")],
+          [cb("✍️ ثبت کانفیگ جدید", `admin_migration_manual_${r.id}`, "primary")],
+          [cb("❌ رد درخواست", `admin_migration_reject_${r.id}`, "danger")],
+          [backButton("admin_migrations")]
         ]
       }
     });
@@ -9726,8 +9736,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: "✅ بله، حذف شود", callback_data: `admin_remove_product_yes_${productId}` },
-            { text: "❌ خیر", callback_data: "admin_products" }
+            cb("🗑 حذف", `admin_remove_product_yes_${productId}`, "danger"),
+            cb("❌ خیر", "admin_products", "primary")
           ]
         ]
       }
@@ -9760,10 +9770,10 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       text: `موجودی محصول:\nآزاد: ${availableCount}\nفروخته‌شده: ${soldCount}`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "➕ افزودن کانفیگ", callback_data: `admin_add_stock_${productId}` }],
-          [{ text: "لیست قابل حذف", callback_data: `admin_available_list_${productId}` }],
-          [{ text: "لیست فروخته‌شده‌ها", callback_data: `admin_sold_list_${productId}` }],
-          [{ text: "🔙 بازگشت", callback_data: "admin_inventory" }]
+          [cb("➕ افزودن کانفیگ", `admin_add_stock_${productId}`, "success")],
+          [cb("🗑 لیست قابل حذف", `admin_available_list_${productId}`, "primary")],
+          [cb("📦 لیست فروخته‌شده‌ها", `admin_sold_list_${productId}`, "primary")],
+          [backButton("admin_inventory")]
         ]
       }
     });
@@ -9801,8 +9811,10 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: revoked ? "✅ فعال" : "🚫 غیرفعال", callback_data: `admin_inv_revoke_${row.id}` },
-              { text: "✏️ نام", callback_data: `admin_inv_rename_${row.id}` }
+              revoked
+                ? confirmButton(`admin_inv_revoke_${row.id}`, "✅ فعال")
+                : cb("🚫 غیرفعال", `admin_inv_revoke_${row.id}`, "danger"),
+              cb("✏️ نام", `admin_inv_rename_${row.id}`, "primary")
             ]
           ]
         }
@@ -9866,7 +9878,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         parse_mode: "HTML",
         text: `#${row.id}\n${escapeHtml(String(row.config_value))}`,
         reply_markup: {
-          inline_keyboard: [[{ text: "🗑 حذف", callback_data: `admin_delete_inventory_${row.id}` }]]
+          inline_keyboard: [[cb("🗑 حذف", `admin_delete_inventory_${row.id}`, "danger")]]
         }
       });
     }
@@ -9905,15 +9917,15 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "admin_discounts") {
     const rows = await sql`SELECT id, code, type, amount, active, usage_limit, used_count FROM discounts ORDER BY id DESC LIMIT 30;`;
     const keyboard = rows.flatMap((d) => [
-      [{ text: `${d.code} | ${d.type} ${d.amount} | مصرف ${d.used_count}/${d.usage_limit ?? "∞"}`, callback_data: `noop_d_${d.id}` }],
+      [cb(`${d.code} | ${d.type} ${d.amount} | مصرف ${d.used_count}/${d.usage_limit ?? "∞"}`, `admin_edit_discount_${d.id}`, "primary")],
       [
-        { text: "ویرایش", callback_data: `admin_edit_discount_${d.id}` },
-        { text: d.active ? "غیرفعال" : "فعال", callback_data: `admin_toggle_discount_${d.id}` },
-        { text: "حذف", callback_data: `admin_delete_discount_${d.id}` }
+        cb("ویرایش", `admin_edit_discount_${d.id}`, "primary"),
+        cb(d.active ? "غیرفعال" : "فعال", `admin_toggle_discount_${d.id}`, d.active ? "danger" : "success"),
+        cb("🗑 حذف", `admin_delete_discount_${d.id}`, "danger")
       ]
     ]);
-    keyboard.push([{ text: "➕ افزودن تخفیف", callback_data: "admin_add_discount" }]);
-    keyboard.push([{ text: "🔙 بازگشت", callback_data: "admin_panel" }]);
+    keyboard.push([cb("➕ افزودن تخفیف", "admin_add_discount", "success")]);
+    keyboard.push([backButton("admin_panel")]);
     await tg("sendMessage", { chat_id: chatId, text: "مدیریت تخفیف:", reply_markup: { inline_keyboard: keyboard } });
     return;
   }
@@ -9975,8 +9987,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   }
   if (data === "admin_payment_methods") {
     const rows = await sql`SELECT code, title, active FROM payment_methods ORDER BY code ASC;`;
-    const keyboard = rows.map((m) => [{ text: `${m.title} | ${m.active ? "فعال" : "غیرفعال"}`, callback_data: `admin_toggle_method_${m.code}` }]);
-    keyboard.push([{ text: "🔙 بازگشت", callback_data: "admin_panel" }]);
+    const keyboard = rows.map((m) => [cb(`${m.title} | ${m.active ? "فعال" : "غیرفعال"}`, `admin_toggle_method_${m.code}`, m.active ? "danger" : "success")]);
+    keyboard.push([backButton("admin_panel")]);
     await tg("sendMessage", { chat_id: chatId, text: "مدیریت روش‌های پرداخت:", reply_markup: { inline_keyboard: keyboard } });
     return;
   }
@@ -10011,19 +10023,20 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           text:
             `${Number(c.id) === mainCardId ? "⭐ " : ""}${c.label} | ${c.card_number} | ${c.active ? "فعال" : "غیرفعال"}\n` +
             `فروش: ${Number(c.sold_count || 0)} | کل سفارش: ${Number(c.total_orders || 0)}`,
-          callback_data: `noop_card_${c.id}`
+          callback_data: `admin_edit_card_${c.id}`,
+          style: "primary"
         }
       ],
       [
-        { text: "ویرایش", callback_data: `admin_edit_card_${c.id}` },
-        { text: c.active ? "غیرفعال" : "فعال", callback_data: `admin_toggle_card_${c.id}` },
-        { text: "کارت اصلی", callback_data: `admin_set_main_card_${c.id}` },
-        { text: "حذف", callback_data: `admin_remove_card_${c.id}` }
+        cb("ویرایش", `admin_edit_card_${c.id}`, "primary"),
+        cb(c.active ? "غیرفعال" : "فعال", `admin_toggle_card_${c.id}`, c.active ? "danger" : "success"),
+        cb("⭐ کارت اصلی", `admin_set_main_card_${c.id}`, "success"),
+        cb("🗑 حذف", `admin_remove_card_${c.id}`, "danger")
       ]
     ]);
-    keyboard.push([{ text: "➕ افزودن کارت", callback_data: "admin_add_card" }]);
-    keyboard.push([{ text: randomMode ? "🎲 رندوم: روشن" : "🎲 رندوم: خاموش", callback_data: "admin_toggle_random_cards" }]);
-    keyboard.push([{ text: "🔙 بازگشت", callback_data: "admin_panel" }]);
+    keyboard.push([cb("➕ افزودن کارت", "admin_add_card", "success")]);
+    keyboard.push([cb(randomMode ? "🎲 پخش رندوم: روشن" : "🎲 پخش رندوم: خاموش", "admin_toggle_random_cards", randomMode ? "success" : "primary")]);
+    keyboard.push([backButton("admin_panel")]);
     await tg("sendMessage", { chat_id: chatId, text: "مدیریت کارت‌ها:", reply_markup: { inline_keyboard: keyboard } });
     return;
   }
@@ -10124,7 +10137,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "لطفاً آیدی عددی (Telegram ID) یا یوزرنیم (با @ یا بدون @) کاربر موردنظر را ارسال کنید:",
-      reply_markup: { inline_keyboard: [[{ text: "🔙 بازگشت", callback_data: "admin_panel" }]] }
+      reply_markup: { inline_keyboard: [[backButton("admin_panel")]] }
     });
     return;
   }
@@ -10134,7 +10147,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "مبلغی که می‌خواهید به کیف پول این کاربر اضافه کنید را به تومان وارد کنید:",
-      reply_markup: { inline_keyboard: [[{ text: "🔙 لغو", callback_data: "admin_manage_users" }]] }
+      reply_markup: { inline_keyboard: [[backButton("admin_manage_users")]] }
     });
     return;
   }
@@ -10144,7 +10157,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "مبلغی که می‌خواهید از کیف پول این کاربر کم کنید را به تومان وارد کنید:",
-      reply_markup: { inline_keyboard: [[{ text: "🔙 لغو", callback_data: "admin_manage_users" }]] }
+      reply_markup: { inline_keyboard: [[backButton("admin_manage_users")]] }
     });
     return;
   }
@@ -10197,8 +10210,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `انتقال‌های در صف: ${Number(m5[0].migrations_pending || 0)}`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "👥 مشتریان هر محصول", callback_data: "admin_stats_buyers" }],
-          [{ text: "🔙 بازگشت", callback_data: "admin_panel" }]
+          [cb("👥 مشتریان هر محصول", "admin_stats_buyers", "primary")],
+          [backButton("admin_panel")]
         ]
       }
     });
@@ -10214,8 +10227,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       GROUP BY p.id, p.name
       ORDER BY p.id ASC;
     `;
-    const keyboard = rows.map((p) => [{ text: `${p.name} | مشتری: ${Number(p.buyers || 0)}`, callback_data: `admin_stats_buyers_product_${p.id}` }]);
-    keyboard.push([{ text: "🔙 بازگشت به آمار", callback_data: "admin_stats" }]);
+    const keyboard = rows.map((p) => [cb(`${p.name} | مشتری: ${Number(p.buyers || 0)}`, `admin_stats_buyers_product_${p.id}`, "primary")]);
+    keyboard.push([backButton("admin_stats", "🔙 بازگشت به آمار")]);
     await tg("sendMessage", {
       chat_id: chatId,
       text: "یک محصول را انتخاب کنید:",
@@ -10249,7 +10262,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       await tg("sendMessage", {
         chat_id: chatId,
         text: `برای محصول «${productRows[0].name}» هنوز مشتری ثبت نشده است.`,
-        reply_markup: { inline_keyboard: [[{ text: "🔙 بازگشت", callback_data: "admin_stats_buyers" }]] }
+        reply_markup: { inline_keyboard: [[backButton("admin_stats_buyers")]] }
       });
       return;
     }
@@ -10261,7 +10274,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: `مشتریان محصول: ${productRows[0].name}\n\n${lines.join("\n")}`,
-      reply_markup: { inline_keyboard: [[{ text: "🔙 بازگشت", callback_data: "admin_stats_buyers" }]] }
+      reply_markup: { inline_keyboard: [[backButton("admin_stats_buyers")]] }
     });
     return;
   }
@@ -10271,15 +10284,15 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       text: "ابزارهای سریع ادمین:",
       reply_markup: {
         inline_keyboard: [
-          [{ text: "⛔ بن با یوزرنیم", callback_data: "admin_tool_ban_username" }],
-          [{ text: "✉️ ارسال پیام به کاربر", callback_data: "admin_tool_message_user" }],
-          [{ text: "🔎 جستجوی شماره سفارش", callback_data: "admin_tool_lookup_purchase" }],
-          [{ text: "🧾 جستجوی کانفیگ/UUID", callback_data: "admin_tool_lookup_config" }],
-          [{ text: "🛠 ساخت کانفیگ سفارشی", callback_data: "admin_tool_create_config" }],
-          [{ text: "🔎 یافتن کانفیگ‌های مرده", callback_data: "admin_dead_configs" }],
-          [{ text: "🚫 لیست بن‌شده‌ها", callback_data: "admin_banned_list_1" }],
-          [{ text: "🔁 انتقال مستقیم کانفیگ", callback_data: "admin_tool_direct_migrate" }],
-          [{ text: "🔙 بازگشت", callback_data: "admin_panel" }]
+          [cb("⛔ بن با یوزرنیم", "admin_tool_ban_username", "danger")],
+          [cb("✉️ ارسال پیام به کاربر", "admin_tool_message_user", "primary")],
+          [cb("🔎 جستجوی شماره سفارش", "admin_tool_lookup_purchase", "primary")],
+          [cb("🧾 جستجوی کانفیگ/UUID", "admin_tool_lookup_config", "primary")],
+          [cb("🛠 ساخت کانفیگ سفارشی", "admin_tool_create_config", "primary")],
+          [cb("🔎 یافتن کانفیگ‌های مرده", "admin_dead_configs", "primary")],
+          [cb("🚫 لیست بن‌شده‌ها", "admin_banned_list_1", "primary")],
+          [cb("🔁 انتقال مستقیم کانفیگ", "admin_tool_direct_migrate", "primary")],
+          [backButton("admin_panel")]
         ]
       }
     });
@@ -10341,7 +10354,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "ساخت کانفیگ سفارشی - مرحله 3 از 5\nنام کانفیگ را بفرستید. (اختیاری)\nبرای ردشدن: -",
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_config_builder_cancel" }]] }
+      reply_markup: { inline_keyboard: [[cancelButton("admin_config_builder_cancel")]] }
     });
     return;
   }
@@ -10367,7 +10380,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       LIMIT ${pageSize};
     `;
     if (!rows.length) {
-      await tg("sendMessage", { chat_id: chatId, text: "لیست بن‌شده‌ها خالی است.", reply_markup: { inline_keyboard: [[{ text: "🔙 بازگشت", callback_data: "admin_tools" }]] } });
+      await tg("sendMessage", { chat_id: chatId, text: "لیست بن‌شده‌ها خالی است.", reply_markup: { inline_keyboard: [[backButton("admin_tools")]] } });
       return;
     }
     const lines = rows.map((r) => {
@@ -10375,13 +10388,13 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       const fullName = [r.first_name ? String(r.first_name) : "", r.last_name ? String(r.last_name) : ""].filter(Boolean).join(" ").trim() || "-";
       return `${r.telegram_id} | ${uname} | ${fullName} | reason:${String(r.reason || "-")}`;
     });
-    const keyboard: Array<Array<{ text: string; callback_data: string }>> = [];
+    const keyboard: any[] = [];
     keyboard.push([
-      { text: "⬅️ قبلی", callback_data: `admin_banned_list_${Math.max(1, page - 1)}` },
-      { text: "بعدی ➡️", callback_data: `admin_banned_list_${page + 1}` }
+      cb("⬅️ قبلی", `admin_banned_list_${Math.max(1, page - 1)}`, "primary"),
+      cb("بعدی ➡️", `admin_banned_list_${page + 1}`, "primary")
     ]);
-    keyboard.push([{ text: "🔓 آنبن کاربر", callback_data: "admin_unban_prompt" }]);
-    keyboard.push([{ text: "🔙 بازگشت", callback_data: "admin_tools" }]);
+    keyboard.push([cb("🔓 آنبن کاربر", "admin_unban_prompt", "success")]);
+    keyboard.push([backButton("admin_tools")]);
     await tg("sendMessage", { chat_id: chatId, text: `لیست بن‌شده‌ها (صفحه ${page})\n\n${lines.join("\n")}`, reply_markup: { inline_keyboard: keyboard } });
     return;
   }
@@ -10408,7 +10421,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "انتقال مستقیم - مرحله 3 از 4\ntelegram id کاربر مقصد را بفرستید.",
-      reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_direct_migrate_wizard_cancel" }]] }
+      reply_markup: { inline_keyboard: [[cancelButton("admin_direct_migrate_wizard_cancel")]] }
     });
     return;
   }
@@ -10443,14 +10456,20 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `قیمت پیشفرض هر 1GB محصول: ${formatPriceToman(productPricePerGb)} تومان`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "📢 تنظیم کانال‌های اجباری", callback_data: "admin_set_mandatory_channels" }],
-          [{ text: "🆘 تنظیم یوزرنیم پشتیبانی", callback_data: "admin_set_support" }],
-          [{ text: "👛 تنظیم کیف پول مقصد", callback_data: "admin_set_wallet" }],
-          [{ text: "🔑 تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }],
-          [{ text: "📈 قیمت افزایش هر 1GB", callback_data: "admin_set_topup_price" }],
-          [{ text: "🏷 قیمت پیشفرض هر 1GB محصول", callback_data: "admin_set_product_price" }],
-          [{ text: infiniteMode ? "♾️ خاموش‌کردن حالت بینهایت" : "♾️ روشن‌کردن حالت بینهایت", callback_data: "admin_toggle_global_infinite" }],
-          [{ text: "🔙 بازگشت", callback_data: "admin_panel" }]
+          [cb("📢 کانال‌های اجباری", "admin_set_mandatory_channels", "primary")],
+          [cb("🆘 یوزرنیم پشتیبانی", "admin_set_support", "primary")],
+          [cb("👛 کیف پول مقصد", "admin_set_wallet", "primary")],
+          [cb("🔑 تنظیمات درگاه‌ها", "admin_gateway_settings", "primary")],
+          [cb("📈 قیمت افزایش هر 1GB", "admin_set_topup_price", "primary")],
+          [cb("🏷 قیمت پیشفرض هر 1GB محصول", "admin_set_product_price", "primary")],
+          [
+            cb(
+              infiniteMode ? "♾️ خاموش‌کردن حالت بینهایت" : "♾️ روشن‌کردن حالت بینهایت",
+              "admin_toggle_global_infinite",
+              infiniteMode ? "danger" : "success"
+            )
+          ],
+          [backButton("admin_panel")]
         ]
       }
     });
@@ -10503,15 +10522,15 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `برای پاک‌کردن هر مورد: -`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "🌐 تنظیم آدرس سایت", callback_data: "admin_set_public_base_url" }],
-          [{ text: "🔑 کلید Tronado", callback_data: "admin_set_tronado_api_key" }],
-          [{ text: "🔑 کلید TetraPay", callback_data: "admin_set_tetrapay_api_key" }],
-          [{ text: "🔑 کلید Plisio", callback_data: "admin_set_plisio_api_key" }],
-          [{ text: "🪙 کیف پول‌های کریپتو", callback_data: "admin_crypto_wallets" }],
-          [{ text: plisioAutoRate ? "✅ نرخ خودکار Plisio" : "❌ نرخ خودکار Plisio", callback_data: "admin_toggle_plisio_auto_rate" }],
-          [{ text: "➕ حاشیه تومان/USDT", callback_data: "admin_set_plisio_extra_toman" }],
-          [{ text: "🛟 نرخ دستی (fallback)", callback_data: "admin_set_plisio_fallback_rate" }],
-          [{ text: "🔙 بازگشت", callback_data: "admin_settings" }]
+          [cb("🌐 آدرس سایت", "admin_set_public_base_url", "primary")],
+          [cb("🔑 کلید Tronado", "admin_set_tronado_api_key", "primary")],
+          [cb("🔑 کلید TetraPay", "admin_set_tetrapay_api_key", "primary")],
+          [cb("🔑 کلید Plisio", "admin_set_plisio_api_key", "primary")],
+          [cb("🪙 کیف پول‌های کریپتو", "admin_crypto_wallets", "primary")],
+          [cb(plisioAutoRate ? "✅ نرخ خودکار Plisio" : "❌ نرخ خودکار Plisio", "admin_toggle_plisio_auto_rate", plisioAutoRate ? "success" : "danger")],
+          [cb("➕ حاشیه تومان/USDT", "admin_set_plisio_extra_toman", "primary")],
+          [cb("🛟 نرخ دستی (fallback)", "admin_set_plisio_fallback_rate", "primary")],
+          [backButton("admin_settings")]
         ]
       }
     });
@@ -10541,12 +10560,12 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       text: `کیف پول‌های کریپتو:\n\n${lines.length ? lines.join("\n") : "هیچ موردی ثبت نشده است."}`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "➕ افزودن کیف پول", callback_data: "admin_crypto_wallet_add" }],
+          [cb("➕ افزودن کیف پول", "admin_crypto_wallet_add", "success")],
           ...wallets.slice(0, 12).map((w: any) => {
             const id = Number(w.id);
-            return [{ text: `⚙️ ${String(w.currency)} (${String(w.network)})`, callback_data: `admin_crypto_wallet_edit_${id}` }];
+            return [cb(`⚙️ ${String(w.currency)} (${String(w.network)})`, `admin_crypto_wallet_edit_${id}`, "primary")];
           }),
-          [{ text: "🔙 بازگشت", callback_data: "admin_gateway_settings" }]
+          [backButton("admin_gateway_settings")]
         ]
       }
     });
@@ -10558,12 +10577,12 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       text: "کدام کیف پول را می‌خواهید اضافه کنید؟",
       reply_markup: {
         inline_keyboard: [
-          [{ text: "TRX (TRON)", callback_data: "admin_crypto_wallet_add_trx_tron" }],
-          [{ text: "TON (TON)", callback_data: "admin_crypto_wallet_add_ton_ton" }],
-          [{ text: "USDT (TRC20)", callback_data: "admin_crypto_wallet_add_usdt_trc20" }],
-          [{ text: "USDT (ERC20)", callback_data: "admin_crypto_wallet_add_usdt_erc20" }],
-          [{ text: "سایر", callback_data: "admin_crypto_wallet_add_other" }],
-          [{ text: "🔙 بازگشت", callback_data: "admin_crypto_wallets" }]
+          [cb("TRX (TRON)", "admin_crypto_wallet_add_trx_tron", "primary")],
+          [cb("TON (TON)", "admin_crypto_wallet_add_ton_ton", "primary")],
+          [cb("USDT (TRC20)", "admin_crypto_wallet_add_usdt_trc20", "primary")],
+          [cb("USDT (ERC20)", "admin_crypto_wallet_add_usdt_erc20", "primary")],
+          [cb("سایر", "admin_crypto_wallet_add_other", "primary")],
+          [backButton("admin_crypto_wallets")]
         ]
       }
     });
@@ -10615,13 +10634,13 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `حاشیه: ${formatPriceToman(Number(w.extra_toman_per_unit || 0))} تومان`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "✍️ تنظیم آدرس", callback_data: `admin_crypto_wallet_set_address_${walletId}` }],
-          [{ text: w.rate_mode === "auto" ? "✅ نرخ خودکار" : "❌ نرخ خودکار", callback_data: `admin_crypto_wallet_toggle_auto_${walletId}` }],
-          [{ text: "💱 تنظیم نرخ دستی", callback_data: `admin_crypto_wallet_set_rate_${walletId}` }],
-          [{ text: "➕ تنظیم حاشیه تومان", callback_data: `admin_crypto_wallet_set_extra_${walletId}` }],
-          [{ text: w.active ? "⛔️ غیرفعال" : "✅ فعال", callback_data: `admin_crypto_wallet_toggle_${walletId}` }],
-          [{ text: "🗑 حذف", callback_data: `admin_crypto_wallet_delete_${walletId}` }],
-          [{ text: "🔙 بازگشت", callback_data: "admin_crypto_wallets" }]
+          [cb("✍️ تنظیم آدرس", `admin_crypto_wallet_set_address_${walletId}`, "primary")],
+          [cb(w.rate_mode === "auto" ? "✅ نرخ خودکار" : "❌ نرخ خودکار", `admin_crypto_wallet_toggle_auto_${walletId}`, w.rate_mode === "auto" ? "success" : "danger")],
+          [cb("💱 تنظیم نرخ دستی", `admin_crypto_wallet_set_rate_${walletId}`, "primary")],
+          [cb("➕ تنظیم حاشیه تومان", `admin_crypto_wallet_set_extra_${walletId}`, "primary")],
+          [cb(w.active ? "⛔️ غیرفعال" : "✅ فعال", `admin_crypto_wallet_toggle_${walletId}`, w.active ? "danger" : "success")],
+          [cb("🗑 حذف", `admin_crypto_wallet_delete_${walletId}`, "danger")],
+          [backButton("admin_crypto_wallets")]
         ]
       }
     });
@@ -10842,7 +10861,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     }
     logInfo("topup_auto_apply_skipped", { topupRequestId: id, reason: auto.message });
     await notifyAdmins(`✅ رسید افزایش دیتا تایید شد: ${rows[0].purchase_id}`, {
-      inline_keyboard: [[{ text: "✅ Done", callback_data: `done_topup_${id}` }]]
+      inline_keyboard: [[confirmButton(`done_topup_${id}`, "✅ انجام شد")]]
     });
     await tg("sendMessage", { chat_id: chatId, text: `رسید تایید شد ✅\nاعمال خودکار انجام نشد: ${auto.message}` });
     return;
