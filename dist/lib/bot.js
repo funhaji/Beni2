@@ -4,6 +4,7 @@ import { logError, logInfo } from "./log.js";
 import { getOrderToken, getStatusByPaymentId, getTronPriceToman } from "./tronado.js";
 import { getBoolSetting, getNumberSetting, getPublicBaseUrl, getSetting, setSetting } from "./settings.js";
 import { getUsdtRateTomanCached } from "./rates.js";
+import { getCryptoTomanPerUnitCached } from "./crypto-rates.js";
 import { escapeHtml, tg } from "./telegram.js";
 import { randomUUID } from "node:crypto";
 import * as crypto from "node:crypto";
@@ -6408,8 +6409,8 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
         let tomanPerUnit = 0;
         if (w.rate_mode === "auto") {
-            const { rateTomanPerUsdt } = await getUsdtRateTomanCached();
-            tomanPerUnit = rateTomanPerUsdt + Number(w.extra_toman_per_unit || 0);
+            const base = await getCryptoTomanPerUnitCached(String(w.currency || ""));
+            tomanPerUnit = base + Number(w.extra_toman_per_unit || 0);
         }
         else {
             tomanPerUnit = Number(w.rate_toman_per_unit || 0) + Number(w.extra_toman_per_unit || 0);
@@ -9953,12 +9954,7 @@ async function handleCallback(update) {
         const rows = await sql `SELECT id, currency, rate_mode FROM crypto_wallets WHERE id = ${walletId} LIMIT 1;`;
         if (!rows.length)
             return;
-        const currency = String(rows[0].currency || "").toUpperCase();
         const current = String(rows[0].rate_mode || "manual");
-        if (currency !== "USDT") {
-            await tg("sendMessage", { chat_id: chatId, text: "نرخ خودکار فعلاً فقط برای USDT فعال می‌شود." });
-            return;
-        }
         const next = current === "auto" ? "manual" : "auto";
         await sql `UPDATE crypto_wallets SET rate_mode = ${next} WHERE id = ${walletId};`;
         await tg("sendMessage", { chat_id: chatId, text: `نرخ ${next === "auto" ? "خودکار" : "دستی"} تنظیم شد ✅` });
