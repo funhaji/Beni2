@@ -5,29 +5,28 @@ const PACKS = {
     proxy: ["Proxy_PJ10"],
     info: ["cwdinfo_aemoji"]
 };
-async function getCustomEmojiIds(setName) {
+async function getCustomEmojiSamples(setName) {
     const now = Date.now();
     const hit = stickerSetCache.get(setName);
     if (hit && now - hit.updatedAt < 10 * 60_000)
-        return hit.ids;
+        return hit.samples;
     const data = await tg("getStickerSet", { name: setName });
-    const ids = (data?.stickers || []).map((s) => String(s?.custom_emoji_id || "")).filter(Boolean);
-    stickerSetCache.set(setName, { ids, updatedAt: now });
-    return ids;
-}
-function pick(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
+    const samples = (data?.stickers || [])
+        .map((s) => ({ id: String(s?.custom_emoji_id || ""), emoji: String(s?.emoji || "") }))
+        .filter((x) => x.id && x.emoji);
+    stickerSetCache.set(setName, { samples, updatedAt: now });
+    return samples;
 }
 export async function premiumPrefix(category, fallback = "✨") {
     try {
-        const pack = pick([...PACKS[category]]);
-        const ids = await getCustomEmojiIds(pack);
-        const id = ids.length ? pick(ids) : "";
-        if (!id)
+        const setName = PACKS[category][0];
+        const samples = await getCustomEmojiSamples(setName);
+        const sample = samples[0];
+        if (!sample)
             return { text: `${fallback} `, entities: undefined };
         return {
-            text: "⬜ ",
-            entities: [{ type: "custom_emoji", offset: 0, length: 1, custom_emoji_id: id }]
+            text: `${sample.emoji} `,
+            entities: [{ type: "custom_emoji", offset: 0, length: sample.emoji.length, custom_emoji_id: sample.id }]
         };
     }
     catch {

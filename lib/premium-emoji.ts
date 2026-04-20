@@ -1,10 +1,12 @@
 import { tg } from "./telegram.js";
 
 type StickerSet = {
-  stickers?: Array<{ custom_emoji_id?: string }>;
+  stickers?: Array<{ custom_emoji_id?: string; emoji?: string }>;
 };
 
-const stickerSetCache = new Map<string, { ids: string[]; updatedAt: number }>();
+type EmojiSample = { id: string; emoji: string };
+
+const stickerSetCache = new Map<string, { samples: EmojiSample[]; updatedAt: number }>();
 
 const PACKS = {
   crypto: ["CryptoPJ"],
@@ -12,29 +14,27 @@ const PACKS = {
   info: ["cwdinfo_aemoji"]
 } as const;
 
-async function getCustomEmojiIds(setName: string) {
+async function getCustomEmojiSamples(setName: string) {
   const now = Date.now();
   const hit = stickerSetCache.get(setName);
-  if (hit && now - hit.updatedAt < 10 * 60_000) return hit.ids;
+  if (hit && now - hit.updatedAt < 10 * 60_000) return hit.samples;
   const data = await tg<StickerSet>("getStickerSet", { name: setName });
-  const ids = (data?.stickers || []).map((s) => String(s?.custom_emoji_id || "")).filter(Boolean);
-  stickerSetCache.set(setName, { ids, updatedAt: now });
-  return ids;
-}
-
-function pick<T>(arr: T[]) {
-  return arr[Math.floor(Math.random() * arr.length)];
+  const samples = (data?.stickers || [])
+    .map((s) => ({ id: String(s?.custom_emoji_id || ""), emoji: String(s?.emoji || "") }))
+    .filter((x) => x.id && x.emoji);
+  stickerSetCache.set(setName, { samples, updatedAt: now });
+  return samples;
 }
 
 export async function premiumPrefix(category: keyof typeof PACKS, fallback = "✨") {
   try {
-    const pack = pick([...PACKS[category]]);
-    const ids = await getCustomEmojiIds(pack);
-    const id = ids.length ? pick(ids) : "";
-    if (!id) return { text: `${fallback} `, entities: undefined as any };
+    const setName = PACKS[category][0];
+    const samples = await getCustomEmojiSamples(setName);
+    const sample = samples[0];
+    if (!sample) return { text: `${fallback} `, entities: undefined as any };
     return {
-      text: "⬜ ",
-      entities: [{ type: "custom_emoji", offset: 0, length: 1, custom_emoji_id: id }]
+      text: `${sample.emoji} `,
+      entities: [{ type: "custom_emoji", offset: 0, length: sample.emoji.length, custom_emoji_id: sample.id }]
     };
   } catch {
     return { text: `${fallback} `, entities: undefined as any };
@@ -46,4 +46,3 @@ export async function withPremiumPrefix(text: string, category: keyof typeof PAC
   if (!p.entities) return { text: p.text + text };
   return { text: p.text + text, entities: p.entities };
 }
-
