@@ -619,10 +619,10 @@ async function promptPanelTypePicker(chatId, mode, panelId) {
         reply_markup: {
             inline_keyboard: [
                 [
-                    { text: "Marzban", callback_data: `${prefix}marzban` },
-                    { text: "Sanaei / 3x-ui", callback_data: `${prefix}sanaei` }
+                    cb("Marzban", `${prefix}marzban`, "primary"),
+                    cb("Sanaei / 3x-ui", `${prefix}sanaei`, "primary")
                 ],
-                [{ text: "🔙 بازگشت", callback_data: panelId ? `admin_panel_open_${panelId}` : "admin_panels" }]
+                [backButton(panelId ? `admin_panel_open_${panelId}` : "admin_panels")]
             ]
         }
     });
@@ -663,7 +663,7 @@ async function promptPanelWizardStep(chatId, payload) {
         chat_id: chatId,
         text,
         reply_markup: {
-            inline_keyboard: [[{ text: "❌ لغو", callback_data: panelId ? `admin_panel_wizard_cancel_${panelId}` : "admin_panel_wizard_cancel" }]]
+            inline_keyboard: [[cancelButton(panelId ? `admin_panel_wizard_cancel_${panelId}` : "admin_panel_wizard_cancel")]]
         }
     });
 }
@@ -721,17 +721,14 @@ async function promptProductPanelWizardStep(chatId, payload) {
             await tg("sendMessage", {
                 chat_id: chatId,
                 text: "هیچ پنلی ثبت نشده است. اول از بخش پنل‌ها یک پنل اضافه کنید.",
-                reply_markup: { inline_keyboard: [[{ text: "🔙 بازگشت", callback_data: "admin_products" }]] }
+                reply_markup: { inline_keyboard: [[backButton("admin_products")]] }
             });
             return;
         }
         const keyboard = panels.map((panel) => [
-            {
-                text: `${panel.name}${panel.active && panel.allow_new_sales ? "" : " ⛔"}`,
-                callback_data: `admin_product_panel_pick_${panel.id}`
-            }
+            cb(`${panel.name}${panel.active && panel.allow_new_sales ? "" : " ⛔"}`, `admin_product_panel_pick_${panel.id}`, "primary")
         ]);
-        keyboard.push([{ text: "❌ لغو", callback_data: `admin_product_panel_wizard_cancel_${productId}` }]);
+        keyboard.push([cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]);
         await tg("sendMessage", {
             chat_id: chatId,
             text: `تنظیم فروش پنل برای «${productName}»\nمرحله 1 از 2: پنل مقصد را انتخاب کنید:`,
@@ -747,9 +744,9 @@ async function promptProductPanelWizardStep(chatId, payload) {
                 `مرحله‌ای: مقادیر دلخواه را می‌پرسد.`,
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "⚡ تنظیم سریع (پیشنهادی)", callback_data: "admin_product_panel_quick" }],
-                    [{ text: "⚙️ تنظیم مرحله‌ای", callback_data: "admin_product_panel_custom" }],
-                    [{ text: "❌ لغو", callback_data: `admin_product_panel_wizard_cancel_${productId}` }]
+                    [cb("⚡ تنظیم سریع (پیشنهادی)", "admin_product_panel_quick", "success")],
+                    [cb("⚙️ تنظیم مرحله‌ای", "admin_product_panel_custom", "primary")],
+                    [cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]
                 ]
             }
         });
@@ -763,7 +760,7 @@ async function promptProductPanelWizardStep(chatId, payload) {
                 `0 = بدون سقف\n` +
                 `- = نگه داشتن مقدار فعلی\n` +
                 `مقدار فعلی: ${payload.panelSellLimit === null || payload.panelSellLimit === undefined ? "بدون سقف" : payload.panelSellLimit}`,
-            reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_product_panel_wizard_cancel_${productId}` }]] }
+            reply_markup: { inline_keyboard: [[cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]] }
         });
         return;
     }
@@ -774,11 +771,11 @@ async function promptProductPanelWizardStep(chatId, payload) {
             reply_markup: {
                 inline_keyboard: [
                     [
-                        { text: "ساب + کانفیگ", callback_data: "admin_product_panel_delivery_both" },
-                        { text: "فقط ساب", callback_data: "admin_product_panel_delivery_sub" },
-                        { text: "فقط کانفیگ", callback_data: "admin_product_panel_delivery_configs" }
+                        cb("ساب + کانفیگ", "admin_product_panel_delivery_both", "primary"),
+                        cb("فقط ساب", "admin_product_panel_delivery_sub", "primary"),
+                        cb("فقط کانفیگ", "admin_product_panel_delivery_configs", "primary")
                     ],
-                    [{ text: "❌ لغو", callback_data: `admin_product_panel_wizard_cancel_${productId}` }]
+                    [cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]
                 ]
             }
         });
@@ -788,7 +785,7 @@ async function promptProductPanelWizardStep(chatId, payload) {
         await tg("sendMessage", {
             chat_id: chatId,
             text: `تنظیم مرحله‌ای - 3 از 5\ninbound_id را بفرستید.\n- = مقدار فعلی (${payload.inboundId || 1})`,
-            reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_product_panel_wizard_cancel_${productId}` }]] }
+            reply_markup: { inline_keyboard: [[cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]] }
         });
         return;
     }
@@ -799,11 +796,11 @@ async function promptProductPanelWizardStep(chatId, payload) {
             reply_markup: {
                 inline_keyboard: [
                     [
-                        { text: "vless", callback_data: "admin_product_panel_protocol_vless" },
-                        { text: "vmess", callback_data: "admin_product_panel_protocol_vmess" },
-                        { text: "trojan", callback_data: "admin_product_panel_protocol_trojan" }
+                        cb("vless", "admin_product_panel_protocol_vless", "primary"),
+                        cb("vmess", "admin_product_panel_protocol_vmess", "primary"),
+                        cb("trojan", "admin_product_panel_protocol_trojan", "primary")
                     ],
-                    [{ text: "❌ لغو", callback_data: `admin_product_panel_wizard_cancel_${productId}` }]
+                    [cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]
                 ]
             }
         });
@@ -813,7 +810,7 @@ async function promptProductPanelWizardStep(chatId, payload) {
         await tg("sendMessage", {
             chat_id: chatId,
             text: `تنظیم مرحله‌ای - 5 از 5\nexpire_days را بفرستید.\n- = مقدار فعلی (${payload.expireDays || 30})`,
-            reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_product_panel_wizard_cancel_${productId}` }]] }
+            reply_markup: { inline_keyboard: [[cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]] }
         });
         return;
     }
@@ -821,7 +818,7 @@ async function promptProductPanelWizardStep(chatId, payload) {
         await tg("sendMessage", {
             chat_id: chatId,
             text: `آخرین مرحله\ndata_limit_mb را بفرستید.\n- = مقدار فعلی (${payload.dataLimitMb || 1024})`,
-            reply_markup: { inline_keyboard: [[{ text: "❌ لغو", callback_data: `admin_product_panel_wizard_cancel_${productId}` }]] }
+            reply_markup: { inline_keyboard: [[cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]] }
         });
     }
 }
