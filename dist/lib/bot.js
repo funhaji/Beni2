@@ -391,6 +391,12 @@ function cryptoWalletReady(w) {
     const hasRate = w.rate_mode === "auto" ? true : Number(w.rate_toman_per_unit || 0) > 0;
     return w.active && hasAddress && hasRate;
 }
+function cb(text, callback_data, style) {
+    return style ? { text, callback_data, style } : { text, callback_data };
+}
+function homeButton() {
+    return cb("🏠 منوی اصلی", "home", "primary");
+}
 async function getPlisioTomanPerUsdt() {
     const auto = await getBoolSetting("plisio_auto_rate", true);
     const extra = (await getNumberSetting("plisio_usdt_extra_toman")) || 0;
@@ -1439,15 +1445,12 @@ async function showPanelDetails(chatId, panelId, notice) {
 }
 function mainMenuMarkup(userId) {
     const rows = [
-        [{ text: "🛍 خرید کانفیگ", callback_data: "buy_menu" }],
-        [{ text: "📦 کانفیگ‌های من", callback_data: "my_configs" }, { text: "👛 کیف پول", callback_data: "wallet_menu" }],
-        [{ text: "🔁 انتقال کانفیگ", callback_data: "migrate_menu" }],
-        [{ text: "📜 درخواست‌های انتقال", callback_data: "my_migrations" }],
-        [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
-        [{ text: "🆘 پشتیبانی", callback_data: "support" }]
+        [cb("🛍 خرید کانفیگ", "buy_menu", "primary")],
+        [cb("📦 کانفیگ‌های من", "my_configs", "primary"), cb("👛 کیف پول", "wallet_menu", "primary")],
+        [cb("🆘 پشتیبانی", "support", "success")]
     ];
     if (isAdmin(userId)) {
-        rows.push([{ text: "🛠 پنل ادمین", callback_data: "admin_panel" }]);
+        rows.push([cb("🛠 پنل ادمین", "admin_panel", "primary")]);
     }
     return { inline_keyboard: rows };
 }
@@ -1466,7 +1469,7 @@ async function upsertUser(user) {
 async function sendMainMenu(chatId, userId, text) {
     await tg("sendMessage", {
         chat_id: chatId,
-        text: text || "به ربات فروش کانفیگ خوش آمدید 🌟\nاز منوی زیر انتخاب کنید:",
+        text: text || "سلام 👋\nبه ربات فروش کانفیگ خوش آمدید.\nاز منوی زیر انتخاب کنید:",
         reply_markup: mainMenuMarkup(userId)
     });
 }
@@ -1508,16 +1511,17 @@ async function sendAdminPanel(chatId) {
         text: "پنل ادمین 👇",
         reply_markup: {
             inline_keyboard: [
-                [{ text: "📦 مدیریت محصولات", callback_data: "admin_products" }],
-                [{ text: "🗂 مدیریت موجودی کانفیگ‌ها", callback_data: "admin_inventory" }],
-                [{ text: "💳 روش‌های پرداخت", callback_data: "admin_payment_methods" }],
-                [{ text: "💳 کارت‌ها", callback_data: "admin_cards" }],
-                [{ text: "🎟 مدیریت تخفیف", callback_data: "admin_discounts" }],
-                [{ text: "🌐 پنل‌های V2Ray", callback_data: "admin_panels" }],
-                [{ text: "👥 مدیریت کاربران (کیف پول)", callback_data: "admin_manage_users" }],
-                [{ text: "📊 آمار", callback_data: "admin_stats" }],
-                [{ text: "🧰 ابزار ادمین", callback_data: "admin_tools" }],
-                [{ text: "⚙️ تنظیمات", callback_data: "admin_settings" }]
+                [cb("📦 مدیریت محصولات", "admin_products", "primary")],
+                [cb("🗂 مدیریت موجودی", "admin_inventory", "primary")],
+                [cb("💳 روش‌های پرداخت", "admin_payment_methods", "primary")],
+                [cb("💳 کارت‌ها", "admin_cards", "primary")],
+                [cb("🎟 کد تخفیف", "admin_discounts", "primary")],
+                [cb("🌐 پنل‌های V2Ray", "admin_panels", "primary")],
+                [cb("👥 مدیریت کاربران", "admin_manage_users", "primary")],
+                [cb("📊 آمار", "admin_stats", "primary")],
+                [cb("🧰 ابزار ادمین", "admin_tools", "primary")],
+                [cb("⚙️ تنظیمات", "admin_settings", "primary")],
+                [homeButton()]
             ]
         }
     });
@@ -3122,8 +3126,8 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, state) {
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                { text: "✅ Accept", callback_data: `wallet_accept_${topupId}` },
-                                { text: "❌ Deny", callback_data: `wallet_deny_${topupId}` }
+                                { text: "✅ تایید", callback_data: `wallet_accept_${topupId}` },
+                                { text: "❌ رد", callback_data: `wallet_deny_${topupId}` }
                             ]
                         ]
                     }
@@ -3233,8 +3237,8 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, state) {
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                { text: "✅ Accept", callback_data: `receipt_accept_${orderId}` },
-                                { text: "❌ Deny", callback_data: `receipt_deny_${orderId}` },
+                                { text: "✅ تایید", callback_data: `receipt_accept_${orderId}` },
+                                { text: "❌ رد", callback_data: `receipt_deny_${orderId}` },
                                 { text: "⛔ Ban", callback_data: `receipt_ban_${orderId}_${userId}` }
                             ]
                         ]
@@ -3295,8 +3299,8 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, state) {
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                { text: "✅ Accept", callback_data: `topup_accept_${topupRequestId}` },
-                                { text: "❌ Deny", callback_data: `topup_deny_${topupRequestId}` },
+                                { text: "✅ تایید", callback_data: `topup_accept_${topupRequestId}` },
+                                { text: "❌ رد", callback_data: `topup_deny_${topupRequestId}` },
                                 { text: "⛔ Ban", callback_data: `topup_ban_${topupRequestId}_${userId}` }
                             ]
                         ]
@@ -4459,7 +4463,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, state) {
                         { text: "🗑 حذف کامل", callback_data: `admin_lookup_delete_inv_${row.id}` }
                     ],
                     [
-                        { text: "🔄 تغییر لینک (Revoke)", callback_data: `admin_lookup_regen_link_${row.id}` }
+                        { text: "🔄 بازسازی لینک", callback_data: `admin_lookup_regen_link_${row.id}` }
                     ]
                 ];
                 if (isPanelConfig) {
@@ -4589,7 +4593,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, state) {
                         { text: "🗑 حذف کامل از پنل", callback_data: `admin_panel_del_${panelMatch.panelId}_${panelKey}` }
                     ],
                     [
-                        { text: "🔄 تغییر لینک (Revoke)", callback_data: `admin_panel_rv_${panelMatch.panelId}_${panelKey}` }
+                        { text: "🔄 بازسازی لینک", callback_data: `admin_panel_rv_${panelMatch.panelId}_${panelKey}` }
                     ],
                     [
                         { text: "➕ افزودن دیتا", callback_data: `admin_panel_add_data_${panelMatch.panelId}_${panelKey}` },
@@ -6695,7 +6699,10 @@ async function showMyConfigs(chatId, userId, forTopupFlow) {
             callback_data: `open_config_${row.id}${forTopupFlow ? "_t" : ""}`
         }
     ]);
-    keyboard.push([{ text: "🏠 منوی اصلی", callback_data: "home" }]);
+    if (!forTopupFlow) {
+        keyboard.push([cb("➕ افزایش دیتا", "topup_menu", "primary"), cb("📜 درخواست‌های انتقال", "my_migrations", "primary")]);
+    }
+    keyboard.push([homeButton()]);
     await tg("sendMessage", {
         chat_id: chatId,
         text: forTopupFlow
@@ -6786,7 +6793,7 @@ async function openMyConfig(chatId, userId, inventoryId, fromTopupFlow) {
         [{ text: "➕ درخواست افزایش دیتا", callback_data: `request_topup_${row.id}` }],
         [{ text: "🔁 انتقال به پنل جدید", callback_data: `config_migrate_targets_${row.id}` }],
         [{ text: "🧹 حذف از لیست من", callback_data: `customer_remove_cfg_${row.id}` }],
-        ...(isPanelConfig ? [[{ text: "🔄 تغییر لینک (Revoke)", callback_data: `customer_revoke_cfg_${row.id}` }]] : []),
+        ...(isPanelConfig ? [[{ text: "🔄 بازسازی لینک", callback_data: `customer_revoke_cfg_${row.id}` }]] : []),
         [{ text: "📦 بازگشت به لیست کانفیگ‌ها", callback_data: fromTopupFlow ? "topup_menu" : "my_configs" }],
         [{ text: "🏠 منوی اصلی", callback_data: "home" }]
     ];
@@ -7618,10 +7625,6 @@ async function handleCallback(update) {
         return;
     }
     if (data === "my_configs") {
-        await showMyConfigs(chatId, userId, false);
-        return;
-    }
-    if (data === "migrate_menu") {
         await showMyConfigs(chatId, userId, false);
         return;
     }
