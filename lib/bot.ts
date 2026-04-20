@@ -7648,6 +7648,10 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("answerCallbackQuery", { callback_query_id: update.id }).catch(() => {});
   }
 
+  if (data.startsWith("noop_")) {
+    return;
+  }
+
   if (await isBanned(userId)) {
     await tg("sendMessage", { chat_id: chatId, text: "دسترسی شما به دلیل تخلف مسدود شده است." });
     return;
