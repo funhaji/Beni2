@@ -108,6 +108,8 @@ export function ensureSchema() {
           plisio_txn_id TEXT,
           plisio_invoice_url TEXT,
           plisio_status TEXT,
+          crypto_wallet_id BIGINT,
+          crypto_currency TEXT,
           crypto_network TEXT,
           crypto_address TEXT,
           crypto_amount NUMERIC(18,6),
@@ -122,11 +124,37 @@ export function ensureSchema() {
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS plisio_txn_id TEXT;`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS plisio_invoice_url TEXT;`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS plisio_status TEXT;`;
+      await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_wallet_id BIGINT;`;
+      await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_currency TEXT;`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_network TEXT;`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_address TEXT;`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_amount NUMERIC(18,6);`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_txid TEXT;`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_expires_at TIMESTAMPTZ;`;
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS crypto_wallets (
+          id BIGSERIAL PRIMARY KEY,
+          currency TEXT NOT NULL,
+          network TEXT NOT NULL,
+          address TEXT,
+          rate_mode TEXT NOT NULL DEFAULT 'manual',
+          rate_toman_per_unit INT,
+          extra_toman_per_unit INT NOT NULL DEFAULT 0,
+          active BOOLEAN NOT NULL DEFAULT FALSE,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          UNIQUE (currency, network)
+        );
+      `;
+      await sql`CREATE INDEX IF NOT EXISTS crypto_wallets_active_idx ON crypto_wallets(active);`;
+      await sql`
+        INSERT INTO crypto_wallets (currency, network, active)
+        VALUES
+          ('TRX', 'TRON', FALSE),
+          ('TON', 'TON', FALSE),
+          ('USDT', 'TRC20', FALSE)
+        ON CONFLICT (currency, network) DO NOTHING;
+      `;
       await sql`
         CREATE TABLE IF NOT EXISTS topup_requests (
           id BIGSERIAL PRIMARY KEY,
@@ -317,7 +345,11 @@ export function ensureSchema() {
         ON CONFLICT (code) DO NOTHING;
       `;
       await sql`UPDATE payment_methods SET title = 'پلیسیو (کریپتو)' WHERE code = 'plisio';`;
-      await sql`UPDATE payment_methods SET active = FALSE WHERE code = 'crypto';`;
+      await sql`
+        INSERT INTO payment_methods (code, title, active)
+        VALUES ('crypto', 'کریپتو', TRUE)
+        ON CONFLICT (code) DO NOTHING;
+      `;
 
       await sql`
         UPDATE products
