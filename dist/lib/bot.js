@@ -2944,11 +2944,11 @@ async function showPaymentMethods(chatId, userId, productId, walletUsed = 0) {
     }
     const keyboard = [];
     if (walletUsed >= productPrice) {
-        keyboard.push([{ text: `💰 پرداخت کامل با کیف پول (${formatPriceToman(productPrice)} تومان)`, callback_data: `select_pay_${productId}_wallet_${walletUsed}` }]);
+        keyboard.push([cb(`💰 پرداخت کامل با کیف پول (${formatPriceToman(productPrice)} تومان)`, `select_pay_${productId}_wallet_${walletUsed}`, "success")]);
     }
     else {
         for (const m of filtered) {
-            keyboard.push([{ text: m.title, callback_data: `select_pay_${productId}_${m.code}_${walletUsed}` }]);
+            keyboard.push([cb(String(m.title), `select_pay_${productId}_${m.code}_${walletUsed}`, "primary")]);
         }
     }
     keyboard.push([homeButton()]);
@@ -8658,8 +8658,12 @@ async function handleCallback(update) {
         const link = `${protocol}://${domain}/cleanup.html?token=${token}`;
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `🔎 **یافتن کانفیگ‌های مرده**\n\nاین ابزار فقط کانفیگ‌ها را در پنل‌های شما جستجو می‌کند و تغییری در آنها ایجاد نمی‌کند. برای جلوگیری از قطعی تایم‌اوت، فرآیند اسکن از طریق مرورگر انجام می‌شود. روی لینک زیر کلیک کنید (لینک فقط تا ۲ ساعت اعتبار دارد):\n\n${link}`,
-            parse_mode: "Markdown"
+            text: `🔎 یافتن کانفیگ‌های مرده\n\n` +
+                `این ابزار فقط کانفیگ‌ها را در پنل‌های شما جستجو می‌کند و تغییری ایجاد نمی‌کند.\n` +
+                `برای جلوگیری از تایم‌اوت، اسکن از طریق مرورگر انجام می‌شود.\n` +
+                `لینک زیر فقط تا ۲ ساعت اعتبار دارد:\n\n` +
+                `<code>${escapeHtml(link)}</code>`,
+            parse_mode: "HTML"
         });
         return;
     }
@@ -9799,8 +9803,12 @@ async function handleCallback(update) {
         const current = await getSetting("mandatory_channels");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `لیست کانال‌های اجباری را وارد کنید.\n\nهر کانال در یک خط یا جدا شده با ویرگول.\nمثال:\n@channel1\n@channel2\n\nبرای غیرفعال کردن کلمه \`خاموش\` را بفرستید.\n\nوضعیت فعلی:\n${current || "خاموش"}`,
-            parse_mode: "Markdown"
+            text: `لیست کانال‌های اجباری را ارسال کنید.\n\n` +
+                `هر کانال در یک خط یا جدا شده با ویرگول.\n` +
+                `مثال:\n<code>@channel1</code>\n<code>@channel2</code>\n\n` +
+                `برای غیرفعال کردن: <code>خاموش</code>\n\n` +
+                `وضعیت فعلی:\n<code>${escapeHtml(current || "خاموش")}</code>`,
+            parse_mode: "HTML"
         });
         return;
     }
@@ -10284,12 +10292,11 @@ async function checkMandatoryChannels(userId, chatId, silent = false) {
             const buttons = notJoined.map(c => {
                 return [{ text: `عضویت در ${c.name}`, url: c.url }];
             });
-            buttons.push([{ text: "✅ بررسی عضویت", callback_data: "check_membership" }]);
+            buttons.push([cb("✅ بررسی عضویت", "check_membership", "success")]);
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "❌ کاربر گرامی!\nبرای استفاده از ربات ابتدا باید در کانال‌های زیر عضو شوید. پس از عضویت، روی **بررسی عضویت** کلیک کنید.",
-                reply_markup: { inline_keyboard: buttons },
-                parse_mode: "Markdown"
+                text: "برای استفاده از ربات، ابتدا در کانال‌های زیر عضو شوید.\nبعد از عضویت، روی «بررسی عضویت» بزنید.",
+                reply_markup: { inline_keyboard: buttons }
             });
         }
         return false;
