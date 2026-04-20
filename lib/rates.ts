@@ -13,52 +13,44 @@ function snippet(raw: string, limit = 180) {
   return s || "empty_response";
 }
 
-async function fetchUsdtTomanFromCoinGecko() {
-  const url = "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=irr";
+async function fetchUsdIrrFromOpenErApi() {
+  const url = "https://open.er-api.com/v6/latest/USD";
   const res = await fetchWithTimeout(url, 6000);
   const raw = await res.text();
   if (!res.ok) {
-    throw new Error(`coingecko_http_${res.status}:${snippet(raw)}`);
+    throw new Error(`open_er_api_http_${res.status}:${snippet(raw)}`);
   }
   let data: any;
   try {
     data = JSON.parse(raw) as any;
   } catch {
-    throw new Error(`coingecko_parse_failed:${snippet(raw)}`);
+    throw new Error(`open_er_api_parse_failed:${snippet(raw)}`);
   }
-  const irrPerUsdt = Number(data?.tether?.irr);
-  if (!Number.isFinite(irrPerUsdt) || irrPerUsdt <= 0) {
-    throw new Error(`coingecko_invalid_payload:${snippet(raw)}`);
+  const irrPerUsd = Number(data?.rates?.IRR);
+  if (!Number.isFinite(irrPerUsd) || irrPerUsd <= 0) {
+    throw new Error(`open_er_api_invalid_payload:${snippet(raw)}`);
   }
-  const tomanPerUsdt = irrPerUsdt / 10;
-  if (!Number.isFinite(tomanPerUsdt) || tomanPerUsdt <= 0) {
-    throw new Error(`coingecko_invalid_value:${String(tomanPerUsdt)}`);
-  }
-  return tomanPerUsdt;
+  return irrPerUsd;
 }
 
-async function fetchUsdtTomanFromCryptoCompare() {
-  const url = "https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=IRR";
+async function fetchUsdIrrFromExchangeRateFun() {
+  const url = "https://api.exchangerate.fun/latest?base=USD";
   const res = await fetchWithTimeout(url, 6000);
   const raw = await res.text();
   if (!res.ok) {
-    throw new Error(`cryptocompare_http_${res.status}:${snippet(raw)}`);
+    throw new Error(`exchangerate_fun_http_${res.status}:${snippet(raw)}`);
   }
   let data: any;
   try {
     data = JSON.parse(raw) as any;
   } catch {
-    throw new Error(`cryptocompare_parse_failed:${snippet(raw)}`);
+    throw new Error(`exchangerate_fun_parse_failed:${snippet(raw)}`);
   }
-  const irrPerUsdt = Number(data?.IRR);
-  if (!Number.isFinite(irrPerUsdt) || irrPerUsdt <= 0) {
-    throw new Error(`cryptocompare_invalid_payload:${snippet(raw)}`);
+  const irrPerUsd = Number(data?.rates?.IRR);
+  if (!Number.isFinite(irrPerUsd) || irrPerUsd <= 0) {
+    throw new Error(`exchangerate_fun_invalid_payload:${snippet(raw)}`);
   }
-  const tomanPerUsdt = irrPerUsdt / 10;
-  if (!Number.isFinite(tomanPerUsdt) || tomanPerUsdt <= 0) {
-    throw new Error(`cryptocompare_invalid_value:${String(tomanPerUsdt)}`);
-  }
-  return tomanPerUsdt;
+  return irrPerUsd;
 }
 
 export async function getUsdtRateTomanCached(options?: { cacheMs?: number; allowStaleMs?: number }) {
@@ -72,16 +64,18 @@ export async function getUsdtRateTomanCached(options?: { cacheMs?: number; allow
 
   const errors: string[] = [];
   try {
-    const rate = await fetchUsdtTomanFromCoinGecko();
-    usdtTomanCache = { value: rate, updatedAt: now };
-    return { rateTomanPerUsdt: rate, source: "coingecko" as const };
+    const irrPerUsd = await fetchUsdIrrFromOpenErApi();
+    const tomanPerUsdt = irrPerUsd / 10;
+    usdtTomanCache = { value: tomanPerUsdt, updatedAt: now };
+    return { rateTomanPerUsdt: tomanPerUsdt, source: "open_er_api" as const };
   } catch (error) {
     errors.push(String((error as Error)?.message || error));
   }
   try {
-    const rate = await fetchUsdtTomanFromCryptoCompare();
-    usdtTomanCache = { value: rate, updatedAt: now };
-    return { rateTomanPerUsdt: rate, source: "cryptocompare" as const };
+    const irrPerUsd = await fetchUsdIrrFromExchangeRateFun();
+    const tomanPerUsdt = irrPerUsd / 10;
+    usdtTomanCache = { value: tomanPerUsdt, updatedAt: now };
+    return { rateTomanPerUsdt: tomanPerUsdt, source: "exchangerate_fun" as const };
   } catch (error) {
     errors.push(String((error as Error)?.message || error));
     if (usdtTomanCache && now - usdtTomanCache.updatedAt < allowStaleMs) {

@@ -105,6 +105,11 @@ export function ensureSchema() {
           plisio_txn_id TEXT,
           plisio_invoice_url TEXT,
           plisio_status TEXT,
+          crypto_network TEXT,
+          crypto_address TEXT,
+          crypto_amount NUMERIC(18,6),
+          crypto_txid TEXT,
+          crypto_expires_at TIMESTAMPTZ,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           paid_at TIMESTAMPTZ
         );
@@ -114,6 +119,11 @@ export function ensureSchema() {
             await sql `ALTER TABLE orders ADD COLUMN IF NOT EXISTS plisio_txn_id TEXT;`;
             await sql `ALTER TABLE orders ADD COLUMN IF NOT EXISTS plisio_invoice_url TEXT;`;
             await sql `ALTER TABLE orders ADD COLUMN IF NOT EXISTS plisio_status TEXT;`;
+            await sql `ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_network TEXT;`;
+            await sql `ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_address TEXT;`;
+            await sql `ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_amount NUMERIC(18,6);`;
+            await sql `ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_txid TEXT;`;
+            await sql `ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_expires_at TIMESTAMPTZ;`;
             await sql `
         CREATE TABLE IF NOT EXISTS topup_requests (
           id BIGSERIAL PRIMARY KEY,
@@ -280,16 +290,27 @@ export function ensureSchema() {
           receipt_file_id TEXT,
           status TEXT NOT NULL DEFAULT 'pending',
           admin_decision_by BIGINT,
+          crypto_network TEXT,
+          crypto_address TEXT,
+          crypto_amount NUMERIC(18,6),
+          crypto_txid TEXT,
+          crypto_expires_at TIMESTAMPTZ,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           done_at TIMESTAMPTZ
         );
       `;
+            await sql `ALTER TABLE wallet_topups ADD COLUMN IF NOT EXISTS crypto_network TEXT;`;
+            await sql `ALTER TABLE wallet_topups ADD COLUMN IF NOT EXISTS crypto_address TEXT;`;
+            await sql `ALTER TABLE wallet_topups ADD COLUMN IF NOT EXISTS crypto_amount NUMERIC(18,6);`;
+            await sql `ALTER TABLE wallet_topups ADD COLUMN IF NOT EXISTS crypto_txid TEXT;`;
+            await sql `ALTER TABLE wallet_topups ADD COLUMN IF NOT EXISTS crypto_expires_at TIMESTAMPTZ;`;
             await sql `
         INSERT INTO payment_methods (code, title, active)
-        VALUES ('tronado', 'TRON', TRUE), ('card2card', 'کارت‌به‌کارت', TRUE), ('tetrapay', 'تتراپی', TRUE), ('plisio', 'پلیسیو (کریپتو)', TRUE)
+        VALUES ('tronado', 'TRON', TRUE), ('card2card', 'کارت‌به‌کارت', TRUE), ('tetrapay', 'تتراپی', TRUE), ('plisio', 'پلیسیو (کریپتو)', TRUE), ('crypto', 'کریپتو', TRUE)
         ON CONFLICT (code) DO NOTHING;
       `;
             await sql `UPDATE payment_methods SET title = 'پلیسیو (کریپتو)' WHERE code = 'plisio';`;
+            await sql `UPDATE payment_methods SET title = 'کریپتو' WHERE code = 'crypto';`;
             await sql `
         UPDATE products
         SET panel_config = jsonb_set(panel_config, '{data_limit_mb}', to_jsonb(size_mb), true)

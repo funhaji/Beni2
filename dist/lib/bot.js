@@ -4,6 +4,8 @@ import { logError, logInfo } from "./log.js";
 import { getOrderToken, getStatusByPaymentId, getTronPriceToman } from "./tronado.js";
 import { getBoolSetting, getNumberSetting, getPublicBaseUrl, getSetting, setSetting } from "./settings.js";
 import { getUsdtRateTomanCached } from "./rates.js";
+import { getTrxRateTomanCached } from "./crypto.js";
+import { getRecentTrxTransfers } from "./tronscan.js";
 import { escapeHtml, tg } from "./telegram.js";
 import { randomUUID } from "node:crypto";
 import * as crypto from "node:crypto";
@@ -3993,6 +3995,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, state) {
         await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio ذخیره شد ✅" });
         return true;
     }
+    if (state.state === "admin_set_crypto_trx_address") {
+        const raw = text.trim();
+        await setSetting("crypto_trx_address", raw === "-" ? "" : raw);
+        await clearState(userId);
+        await tg("sendMessage", { chat_id: chatId, text: "آدرس کیف پول کریپتو ذخیره شد ✅" });
+        return true;
+    }
     if (state.state === "admin_set_plisio_extra_toman") {
         const raw = text.trim();
         if (raw === "-") {
@@ -6183,6 +6192,65 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         });
         return;
     }
+    if (paymentMethod === "crypto") {
+        const address = ((await getSetting("crypto_trx_address")) || "").trim();
+        if (!address) {
+            await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+            await notifyAdmins(`⚠️ کیف پول کریپتو (TRX) تنظیم نشده است\nسفارش: ${purchaseId}`, {
+                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            });
+            return;
+        }
+        const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
+        try {
+            const { trxToman, source } = await getTrxRateTomanCached();
+            const trxAmount = Number((finalPrice / trxToman).toFixed(5));
+            if (!Number.isFinite(trxAmount) || trxAmount <= 0) {
+                throw new Error("invalid_trx_amount");
+            }
+            await sql `
+        INSERT INTO orders
+        (
+          purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
+          payment_method, discount_code, discount_amount, final_price, tron_amount, status, wallet_used,
+          crypto_network, crypto_address, crypto_amount, crypto_expires_at
+        )
+        VALUES
+        (
+          ${purchaseId}, ${userId}, ${product.id}, ${String(product.name || "")}, ${sellMode}, ${product.panel_id || null}, ${parseDeliveryMode(String(product.panel_delivery_mode || ""))},
+          ${JSON.stringify(sanitizePanelConfig(product.panel_config))}::jsonb,
+          'crypto', ${discountCode}, ${discountAmount}, ${finalPrice}, 0, 'pending', ${walletUsed},
+          'TRX', ${address}, ${trxAmount}, ${expiresAt.toISOString()}
+        );
+      `;
+            await tg("sendMessage", {
+                chat_id: chatId,
+                text: `فاکتور پرداخت کریپتو شما:\n\n` +
+                    `💰 مبلغ: ${formatPriceToman(finalPrice)} تومان\n` +
+                    `⏰ مهلت پرداخت: 20 دقیقه\n` +
+                    `🪙 شبکه: TRX (TRX)\n` +
+                    `☑️ مبلغ پرداختی: ${trxAmount}\n\n` +
+                    `📱 آدرس کیف پول:\n\n${address}\n\n` +
+                    `❗️ توجه: مبلغ واریزی باید حداقل همین مقدار باشد (برای کارمزد صرافی، کمی بیشتر ارسال کنید).\n` +
+                    `بعد از پرداخت، روی «بررسی پرداخت» بزنید.`,
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
+                        [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+                    ]
+                }
+            });
+            logInfo("crypto_invoice_created", { purchaseId, productId, trxAmount, source });
+        }
+        catch (error) {
+            logError("create_crypto_invoice_failed", error, { chatId, userId, productId, purchaseId });
+            await notifyAdmins(`❌ خطا در ساخت فاکتور کریپتو\nسفارش: ${purchaseId}\nعلت: ${error.message || String(error)}`, {
+                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            });
+            await tg("sendMessage", { chat_id: chatId, text: "ساخت فاکتور کریپتو با خطا مواجه شد. لطفاً کمی بعد دوباره تلاش کنید یا به پشتیبانی پیام دهید." });
+        }
+        return;
+    }
     if (paymentMethod === "tetrapay") {
         const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
         if (!callbackBase) {
@@ -6618,7 +6686,7 @@ async function isRateLimited(userId, key, windowMs) {
 export async function fulfillOrderByPaymentId(paymentId) {
     await ensureSchema();
     const topupRows = await sql `
-    SELECT id, telegram_id, amount, status
+    SELECT id, telegram_id, amount, status, payment_method
     FROM wallet_topups
     WHERE receipt_file_id = ${paymentId}
     LIMIT 1;
@@ -6637,9 +6705,19 @@ export async function fulfillOrderByPaymentId(paymentId) {
       SET wallet_balance = wallet_balance + ${topup.amount}
       WHERE telegram_id = ${topup.telegram_id};
     `;
+        const paymentMethod = String(topup.payment_method || "");
+        const paymentLabel = paymentMethod === "tronado"
+            ? "Tronado"
+            : paymentMethod === "tetrapay"
+                ? "تتراپی"
+                : paymentMethod === "plisio"
+                    ? "Plisio"
+                    : paymentMethod === "crypto"
+                        ? "کریپتو"
+                        : paymentMethod || "-";
         await sql `
       INSERT INTO wallet_transactions (telegram_id, amount, type, description)
-      VALUES (${topup.telegram_id}, ${topup.amount}, 'charge', 'شارژ از طریق درگاه Tronado');
+      VALUES (${topup.telegram_id}, ${topup.amount}, 'charge', ${`شارژ از طریق ${paymentLabel}`});
     `;
         try {
             await tg("sendMessage", {
@@ -6649,7 +6727,7 @@ export async function fulfillOrderByPaymentId(paymentId) {
             for (const adminId of adminIds) {
                 await tg("sendMessage", {
                     chat_id: adminId,
-                    text: `💰 کاربر ${topup.telegram_id} مبلغ ${formatPriceToman(Number(topup.amount))} تومان از طریق درگاه کیف پول خود را شارژ کرد.`
+                    text: `💰 کاربر ${topup.telegram_id} مبلغ ${formatPriceToman(Number(topup.amount))} تومان از طریق ${paymentLabel} کیف پول خود را شارژ کرد.`
                 }).catch(() => { });
             }
         }
@@ -6714,7 +6792,7 @@ async function finalizeOrder(orderId, decidedBy) {
     if (!rows.length)
         return { ok: false, reason: "order_not_found" };
     const order = rows[0];
-    if (order.payment_method === 'tronado' || order.payment_method === 'tetrapay' || order.payment_method === 'plisio') {
+    if (order.payment_method === 'tronado' || order.payment_method === 'tetrapay' || order.payment_method === 'plisio' || order.payment_method === 'crypto') {
         const walletUsed = Number(order.wallet_used || 0);
         if (walletUsed > 0) {
             const negativeWalletUsed = -walletUsed;
@@ -7074,6 +7152,51 @@ async function handleCallback(update) {
                 await tg("sendMessage", { chat_id: chatId, text: "خطا در ایجاد لینک پرداخت." });
             }
         }
+        else if (method === "crypto") {
+            try {
+                const address = ((await getSetting("crypto_trx_address")) || "").trim();
+                if (!address) {
+                    await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+                    return;
+                }
+                const paymentId = `W${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
+                const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
+                const { trxToman, source } = await getTrxRateTomanCached();
+                const trxAmount = Number((amount / trxToman).toFixed(5));
+                if (!Number.isFinite(trxAmount) || trxAmount <= 0) {
+                    throw new Error("invalid_trx_amount");
+                }
+                await sql `
+          INSERT INTO wallet_topups
+          (telegram_id, amount, payment_method, receipt_file_id, crypto_network, crypto_address, crypto_amount, crypto_expires_at)
+          VALUES
+          (${userId}, ${amount}, 'crypto', ${paymentId}, 'TRX', ${address}, ${trxAmount}, ${expiresAt.toISOString()});
+        `;
+                await tg("sendMessage", {
+                    chat_id: chatId,
+                    text: `فاکتور افزایش موجودی شما:\n\n` +
+                        `💰 مبلغ افزایش موجودی: ${formatPriceToman(amount)} تومان\n` +
+                        `⏰ مهلت پرداخت : 20 دقیقه\n` +
+                        `🪙 شبکه: TRX (TRX)\n` +
+                        `☑️ مبلغ پرداختی: ${trxAmount}\n\n` +
+                        `📱 آدرس کیف پول (ولت):\n\n${address}\n\n` +
+                        `❗️ توجه: مبلغ واریزی باید حداقل همین مقدار باشد (برای کارمزد صرافی، کمی بیشتر ارسال کنید).\n\n` +
+                        `بعد از پرداخت روی «بررسی پرداخت» بزنید.`,
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: "✅ بررسی پرداخت", callback_data: `check_topup_${paymentId}` }],
+                            [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+                        ]
+                    }
+                });
+                logInfo("crypto_topup_invoice_created", { paymentId, userId, amount, trxAmount, source });
+                await clearState(userId);
+            }
+            catch (error) {
+                logError("create_wallet_crypto_failed", error, { userId, amount });
+                await tg("sendMessage", { chat_id: chatId, text: "خطا در ایجاد فاکتور کریپتو." });
+            }
+        }
         else if (method === "card2card") {
             const cards = await sql `SELECT card_number, holder_name, bank_name FROM cards WHERE active = TRUE;`;
             if (!cards.length) {
@@ -7167,6 +7290,76 @@ async function handleCallback(update) {
         await createOrder(chatId, userId, productId, paymentMethod, null, walletUsed);
         return;
     }
+    if (data.startsWith("check_topup_")) {
+        const paymentId = data.replace("check_topup_", "");
+        if (await isRateLimited(userId, "check_topup", 10_000)) {
+            await tg("sendMessage", { chat_id: chatId, text: "کمی صبر کنید و دوباره تلاش کنید." });
+            return;
+        }
+        try {
+            const rows = await sql `
+        SELECT id, status, crypto_address, crypto_amount, crypto_expires_at, created_at
+        FROM wallet_topups
+        WHERE receipt_file_id = ${paymentId}
+        LIMIT 1;
+      `;
+            if (!rows.length) {
+                await tg("sendMessage", { chat_id: chatId, text: "فاکتور یافت نشد." });
+                return;
+            }
+            const topup = rows[0];
+            if (String(topup.status) === "paid") {
+                await tg("sendMessage", { chat_id: chatId, text: "این فاکتور قبلاً پرداخت شده است ✅" });
+                return;
+            }
+            const address = String(topup.crypto_address || "").trim();
+            const amount = Number(topup.crypto_amount || 0);
+            const createdAt = new Date(String(topup.created_at));
+            const expiresAtRaw = topup.crypto_expires_at ? new Date(String(topup.crypto_expires_at)) : null;
+            if (!address || !Number.isFinite(amount) || amount <= 0) {
+                await tg("sendMessage", { chat_id: chatId, text: "اطلاعات فاکتور ناقص است. لطفاً به پشتیبانی پیام دهید." });
+                return;
+            }
+            if (expiresAtRaw && Date.now() > expiresAtRaw.getTime()) {
+                await tg("sendMessage", { chat_id: chatId, text: "مهلت این فاکتور تمام شده است. لطفاً دوباره شارژ را انجام دهید." });
+                return;
+            }
+            const transfers = await getRecentTrxTransfers(address, 50);
+            const fromMs = createdAt.getTime() - 2 * 60 * 1000;
+            const toMs = (expiresAtRaw ? expiresAtRaw.getTime() : createdAt.getTime() + 60 * 60 * 1000) + 10 * 60 * 1000;
+            const min = amount * 0.99;
+            const max = amount * 1.05;
+            let matched = null;
+            for (const t of transfers) {
+                if (t.timestampMs < fromMs || t.timestampMs > toMs)
+                    continue;
+                if (t.to.toLowerCase() !== address.toLowerCase())
+                    continue;
+                if (t.amount < min || t.amount > max)
+                    continue;
+                const used1 = await sql `SELECT id FROM wallet_topups WHERE crypto_txid = ${t.txid} LIMIT 1;`;
+                const used2 = await sql `SELECT purchase_id FROM orders WHERE crypto_txid = ${t.txid} LIMIT 1;`;
+                if (used1.length || used2.length)
+                    continue;
+                matched = { txid: t.txid, amount: t.amount };
+                break;
+            }
+            if (!matched) {
+                await tg("sendMessage", { chat_id: chatId, text: "هنوز پرداخت تایید نشده است. اگر پرداخت کرده‌اید، چند دقیقه بعد دوباره بررسی کنید." });
+                return;
+            }
+            await sql `UPDATE wallet_topups SET crypto_txid = ${matched.txid} WHERE id = ${topup.id};`;
+            const fulfill = await fulfillOrderByPaymentId(paymentId);
+            if (!fulfill.ok) {
+                await tg("sendMessage", { chat_id: chatId, text: "پرداخت پیدا شد ولی در ثبت شارژ خطا رخ داد. ادمین پیگیری می‌کند." });
+            }
+        }
+        catch (error) {
+            logError("check_topup_status_failed", error, { paymentId, userId, chatId });
+            await tg("sendMessage", { chat_id: chatId, text: "خطا در بررسی وضعیت پرداخت." });
+        }
+        return;
+    }
     if (data.startsWith("check_order_")) {
         const purchaseId = data.replace("check_order_", "");
         if (await isRateLimited(userId, "check_order", 10_000)) {
@@ -7175,7 +7368,7 @@ async function handleCallback(update) {
         }
         try {
             const orderRows = await sql `
-        SELECT payment_method, plisio_txn_id
+        SELECT payment_method, plisio_txn_id, crypto_address, crypto_amount, crypto_expires_at, created_at
         FROM orders
         WHERE purchase_id = ${purchaseId}
         LIMIT 1;
@@ -7226,6 +7419,50 @@ async function handleCallback(update) {
                     return;
                 }
                 isAccepted = s === "completed" || s === "mismatch";
+            }
+            else if (paymentMethod === "crypto") {
+                const address = String(orderRows[0].crypto_address || "").trim();
+                const amount = Number(orderRows[0].crypto_amount || 0);
+                const createdAt = new Date(String(orderRows[0].created_at));
+                const expiresAtRaw = orderRows[0].crypto_expires_at ? new Date(String(orderRows[0].crypto_expires_at)) : null;
+                if (!address || !Number.isFinite(amount) || amount <= 0) {
+                    await tg("sendMessage", { chat_id: chatId, text: "اطلاعات پرداخت کریپتو ناقص است. لطفاً به پشتیبانی پیام دهید." });
+                    await notifyAdmins(`⚠️ اطلاعات پرداخت کریپتو ناقص است\nسفارش: ${purchaseId}`, {
+                        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+                    });
+                    return;
+                }
+                if (expiresAtRaw && Date.now() > expiresAtRaw.getTime()) {
+                    await tg("sendMessage", { chat_id: chatId, text: "مهلت این فاکتور تمام شده است. لطفاً دوباره خرید را انجام دهید." });
+                    return;
+                }
+                const transfers = await getRecentTrxTransfers(address, 50);
+                const fromMs = createdAt.getTime() - 2 * 60 * 1000;
+                const toMs = (expiresAtRaw ? expiresAtRaw.getTime() : createdAt.getTime() + 60 * 60 * 1000) + 10 * 60 * 1000;
+                const min = amount * 0.99;
+                const max = amount * 1.05;
+                let matched = null;
+                for (const t of transfers) {
+                    if (t.timestampMs < fromMs || t.timestampMs > toMs)
+                        continue;
+                    if (t.to.toLowerCase() !== address.toLowerCase())
+                        continue;
+                    if (t.amount < min || t.amount > max)
+                        continue;
+                    const used = await sql `SELECT purchase_id FROM orders WHERE crypto_txid = ${t.txid} LIMIT 1;`;
+                    if (used.length)
+                        continue;
+                    matched = { txid: t.txid, amount: t.amount };
+                    break;
+                }
+                if (matched) {
+                    await sql `UPDATE orders SET crypto_txid = ${matched.txid} WHERE purchase_id = ${purchaseId};`;
+                    isAccepted = true;
+                }
+                else {
+                    await tg("sendMessage", { chat_id: chatId, text: "هنوز پرداخت تایید نشده است. اگر پرداخت کرده‌اید، چند دقیقه بعد دوباره بررسی کنید." });
+                    return;
+                }
             }
             if (isAccepted) {
                 const fulfill = await fulfillOrderByPaymentId(purchaseId);
@@ -9483,6 +9720,7 @@ async function handleCallback(update) {
         const tronadoKeyMasked = maskSecret((await getSetting("tronado_api_key")) || "");
         const tetrapayKeyMasked = maskSecret((await getSetting("tetrapay_api_key")) || "");
         const plisioKeyMasked = maskSecret((await getSetting("plisio_api_key")) || "");
+        const cryptoTrxAddress = (await getSetting("crypto_trx_address")) || "";
         const plisioAutoRate = await getBoolSetting("plisio_auto_rate", true);
         const plisioExtra = (await getSetting("plisio_usdt_extra_toman")) || "0";
         const plisioFallback = (await getSetting("plisio_usdt_rate_fallback_toman")) || (await getSetting("plisio_usd_rate_toman")) || "";
@@ -9493,6 +9731,7 @@ async function handleCallback(update) {
                 `Tronado: ${tronadoKeyMasked}\n` +
                 `TetraPay: ${tetrapayKeyMasked}\n` +
                 `Plisio: ${plisioKeyMasked}\n` +
+                `کیف پول کریپتو (TRX): ${cryptoTrxAddress ? `${cryptoTrxAddress.slice(0, 6)}...${cryptoTrxAddress.slice(-6)}` : "تنظیم نشده"}\n` +
                 `نرخ Plisio: ${plisioAutoRate ? "خودکار (IRR→USDT)" : "دستی"}\n` +
                 `حاشیه تومان/USDT: ${plisioExtra}\n` +
                 `${plisioFallback ? `نرخ دستی (fallback): ${plisioFallback}\n` : ""}\n` +
@@ -9503,6 +9742,7 @@ async function handleCallback(update) {
                     [{ text: "🔑 کلید Tronado", callback_data: "admin_set_tronado_api_key" }],
                     [{ text: "🔑 کلید TetraPay", callback_data: "admin_set_tetrapay_api_key" }],
                     [{ text: "🔑 کلید Plisio", callback_data: "admin_set_plisio_api_key" }],
+                    [{ text: "🪙 کیف پول کریپتو (TRX)", callback_data: "admin_set_crypto_trx_address" }],
                     [{ text: plisioAutoRate ? "✅ نرخ خودکار Plisio" : "❌ نرخ خودکار Plisio", callback_data: "admin_toggle_plisio_auto_rate" }],
                     [{ text: "➕ حاشیه تومان/USDT", callback_data: "admin_set_plisio_extra_toman" }],
                     [{ text: "🛟 نرخ دستی (fallback)", callback_data: "admin_set_plisio_fallback_rate" }],
@@ -9530,6 +9770,11 @@ async function handleCallback(update) {
     if (data === "admin_set_plisio_api_key") {
         await setState(userId, "admin_set_plisio_api_key");
         await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio را ارسال کنید.\nبرای پاک‌کردن: -" });
+        return;
+    }
+    if (data === "admin_set_crypto_trx_address") {
+        await setState(userId, "admin_set_crypto_trx_address");
+        await tg("sendMessage", { chat_id: chatId, text: "آدرس کیف پول TRX را ارسال کنید.\nبرای پاک‌کردن: -" });
         return;
     }
     if (data === "admin_toggle_plisio_auto_rate") {
