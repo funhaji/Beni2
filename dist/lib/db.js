@@ -16,6 +16,26 @@ export function ensureSchema() {
         );
       `;
             await sql `
+        CREATE TABLE IF NOT EXISTS panels (
+          id BIGSERIAL PRIMARY KEY,
+          name TEXT NOT NULL UNIQUE,
+          panel_type TEXT NOT NULL,
+          base_url TEXT NOT NULL,
+          username TEXT,
+          password TEXT,
+          access_token TEXT,
+          active BOOLEAN NOT NULL DEFAULT TRUE,
+          allow_customer_migration BOOLEAN NOT NULL DEFAULT FALSE,
+          allow_new_sales BOOLEAN NOT NULL DEFAULT FALSE,
+          last_check_at TIMESTAMPTZ,
+          last_check_ok BOOLEAN,
+          last_check_message TEXT,
+          cached_meta JSONB NOT NULL DEFAULT '{}'::jsonb,
+          priority INT NOT NULL DEFAULT 0,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `;
+            await sql `
         CREATE TABLE IF NOT EXISTS products (
           id SERIAL PRIMARY KEY,
           name TEXT NOT NULL UNIQUE,
@@ -154,26 +174,6 @@ export function ensureSchema() {
           telegram_id BIGINT PRIMARY KEY,
           reason TEXT NOT NULL DEFAULT 'manual',
           banned_by BIGINT,
-          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        );
-      `;
-            await sql `
-        CREATE TABLE IF NOT EXISTS panels (
-          id BIGSERIAL PRIMARY KEY,
-          name TEXT NOT NULL UNIQUE,
-          panel_type TEXT NOT NULL,
-          base_url TEXT NOT NULL,
-          username TEXT,
-          password TEXT,
-          access_token TEXT,
-          active BOOLEAN NOT NULL DEFAULT TRUE,
-          allow_customer_migration BOOLEAN NOT NULL DEFAULT FALSE,
-          allow_new_sales BOOLEAN NOT NULL DEFAULT FALSE,
-          last_check_at TIMESTAMPTZ,
-          last_check_ok BOOLEAN,
-          last_check_message TEXT,
-          cached_meta JSONB NOT NULL DEFAULT '{}'::jsonb,
-          priority INT NOT NULL DEFAULT 0,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
       `;
