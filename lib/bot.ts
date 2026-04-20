@@ -5,6 +5,7 @@ import { getOrderToken, getStatusByPaymentId, getTronPriceToman } from "./tronad
 import { getBoolSetting, getNumberSetting, getPublicBaseUrl, getSetting, setSetting } from "./settings.js";
 import { getUsdtRateTomanCached } from "./rates.js";
 import { getCryptoTomanPerUnitCached } from "./crypto-rates.js";
+import { withPremiumPrefix } from "./premium-emoji.js";
 import { escapeHtml, tg } from "./telegram.js";
 import { randomUUID } from "node:crypto";
 import * as crypto from "node:crypto";
@@ -1614,9 +1615,11 @@ async function upsertUser(user: { id: number; username?: string; first_name?: st
 }
 
 async function sendMainMenu(chatId: number, userId: number, text?: string) {
+  const message = await withPremiumPrefix(text || "سلام 👋\nبه ربات فروش کانفیگ خوش آمدید.\nاز منوی زیر انتخاب کنید:", "proxy", "🌟");
   await tg("sendMessage", {
     chat_id: chatId,
-    text: text || "سلام 👋\nبه ربات فروش کانفیگ خوش آمدید.\nاز منوی زیر انتخاب کنید:",
+    text: message.text,
+    ...(message.entities ? { entities: message.entities } : {}),
     reply_markup: mainMenuMarkup(userId)
   });
 }
@@ -1659,9 +1662,11 @@ async function adminHelp(chatId: number) {
 }
 
 async function sendAdminPanel(chatId: number) {
+  const message = await withPremiumPrefix("پنل ادمین 👇", "info", "🛠");
   await tg("sendMessage", {
     chat_id: chatId,
-    text: "پنل ادمین 👇",
+    text: message.text,
+    ...(message.entities ? { entities: message.entities } : {}),
     reply_markup: {
       inline_keyboard: [
         [cb("📦 مدیریت محصولات", "admin_products", "primary")],
@@ -6854,19 +6859,22 @@ async function createOrder(
       );
     `;
 
+    const cryptoText =
+      `سفارش شما ساخته شد ✅\n` +
+      `شناسه خرید: ${purchaseId}\n` +
+      `محصول: ${product.name}\n` +
+      `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
+      `⏰ مهلت پرداخت: 20 دقیقه\n` +
+      `🪙 ارز: ${String(w.currency)}\n` +
+      `🌐 شبکه: ${String(w.network)}\n` +
+      `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
+      `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
+      `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`;
+    const message = await withPremiumPrefix(cryptoText, "crypto", "🪙");
     await tg("sendMessage", {
       chat_id: chatId,
-      text:
-        `سفارش شما ساخته شد ✅\n` +
-        `شناسه خرید: ${purchaseId}\n` +
-        `محصول: ${product.name}\n` +
-        `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
-        `⏰ مهلت پرداخت: 20 دقیقه\n` +
-        `🪙 ارز: ${String(w.currency)}\n` +
-        `🌐 شبکه: ${String(w.network)}\n` +
-        `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
-        `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
-        `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`,
+      text: message.text,
+      ...(message.entities ? { entities: message.entities } : {}),
       reply_markup: {
         inline_keyboard: [
           [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
