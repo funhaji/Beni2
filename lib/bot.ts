@@ -5,7 +5,6 @@ import { getOrderToken, getStatusByPaymentId, getTronPriceToman } from "./tronad
 import { getBoolSetting, getNumberSetting, getPublicBaseUrl, getSetting, setSetting } from "./settings.js";
 import { getUsdtRateTomanCached } from "./rates.js";
 import { getCryptoTomanPerUnitCached } from "./crypto-rates.js";
-import { withPremiumPrefix } from "./premium-emoji.js";
 import { escapeHtml, tg } from "./telegram.js";
 import { randomUUID } from "node:crypto";
 import * as crypto from "node:crypto";
@@ -1615,11 +1614,9 @@ async function upsertUser(user: { id: number; username?: string; first_name?: st
 }
 
 async function sendMainMenu(chatId: number, userId: number, text?: string) {
-  const message = await withPremiumPrefix(text || "سلام 👋\nبه ربات فروش کانفیگ خوش آمدید.\nاز منوی زیر انتخاب کنید:", "proxy", "🌟");
   await tg("sendMessage", {
     chat_id: chatId,
-    text: message.text,
-    ...(message.entities ? { entities: message.entities } : {}),
+    text: text || "سلام 👋\nبه ربات فروش کانفیگ خوش آمدید.\nاز منوی زیر انتخاب کنید:",
     reply_markup: mainMenuMarkup(userId)
   });
 }
@@ -1662,11 +1659,9 @@ async function adminHelp(chatId: number) {
 }
 
 async function sendAdminPanel(chatId: number) {
-  const message = await withPremiumPrefix("پنل ادمین 👇", "info", "🛠");
   await tg("sendMessage", {
     chat_id: chatId,
-    text: message.text,
-    ...(message.entities ? { entities: message.entities } : {}),
+    text: "پنل ادمین 👇",
     reply_markup: {
       inline_keyboard: [
         [cb("📦 مدیریت محصولات", "admin_products", "primary")],
@@ -2869,7 +2864,7 @@ async function showCustomerMigrationTargets(chatId: number, inventoryId: number,
   const keyboard = rows.map((p) => [
     { text: `${p.name} (${String(p.panel_type).toUpperCase()})`, callback_data: `migrate_pick_${inventoryId}_${p.id}` }
   ]);
-  keyboard.push([{ text: "🏠 منوی اصلی", callback_data: "home" }]);
+  keyboard.push([homeButton()]);
   await tg("sendMessage", {
     chat_id: chatId,
     text: "پنل مقصد را انتخاب کنید:\nانتقال برای شما به‌صورت فوری انجام می‌شود ✅",
@@ -2996,7 +2991,7 @@ async function showMyMigrations(chatId: number, userId: number) {
   await tg("sendMessage", {
     chat_id: chatId,
     text: `آخرین درخواست‌های انتقال شما:\n\n${lines.join("\n")}`,
-    reply_markup: { inline_keyboard: [[{ text: "🏠 منوی اصلی", callback_data: "home" }]] }
+    reply_markup: { inline_keyboard: [[homeButton()]] }
   });
 }
 
@@ -3049,7 +3044,7 @@ async function completeMigration(migrationId: number, decidedBy: number, targetC
     chat_id: Number(m.requested_for),
     text: `درخواست انتقال #${migrationId} تایید شد ✅\nکانفیگ جدید شما:`,
   });
-  await sendConfigWithQr(Number(m.requested_for), `M-${migrationId}`, value, [[{ text: "🏠 منوی اصلی", callback_data: "home" }]]);
+  await sendConfigWithQr(Number(m.requested_for), `M-${migrationId}`, value, [[homeButton()]]);
   return { ok: true, reason: "done" };
 }
 
@@ -3092,7 +3087,7 @@ async function showProducts(chatId: number, forBuy: boolean) {
       callback_data: forBuy ? `buy_product_${p.id}` : `admin_inventory_product_${p.id}`
     }
   ]);
-  keyboard.push([{ text: "🏠 منوی اصلی", callback_data: "home" }]);
+  keyboard.push([homeButton()]);
   await tg("sendMessage", {
     chat_id: chatId,
     text: forBuy ? "محصول موردنظر را انتخاب کنید:" : "محصول برای مدیریت موجودی:",
@@ -3174,7 +3169,7 @@ async function showWalletUsagePrompt(chatId: number, userId: number, productId: 
     [{ text: `✅ استفاده از حداکثر ممکن (${formatPriceToman(maxUsable)} تومان)`, callback_data: `use_wallet_${productId}_${maxUsable}` }],
     [{ text: "✍️ ورود مبلغ دلخواه", callback_data: `use_wallet_custom_${productId}` }],
     [{ text: "❌ بدون استفاده از کیف پول", callback_data: `use_wallet_${productId}_0` }],
-    [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+    [homeButton()]
   ];
 
   await tg("sendMessage", {
@@ -3238,7 +3233,7 @@ async function showPaymentMethods(chatId: number, userId: number, productId: num
     }
   }
   
-  keyboard.push([{ text: "🏠 منوی اصلی", callback_data: "home" }]);
+  keyboard.push([homeButton()]);
   await tg("sendMessage", {
     chat_id: chatId,
     text: walletUsed > 0 && walletUsed < productPrice 
@@ -3256,7 +3251,7 @@ async function showDiscountChoice(chatId: number, productId: number, paymentMeth
       inline_keyboard: [
         [{ text: "✅ بله دارم", callback_data: `discount_yes_${productId}_${paymentMethod}_${walletUsed}` }],
         [{ text: "❌ ندارم", callback_data: `discount_no_${productId}_${paymentMethod}_${walletUsed}` }],
-        [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+        [homeButton()]
       ]
     }
   });
@@ -5518,7 +5513,7 @@ async function parseAndApplyState(
           purchaseId,
           provision.configValue,
           { ...delivery, metadata },
-          [[{ text: "🏠 منوی اصلی", callback_data: "home" }]],
+          [[homeButton()]],
           "🎁 یک کانفیگ جدید برای شما صادر شد."
         );
       } catch (error) {
@@ -5616,7 +5611,7 @@ async function parseAndApplyState(
       String(order.purchase_id),
       String(text),
       { configLinks: [String(text)] },
-      [[{ text: "🏠 منوی اصلی", callback_data: "home" }]]
+      [[homeButton()]]
     );
     await notifyAdmins(
       buildAdminDeliverySummary({
@@ -6039,7 +6034,7 @@ async function createTopupCard2CardRequest(chatId: number, userId: number, inven
       `${selected.holder_name ? `صاحب کارت: ${selected.holder_name}\n` : ""}` +
       `${selected.bank_name ? `بانک: ${selected.bank_name}\n` : ""}\n` +
       `پس از پرداخت، عکس رسید را ارسال کنید.`,
-    reply_markup: { inline_keyboard: [[{ text: "🏠 منوی اصلی", callback_data: "home" }]] }
+    reply_markup: { inline_keyboard: [[homeButton()]] }
   });
 }
 
@@ -6701,7 +6696,7 @@ async function createOrder(
       await tg("sendMessage", {
         chat_id: chatId,
         text: "کدام کیف پول را برای پرداخت انتخاب می‌کنید؟",
-        reply_markup: { inline_keyboard: ready.slice(0, 12).map((w) => [{ text: cryptoWalletTitle(w), callback_data: `select_crypto_wallet_${w.id}` }]).concat([[{ text: "🏠 منوی اصلی", callback_data: "home" }]]) }
+        reply_markup: { inline_keyboard: ready.slice(0, 12).map((w) => [{ text: cryptoWalletTitle(w), callback_data: `select_crypto_wallet_${w.id}` }]).concat([[homeButton()]]) }
       });
       return;
     }
@@ -6800,7 +6795,7 @@ async function createOrder(
         `${selected.bank_name ? `بانک: ${selected.bank_name}\n` : ""}\n` +
         `بعد از انتقال، اسکرین‌شات رسید را به صورت عکس ارسال کنید.`,
       reply_markup: {
-        inline_keyboard: [[{ text: "🏠 منوی اصلی", callback_data: "home" }]]
+        inline_keyboard: [[homeButton()]]
       }
     });
     return;
@@ -6870,15 +6865,13 @@ async function createOrder(
       `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
       `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
       `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`;
-    const message = await withPremiumPrefix(cryptoText, "crypto", "🪙");
     await tg("sendMessage", {
       chat_id: chatId,
-      text: message.text,
-      ...(message.entities ? { entities: message.entities } : {}),
+      text: cryptoText,
       reply_markup: {
         inline_keyboard: [
           [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
-          [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+          [homeButton()]
         ]
       }
     });
@@ -6942,7 +6935,7 @@ async function createOrder(
         reply_markup: {
           inline_keyboard: [
             [{ text: "💳 پرداخت با تتراپی", url: orderRes.paymentUrlBot! }],
-            [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+            [homeButton()]
           ]
         }
       });
@@ -7014,7 +7007,7 @@ async function createOrder(
           inline_keyboard: [
             [{ text: "💳 پرداخت با Plisio", url: invoice.invoiceUrl }],
             [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
-            [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+            [homeButton()]
           ]
         }
       });
@@ -7079,7 +7072,7 @@ async function createOrder(
         inline_keyboard: [
           [{ text: "💳 پرداخت", url: token.paymentUrl }],
           [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
-          [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+          [homeButton()]
         ]
       }
     });
@@ -7214,7 +7207,7 @@ async function openMyConfig(chatId: number, userId: number, inventoryId: number,
     [{ text: "🧹 حذف از لیست من", callback_data: `customer_remove_cfg_${row.id}` }],
     ...(isPanelConfig ? [[{ text: "🔄 بازسازی لینک", callback_data: `customer_revoke_cfg_${row.id}` }]] : []),
     [{ text: "📦 بازگشت به لیست کانفیگ‌ها", callback_data: fromTopupFlow ? "topup_menu" : "my_configs" }],
-    [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+    [homeButton()]
   ];
   if (revoked) {
     await tg("sendMessage", { chat_id: chatId, text: "⚠️ این کانفیگ توسط ادمین غیرفعال شده است." });
@@ -7555,7 +7548,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
     
     await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), String(provision.configValue), provision.deliveryPayload, [
       [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
-      [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+      [homeButton()]
     ]).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
     
     await notifyAdmins(
@@ -7623,7 +7616,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
     { configLinks: [String(allocated[0].config_value)] },
     [
     [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
-    [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+    [homeButton()]
     ]
   ).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
   await notifyAdmins(
@@ -7793,7 +7786,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           reply_markup: {
             inline_keyboard: [
               [{ text: "💳 پرداخت با تتراپی", url: orderRes.paymentUrlBot! }],
-              [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+              [homeButton()]
             ]
           }
         });
@@ -7833,7 +7826,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         await tg("sendMessage", {
           chat_id: chatId,
           text: `لینک پرداخت Plisio برای شارژ کیف پول آماده است:\nمبلغ: ${formatPriceToman(amount)} تومان\nمعادل تقریبی: ${usdtAmount} USDT`,
-          reply_markup: { inline_keyboard: [[{ text: "💳 پرداخت با Plisio", url: invoice.invoiceUrl }], [{ text: "🏠 منوی اصلی", callback_data: "home" }]] }
+          reply_markup: { inline_keyboard: [[{ text: "💳 پرداخت با Plisio", url: invoice.invoiceUrl }], [homeButton()]] }
         });
         await clearState(userId);
       } catch (error) {
@@ -8069,7 +8062,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const keyboard: Array<Array<{ text: string; callback_data: string }>> = [];
     if (navRow.length) keyboard.push(navRow);
     keyboard.push([{ text: "📦 کانفیگ‌های من", callback_data: "my_configs" }]);
-    keyboard.push([{ text: "🏠 منوی اصلی", callback_data: "home" }]);
+    keyboard.push([homeButton()]);
     await tg("sendMessage", { chat_id: chatId, text, reply_markup: { inline_keyboard: keyboard } });
     return;
   }
@@ -8122,7 +8115,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           ],
           [{ text: "2GB (2048MB)", callback_data: `topup_amount_${inventoryId}_2048` }],
           [{ text: "✍️ مقدار دلخواه", callback_data: `topup_custom_${inventoryId}` }],
-          [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+          [homeButton()]
         ]
       }
     });
