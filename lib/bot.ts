@@ -104,6 +104,30 @@ function formatPriceToman(value: number | string) {
   return amount.toLocaleString("en-US");
 }
 
+function formatPaymentMethodTitle(methodRaw: unknown) {
+  const method = String(methodRaw || "").trim().toLowerCase();
+  if (method === "wallet") return "کیف پول";
+  if (method === "card2card") return "کارت‌به‌کارت";
+  if (method === "tronado") return "TRON (Tronado)";
+  if (method === "tetrapay") return "تتراپی";
+  if (method === "plisio") return "Plisio";
+  if (method === "crypto") return "کریپتو";
+  return methodRaw ? String(methodRaw) : "-";
+}
+
+function formatOrderStatusTitle(statusRaw: unknown) {
+  const status = String(statusRaw || "").trim().toLowerCase();
+  if (status === "pending") return "⏳ در انتظار پرداخت";
+  if (status === "awaiting_receipt") return "📷 منتظر ارسال رسید";
+  if (status === "receipt_submitted") return "🕵️ در انتظار بررسی";
+  if (status === "fulfilling") return "⚙️ در حال آماده‌سازی";
+  if (status === "paid") return "✅ تحویل شده";
+  if (status === "denied") return "❌ رد شده";
+  if (status === "cancelled") return "🗑 لغو شده";
+  if (status === "awaiting_config") return "🧩 نیازمند کانفیگ دستی";
+  return statusRaw ? String(statusRaw) : "-";
+}
+
 function normalizePricePerGb(raw: number | string | null | undefined, fallback = 500000) {
   const n = Number(raw);
   if (!Number.isFinite(n) || n <= 0) return fallback;
@@ -1600,7 +1624,7 @@ async function showPanelDetails(chatId: number, panelId: number, notice?: string
 function mainMenuMarkup(userId: number) {
   const rows = [
     [cb("🛍 خرید کانفیگ", "buy_menu", "primary")],
-    [cb("📦 کانفیگ‌های من", "my_configs", "primary"), cb("👛 کیف پول", "wallet_menu", "primary")],
+    [cb("📦 کانفیگ‌های من", "my_configs", "primary"), cb("👛 کیف پول", "wallet_menu", "success")],
     [cb("🆘 پشتیبانی", "support", "success")]
   ];
   if (isAdmin(userId)) {
@@ -3004,6 +3028,102 @@ async function showMyMigrations(chatId: number, userId: number) {
   });
 }
 
+async function showMyOrders(chatId: number, userId: number) {
+  const rows = await sql`
+    SELECT
+      o.id,
+      o.purchase_id,
+      COALESCE(o.product_name_snapshot, p.name) AS product_name,
+      o.status,
+      o.payment_method,
+      o.final_price,
+      o.created_at
+    FROM orders o
+    INNER JOIN products p ON p.id = o.product_id
+    WHERE o.telegram_id = ${userId}
+    ORDER BY o.id DESC
+    LIMIT 20;
+  `;
+  if (!rows.length) {
+    await tg("sendMessage", { chat_id: chatId, text: "هنوز سفارشی ثبت نکرده‌ای." });
+    return;
+  }
+  const keyboard = rows.map((o: any) => [
+    cb(
+      `${String(o.purchase_id)} | ${String(o.product_name)} | ${formatOrderStatusTitle(o.status)}`,
+      `open_order_${String(o.purchase_id)}`,
+      "primary"
+    )
+  ]);
+  keyboard.push([cb("🔎 پیگیری با شناسه", "order_lookup", "primary")]);
+  keyboard.push([homeButton()]);
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text: "🧾 سفارش‌های اخیرت 👇",
+    reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+async function showOrderDetails(chatId: number, userId: number, purchaseId: string) {
+  const rows = await sql`
+    SELECT
+      o.id,
+      o.purchase_id,
+      COALESCE(o.product_name_snapshot, p.name) AS product_name,
+      o.status,
+      o.payment_method,
+      o.final_price,
+      o.created_at,
+      o.inventory_id,
+      o.tronado_payment_url,
+      o.plisio_invoice_url,
+      o.receipt_file_id
+    FROM orders o
+    INNER JOIN products p ON p.id = o.product_id
+    WHERE o.purchase_id = ${purchaseId} AND o.telegram_id = ${userId}
+    LIMIT 1;
+  `;
+  if (!rows.length) {
+    await tg("sendMessage", { chat_id: chatId, text: "سفارش پیدا نشد یا متعلق به تو نیست." });
+    return;
+  }
+  const o: any = rows[0];
+  const statusTitle = formatOrderStatusTitle(o.status);
+  const methodTitle = formatPaymentMethodTitle(o.payment_method);
+  const lines = [
+    `🧾 جزئیات سفارش`,
+    ``,
+    `شناسه: ${String(o.purchase_id)}`,
+    `محصول: ${String(o.product_name)}`,
+    `مبلغ: ${formatPriceToman(Number(o.final_price))} تومان`,
+    `روش پرداخت: ${methodTitle}`,
+    `وضعیت: ${statusTitle}`,
+    `زمان: ${String(o.created_at)}`
+  ];
+
+  const keyboard: any[] = [];
+  const paymentUrl = String(o.plisio_invoice_url || o.tronado_payment_url || "").trim();
+  if (paymentUrl && (String(o.status || "").toLowerCase() === "pending")) {
+    keyboard.push([{ text: "💳 پرداخت", url: paymentUrl }]);
+  }
+  if (String(o.payment_method || "").toLowerCase() === "crypto") {
+    keyboard.push([cb("✅ بررسی/ثبت پرداخت", `check_order_${String(o.purchase_id)}`, "success")]);
+  }
+  if (String(o.payment_method || "").toLowerCase() === "card2card" && String(o.status || "").toLowerCase() === "awaiting_receipt") {
+    keyboard.push([cb("📷 ارسال رسید", `order_send_receipt_${Number(o.id)}`, "success")]);
+  }
+  if (o.inventory_id) {
+    keyboard.push([cb("📦 مشاهده کانفیگ", `open_config_${Number(o.inventory_id)}`, "primary")]);
+  }
+  if (String(o.payment_method || "").toLowerCase() !== "wallet" && ["pending", "awaiting_receipt"].includes(String(o.status || "").toLowerCase())) {
+    keyboard.push([cb("🗑 لغو سفارش", `order_cancel_${String(o.purchase_id)}`, "danger")]);
+  }
+  keyboard.push([backButton("my_orders")]);
+  keyboard.push([homeButton()]);
+
+  await tg("sendMessage", { chat_id: chatId, text: lines.join("\n"), reply_markup: { inline_keyboard: keyboard } });
+}
+
 async function completeMigration(migrationId: number, decidedBy: number, targetConfigValue: string | null) {
   const rows = await sql`
     SELECT
@@ -3330,6 +3450,16 @@ async function parseAndApplyState(
       text: `مبلغ ${formatPriceToman(amount)} تومان.\nلطفاً روش پرداخت را انتخاب کنید:`,
       reply_markup: { inline_keyboard: buttons }
     });
+    return true;
+  }
+  if (state.state === "await_order_lookup") {
+    const purchaseId = text.trim();
+    if (!purchaseId || purchaseId.length < 4) {
+      await tg("sendMessage", { chat_id: chatId, text: "شناسه سفارش معتبر نیست. دوباره ارسال کن." });
+      return true;
+    }
+    await clearState(userId);
+    await showOrderDetails(chatId, userId, purchaseId);
     return true;
   }
   if (state.state === "await_crypto_receipt") {
@@ -7115,6 +7245,7 @@ async function showMyConfigs(chatId: number, userId: number, forTopupFlow: boole
     }
   ]);
   if (!forTopupFlow) {
+    keyboard.push([cb("🧾 سفارش‌های من", "my_orders", "primary"), cb("🔎 پیگیری سفارش", "order_lookup", "primary")]);
     keyboard.push([cb("➕ افزایش دیتا", "topup_menu", "primary"), cb("📜 درخواست‌های انتقال", "my_migrations", "primary")]);
   }
   keyboard.push([homeButton()]);
@@ -7421,9 +7552,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
     UPDATE orders
     SET status = 'fulfilling'
     WHERE id = ${orderId}
-      AND status <> 'paid'
-      AND status <> 'denied'
-      AND status <> 'fulfilling'
+      AND status IN ('pending', 'receipt_submitted', 'awaiting_receipt')
     RETURNING id;
   `;
   if (!locked.length) {
@@ -8077,6 +8206,63 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   }
   if (data === "my_configs") {
     await showMyConfigs(chatId, userId, false);
+    return;
+  }
+  if (data === "my_orders") {
+    await showMyOrders(chatId, userId);
+    return;
+  }
+  if (data === "order_lookup") {
+    await setState(userId, "await_order_lookup");
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "شناسه سفارش را ارسال کن (مثال: P1712345678901234):",
+      reply_markup: { inline_keyboard: [[backButton("my_orders")], [homeButton()]] }
+    });
+    return;
+  }
+  if (data.startsWith("open_order_")) {
+    const purchaseId = data.replace("open_order_", "").trim();
+    if (!purchaseId) return;
+    await showOrderDetails(chatId, userId, purchaseId);
+    return;
+  }
+  if (data.startsWith("order_send_receipt_")) {
+    const orderId = Number(data.replace("order_send_receipt_", ""));
+    if (!Number.isFinite(orderId) || orderId <= 0) return;
+    const rows = await sql`SELECT id, status, purchase_id FROM orders WHERE id = ${orderId} AND telegram_id = ${userId} LIMIT 1;`;
+    if (!rows.length) {
+      await tg("sendMessage", { chat_id: chatId, text: "سفارش پیدا نشد." });
+      return;
+    }
+    if (String(rows[0].status || "").toLowerCase() !== "awaiting_receipt") {
+      await tg("sendMessage", { chat_id: chatId, text: "برای این سفارش نیازی به ارسال رسید نیست." });
+      return;
+    }
+    await setState(userId, "await_receipt", { orderId });
+    const purchaseId = String(rows[0].purchase_id || "").trim();
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "لطفاً تصویر رسید را به صورت عکس ارسال کن:",
+      reply_markup: { inline_keyboard: [[backButton(`open_order_${purchaseId}`)], [homeButton()]] }
+    });
+    return;
+  }
+  if (data.startsWith("order_cancel_")) {
+    const purchaseId = data.replace("order_cancel_", "").trim();
+    if (!purchaseId) return;
+    const rows = await sql`
+      UPDATE orders
+      SET status = 'cancelled'
+      WHERE purchase_id = ${purchaseId}
+        AND telegram_id = ${userId}
+        AND status IN ('pending', 'awaiting_receipt')
+      RETURNING purchase_id;
+    `;
+    await tg("sendMessage", { chat_id: chatId, text: rows.length ? "سفارش لغو شد ✅" : "امکان لغو این سفارش وجود ندارد." });
+    if (rows.length) {
+      await showOrderDetails(chatId, userId, purchaseId);
+    }
     return;
   }
   if (data === "my_migrations") {
