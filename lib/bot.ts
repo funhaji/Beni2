@@ -502,6 +502,18 @@ function homeButton() {
   return cb("🏠 منوی اصلی", "home", "primary");
 }
 
+function backButton(callback_data: string, text: string = "🔙 بازگشت") {
+  return cb(text, callback_data, "primary");
+}
+
+function cancelButton(callback_data: string = "home", text: string = "❌ لغو") {
+  return cb(text, callback_data, "danger");
+}
+
+function confirmButton(callback_data: string, text: string = "✅ تایید") {
+  return cb(text, callback_data, "success");
+}
+
 async function getPlisioTomanPerUsdt() {
   const auto = await getBoolSetting("plisio_auto_rate", true);
   const extra = (await getNumberSetting("plisio_usdt_extra_toman")) || 0;
@@ -3082,15 +3094,16 @@ async function showProducts(chatId: number, forBuy: boolean) {
     return;
   }
   const keyboard = rows.map((p) => [
-    {
-      text: `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
-      callback_data: forBuy ? `buy_product_${p.id}` : `admin_inventory_product_${p.id}`
-    }
+    cb(
+      `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
+      forBuy ? `buy_product_${p.id}` : `admin_inventory_product_${p.id}`,
+      "primary"
+    )
   ]);
   keyboard.push([homeButton()]);
   await tg("sendMessage", {
     chat_id: chatId,
-    text: forBuy ? "محصول موردنظر را انتخاب کنید:" : "محصول برای مدیریت موجودی:",
+    text: forBuy ? "🛍 محصول موردنظر را انتخاب کنید:" : "محصول برای مدیریت موجودی:",
     reply_markup: { inline_keyboard: keyboard }
   });
 }
@@ -3119,31 +3132,27 @@ async function listProductsForAdmin(chatId: number, userId: number) {
     [
       {
         text: `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
-        callback_data: `noop_${p.id}`
+        callback_data: `admin_edit_product_${p.id}`
       }
     ],
     [
-      { text: "ویرایش", callback_data: `admin_edit_product_${p.id}` },
-      { text: p.is_active ? "غیرفعال‌سازی" : "فعال‌سازی", callback_data: `admin_toggle_product_${p.id}` },
-      {
-        text: parseSellMode(String(p.sell_mode || "")) === "panel" ? "فروش دستی" : "فروش از پنل",
-        callback_data: `admin_toggle_product_sell_mode_${p.id}`
-      }
+      cb("ویرایش", `admin_edit_product_${p.id}`, "primary"),
+      cb(p.is_active ? "غیرفعال‌سازی" : "فعال‌سازی", `admin_toggle_product_${p.id}`, p.is_active ? "danger" : "success"),
+      cb(
+        parseSellMode(String(p.sell_mode || "")) === "panel" ? "فروش دستی" : "فروش از پنل",
+        `admin_toggle_product_sell_mode_${p.id}`,
+        "primary"
+      )
     ],
     [
-      { text: p.is_infinite ? "حذف ∞" : "∞", callback_data: `admin_toggle_product_infinite_${p.id}` },
-      { text: "تنظیم فروش پنل", callback_data: `admin_configure_product_panel_${p.id}` },
-      { text: "🗑 حذف", callback_data: `admin_remove_product_${p.id}` }
+      cb(p.is_infinite ? "حذف ∞" : "∞", `admin_toggle_product_infinite_${p.id}`, "primary"),
+      cb("تنظیم فروش پنل", `admin_configure_product_panel_${p.id}`, "primary"),
+      cb("🗑 حذف", `admin_remove_product_${p.id}`, "danger")
     ]
   ]);
-  keyboard.push([
-    {
-      text: showArchived ? "📦 مخفی کردن آرشیو" : "📦 نمایش آرشیو",
-      callback_data: showArchived ? "admin_products_hide_archived" : "admin_products_show_archived"
-    }
-  ]);
-  keyboard.push([{ text: "➕ افزودن محصول", callback_data: "admin_add_product" }]);
-  keyboard.push([{ text: "🔙 بازگشت", callback_data: "admin_panel" }]);
+  keyboard.push([cb(showArchived ? "📦 مخفی کردن آرشیو" : "📦 نمایش آرشیو", showArchived ? "admin_products_hide_archived" : "admin_products_show_archived", "primary")]);
+  keyboard.push([cb("➕ افزودن محصول", "admin_add_product", "success")]);
+  keyboard.push([backButton("admin_panel")]);
   await tg("sendMessage", {
     chat_id: chatId,
     text: "مدیریت محصولات:",
@@ -3166,9 +3175,9 @@ async function showWalletUsagePrompt(chatId: number, userId: number, productId: 
   }
 
   const keyboard = [
-    [{ text: `✅ استفاده از حداکثر ممکن (${formatPriceToman(maxUsable)} تومان)`, callback_data: `use_wallet_${productId}_${maxUsable}` }],
-    [{ text: "✍️ ورود مبلغ دلخواه", callback_data: `use_wallet_custom_${productId}` }],
-    [{ text: "❌ بدون استفاده از کیف پول", callback_data: `use_wallet_${productId}_0` }],
+    [cb(`✅ استفاده از حداکثر ممکن (${formatPriceToman(maxUsable)} تومان)`, `use_wallet_${productId}_${maxUsable}`, "success")],
+    [cb("✍️ ورود مبلغ دلخواه", `use_wallet_custom_${productId}`, "primary")],
+    [cb("❌ بدون استفاده از کیف پول", `use_wallet_${productId}_0`, "danger")],
     [homeButton()]
   ];
 
@@ -3249,8 +3258,8 @@ async function showDiscountChoice(chatId: number, productId: number, paymentMeth
     text: "کد تخفیف دارید؟",
     reply_markup: {
       inline_keyboard: [
-        [{ text: "✅ بله دارم", callback_data: `discount_yes_${productId}_${paymentMethod}_${walletUsed}` }],
-        [{ text: "❌ ندارم", callback_data: `discount_no_${productId}_${paymentMethod}_${walletUsed}` }],
+        [confirmButton(`discount_yes_${productId}_${paymentMethod}_${walletUsed}`, "✅ بله")],
+        [cb("❌ ندارم", `discount_no_${productId}_${paymentMethod}_${walletUsed}`, "primary")],
         [homeButton()]
       ]
     }
@@ -3317,8 +3326,8 @@ async function parseAndApplyState(
       if (code === "tronado") return Boolean(callbackBase) && hasTronadoKey && hasBusinessWallet;
       return true;
     });
-    const buttons = filtered.map((m: any) => [{ text: String(m.title), callback_data: `wallet_charge_method_${m.code}` }]);
-    buttons.push([{ text: "🔙 لغو", callback_data: "wallet_menu" }]);
+    const buttons = filtered.map((m: any) => [cb(String(m.title), `wallet_charge_method_${m.code}`, "primary")]);
+    buttons.push([backButton("wallet_menu", "🔙 بازگشت")]);
     await tg("sendMessage", {
       chat_id: chatId,
       text: `مبلغ ${formatPriceToman(amount)} تومان.\nلطفاً روش پرداخت را انتخاب کنید:`,
@@ -7679,12 +7688,11 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const balance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
     await tg("sendMessage", {
       chat_id: chatId,
-      text: `👛 **کیف پول شما**\n\nموجودی فعلی: ${formatPriceToman(balance)} تومان`,
-      parse_mode: "Markdown",
+      text: `👛 کیف پول\n\nموجودی فعلی: ${formatPriceToman(balance)} تومان`,
       reply_markup: {
         inline_keyboard: [
-          [{ text: "➕ شارژ موجودی", callback_data: "wallet_charge" }],
-          [{ text: "🔙 بازگشت", callback_data: "home" }]
+          [cb("➕ شارژ موجودی", "wallet_charge", "success")],
+          [homeButton()]
         ]
       }
     });
@@ -7694,8 +7702,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await setState(userId, "await_wallet_charge_amount");
     await tg("sendMessage", {
       chat_id: chatId,
-      text: "لطفاً مبلغ مورد نظر برای شارژ کیف پول را به تومان وارد کنید (مثال: 50000):",
-      reply_markup: { inline_keyboard: [[{ text: "🔙 لغو", callback_data: "wallet_menu" }]] }
+      text: "مبلغ شارژ را به تومان ارسال کنید.\nمثال: 50000",
+      reply_markup: { inline_keyboard: [[backButton("wallet_menu")]] }
     });
     return;
   }
@@ -8195,7 +8203,16 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       await tg("sendMessage", { chat_id: chatId, text: "پشتیبانی هنوز تنظیم نشده است." });
       return;
     }
-    await tg("sendMessage", { chat_id: chatId, text: `برای پشتیبانی پیام دهید: @${support}` });
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: `🆘 پشتیبانی\n\nبرای ارتباط با پشتیبانی روی دکمه زیر بزنید یا پیام دهید:\n@${support}`,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "💬 چت با پشتیبانی", url: `https://t.me/${support}` }],
+          [homeButton()]
+        ]
+      }
+    });
     return;
   }
 
