@@ -1,15 +1,20 @@
 import { fetchWithTimeout } from "./bot.js";
 
-const API_KEY = "7c557272bdd58727996fbba2dd8339b1";
+function assertApiKey(apiKey: string) {
+  const key = apiKey.trim();
+  if (!key) throw new Error("TETRAPAY api key is not configured");
+  return key;
+}
 
 export async function createTetrapayOrder(params: {
   purchaseId: string;
   amountToman: number;
   description: string;
   callbackUrl: string;
+  apiKey: string;
 }) {
   const payload = {
-    ApiKey: API_KEY,
+    ApiKey: assertApiKey(params.apiKey),
     Hash_id: params.purchaseId,
     Amount: params.amountToman,
     Description: params.description,
@@ -48,10 +53,10 @@ export async function createTetrapayOrder(params: {
   }
 }
 
-export async function verifyTetrapayOrder(authority: string) {
+export async function verifyTetrapayOrder(authority: string, apiKey: string) {
   const payload = {
     authority,
-    ApiKey: API_KEY
+    ApiKey: assertApiKey(apiKey)
   };
 
   const res = await fetchWithTimeout("https://tetra98.com/api/verify", {

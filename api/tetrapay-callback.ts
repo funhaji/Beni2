@@ -2,6 +2,9 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { fulfillOrderByPaymentId } from "../lib/bot.js";
 import { logError, logInfo } from "../lib/log.js";
 import { verifyTetrapayOrder } from "../lib/tetrapay.js";
+import { getSetting } from "../lib/settings.js";
+import { adminIds } from "../lib/env.js";
+import { tg } from "../lib/telegram.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
@@ -20,7 +23,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-      const verifyRes = await verifyTetrapayOrder(authority);
+      const apiKey = (await getSetting("tetrapay_api_key")) || "";
+      const verifyRes = await verifyTetrapayOrder(authority, apiKey);
       if (!verifyRes.ok) {
         logError("tetrapay_callback_spoofed", new Error("Payment status not verified"), { authority, verifyRes });
         res.status(400).json({ ok: false, error: "Payment not completed or spoofed" });
@@ -28,6 +32,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     } catch (statusErr) {
       logError("tetrapay_callback_verify_failed", statusErr, { authority });
+      for (const adminId of adminIds) {
+        await tg("sendMessage", {
+          chat_id: adminId,
+          text: `⚠️ خطا در تایید پرداخت TetraPay\nauthority: ${authority}\nعلت: ${(statusErr as Error).message || String(statusErr)}`
+        }).catch(() => {});
+      }
       res.status(500).json({ ok: false, error: "Could not verify payment status with TetraPay" });
       return;
     }

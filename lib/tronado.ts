@@ -26,6 +26,7 @@ export async function getOrderToken(input: {
   walletAddress: string;
   tronAmount: number;
   callbackUrl: string;
+  apiKey?: string;
 }) {
   const url = `${env.TRONADO_BASE_URL}/api/v3/GetOrderToken`;
   const form = new FormData();
@@ -38,7 +39,7 @@ export async function getOrderToken(input: {
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      "x-api-key": getApiKey()
+      "x-api-key": (input.apiKey || "").trim() || getApiKey()
     },
     body: form
   });
@@ -53,14 +54,14 @@ export async function getOrderToken(input: {
   };
 }
 
-export async function getStatusByPaymentId(paymentId: string) {
+export async function getStatusByPaymentId(paymentId: string, apiKey?: string) {
   const url = `${env.TRONADO_BASE_URL}/Order/GetStatusByPaymentID`;
   const form = new FormData();
   form.append("Id", paymentId);
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      "x-api-key": getApiKey()
+      "x-api-key": (apiKey || "").trim() || getApiKey()
     },
     body: form
   });
@@ -70,7 +71,7 @@ export async function getStatusByPaymentId(paymentId: string) {
   return (await res.json()) as Record<string, unknown>;
 }
 
-export async function getTronPriceToman() {
+export async function getTronPriceToman(apiKey?: string) {
   const candidates = [
     `${env.TRONADO_BASE_URL}/Price/Tron`,
     `${env.TRONADO_BASE_URL}/api/Price/Tron`
@@ -78,7 +79,7 @@ export async function getTronPriceToman() {
   for (const url of candidates) {
     try {
       const res = await fetch(url, {
-        headers: { "x-api-key": getApiKey() }
+        headers: { "x-api-key": (apiKey || "").trim() || getApiKey() }
       });
       if (!res.ok) {
         continue;
