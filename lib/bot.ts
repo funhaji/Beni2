@@ -3,6 +3,7 @@ import { adminIds, env } from "./env.js";
 import { logError, logInfo } from "./log.js";
 import { getOrderToken, getStatusByPaymentId, getTronPriceToman } from "./tronado.js";
 import { getBoolSetting, getNumberSetting, getPublicBaseUrl, getSetting, setSetting } from "./settings.js";
+import { getUsdtRateTomanCached } from "./rates.js";
 import { escapeHtml, tg } from "./telegram.js";
 import { randomUUID } from "node:crypto";
 import * as crypto from "node:crypto";
@@ -464,6 +465,23 @@ function isValidHttpUrl(raw: string) {
   } catch {
     return false;
   }
+}
+
+async function getPlisioTomanPerUsdt() {
+  const auto = await getBoolSetting("plisio_auto_rate", true);
+  const extra = (await getNumberSetting("plisio_usdt_extra_toman")) || 0;
+  if (!auto) {
+    const manual =
+      (await getNumberSetting("plisio_usdt_rate_fallback_toman")) ||
+      (await getNumberSetting("plisio_usd_rate_toman")) ||
+      0;
+    if (manual <= 0) {
+      throw new Error("plisio_manual_rate_not_set");
+    }
+    return Math.max(1, manual + extra);
+  }
+  const { rateTomanPerUsdt } = await getUsdtRateTomanCached();
+  return Math.max(1, rateTomanPerUsdt + extra);
 }
 
 export async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 8000) {
@@ -4247,6 +4265,42 @@ async function parseAndApplyState(
     await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio ذخیره شد ✅" });
     return true;
   }
+  if (state.state === "admin_set_plisio_extra_toman") {
+    const raw = text.trim();
+    if (raw === "-") {
+      await setSetting("plisio_usdt_extra_toman", "");
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "حاشیه پاک شد ✅" });
+      return true;
+    }
+    const n = Math.round(Number(raw));
+    if (!Number.isFinite(n)) {
+      await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 2000" });
+      return true;
+    }
+    await setSetting("plisio_usdt_extra_toman", String(n));
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: `حاشیه ذخیره شد ✅\n${n} تومان` });
+    return true;
+  }
+  if (state.state === "admin_set_plisio_fallback_rate") {
+    const raw = text.trim();
+    if (raw === "-") {
+      await setSetting("plisio_usdt_rate_fallback_toman", "");
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "نرخ دستی (fallback) پاک شد ✅" });
+      return true;
+    }
+    const rate = Math.round(Number(raw));
+    if (!Number.isFinite(rate) || rate <= 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 65000" });
+      return true;
+    }
+    await setSetting("plisio_usdt_rate_fallback_toman", String(rate));
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: `نرخ دستی (fallback) ذخیره شد ✅\n${rate} تومان` });
+    return true;
+  }
   if (state.state === "admin_set_plisio_usd_rate") {
     const raw = text.trim();
     if (raw === "-") {
@@ -6586,25 +6640,25 @@ async function createOrder(
       return;
     }
     const plisioApiKey = ((await getSetting("plisio_api_key")) || "").trim();
-    const usdRateToman = (await getNumberSetting("plisio_usd_rate_toman")) || 0;
-    if (!plisioApiKey || usdRateToman <= 0) {
+    if (!plisioApiKey) {
       await tg("sendMessage", { chat_id: chatId, text: "تنظیمات Plisio کامل نیست. لطفاً به پشتیبانی پیام دهید." });
       await notifyAdmins(
-        `⚠️ تنظیمات Plisio ناقص است\nسفارش: ${purchaseId}\nکلید: ${plisioApiKey ? "ok" : "missing"}\nنرخ دلار: ${usdRateToman || "missing"}`,
+        `⚠️ تنظیمات Plisio ناقص است\nسفارش: ${purchaseId}\nکلید: ${plisioApiKey ? "ok" : "missing"}`,
         { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]] }
       );
       return;
     }
 
-    const usdAmount = Math.max(0.01, Number((finalPrice / usdRateToman).toFixed(2)));
     try {
+      const tomanPerUsdt = await getPlisioTomanPerUsdt();
+      const usdtAmount = Math.max(0.01, Number((finalPrice / tomanPerUsdt).toFixed(2)));
       const { createPlisioInvoice } = await import("./plisio.js");
       const invoice = await createPlisioInvoice({
         apiKey: plisioApiKey,
         orderNumber: purchaseId.slice(1),
         orderName: purchaseId,
         sourceCurrency: "USD",
-        sourceAmount: usdAmount,
+        sourceAmount: usdtAmount,
         callbackUrl: `${callbackBase}/api/plisio-callback?json=true`
       });
 
@@ -6631,7 +6685,7 @@ async function createOrder(
           `شناسه خرید: ${purchaseId}\n` +
           `محصول: ${product.name}\n` +
           `مبلغ: ${formatPriceToman(finalPrice)} تومان\n` +
-          `معادل تقریبی: $${usdAmount}\n\n` +
+          `معادل تقریبی: ${usdtAmount} USDT\n\n` +
           `بعد از پرداخت، روی دکمه «بررسی پرداخت» بزنید.`,
         reply_markup: {
           inline_keyboard: [
@@ -7419,20 +7473,20 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           return;
         }
         const plisioApiKey = ((await getSetting("plisio_api_key")) || "").trim();
-        const usdRateToman = (await getNumberSetting("plisio_usd_rate_toman")) || 0;
-        if (!plisioApiKey || usdRateToman <= 0) {
+        if (!plisioApiKey) {
           await tg("sendMessage", { chat_id: chatId, text: "تنظیمات Plisio کامل نیست. لطفاً به پشتیبانی پیام دهید." });
           return;
         }
         const paymentId = `W${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
-        const usdAmount = Math.max(0.01, Number((amount / usdRateToman).toFixed(2)));
+        const tomanPerUsdt = await getPlisioTomanPerUsdt();
+        const usdtAmount = Math.max(0.01, Number((amount / tomanPerUsdt).toFixed(2)));
         const { createPlisioInvoice } = await import("./plisio.js");
         const invoice = await createPlisioInvoice({
           apiKey: plisioApiKey,
           orderNumber: paymentId.slice(1),
           orderName: paymentId,
           sourceCurrency: "USD",
-          sourceAmount: usdAmount,
+          sourceAmount: usdtAmount,
           callbackUrl: `${callbackBase}/api/plisio-callback?json=true`
         });
         await sql`
@@ -7441,7 +7495,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `;
         await tg("sendMessage", {
           chat_id: chatId,
-          text: `لینک پرداخت Plisio برای شارژ کیف پول آماده است:\nمبلغ: ${formatPriceToman(amount)} تومان\nمعادل تقریبی: $${usdAmount}`,
+          text: `لینک پرداخت Plisio برای شارژ کیف پول آماده است:\nمبلغ: ${formatPriceToman(amount)} تومان\nمعادل تقریبی: ${usdtAmount} USDT`,
           reply_markup: { inline_keyboard: [[{ text: "💳 پرداخت با Plisio", url: invoice.invoiceUrl }], [{ text: "🏠 منوی اصلی", callback_data: "home" }]] }
         });
         await clearState(userId);
@@ -9813,7 +9867,9 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const tronadoKeyMasked = maskSecret((await getSetting("tronado_api_key")) || "");
     const tetrapayKeyMasked = maskSecret((await getSetting("tetrapay_api_key")) || "");
     const plisioKeyMasked = maskSecret((await getSetting("plisio_api_key")) || "");
-    const plisioUsdRate = await getSetting("plisio_usd_rate_toman");
+    const plisioAutoRate = await getBoolSetting("plisio_auto_rate", true);
+    const plisioExtra = (await getSetting("plisio_usdt_extra_toman")) || "0";
+    const plisioFallback = (await getSetting("plisio_usdt_rate_fallback_toman")) || (await getSetting("plisio_usd_rate_toman")) || "";
     await tg("sendMessage", {
       chat_id: chatId,
       text:
@@ -9824,7 +9880,9 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `کلید Tronado: ${tronadoKeyMasked}\n` +
         `کلید TetraPay: ${tetrapayKeyMasked}\n` +
         `کلید Plisio: ${plisioKeyMasked}\n` +
-        `نرخ دلار برای Plisio: ${plisioUsdRate ? `${plisioUsdRate} تومان` : "تنظیم نشده"}\n` +
+        `نرخ Plisio: ${plisioAutoRate ? "خودکار (USDT)" : "دستی"}\n` +
+        `حاشیه تومان/USDT: ${plisioExtra}\n` +
+        `${plisioFallback ? `نرخ دستی (fallback): ${plisioFallback}\n` : ""}` +
         `بینهایت سراسری: ${infiniteMode ? "روشن" : "خاموش"}\n` +
         `قیمت افزایش هر 1GB: ${formatPriceToman(topupPricePerGb)} تومان\n` +
         `قیمت پیشفرض هر 1GB محصول: ${formatPriceToman(productPricePerGb)} تومان`,
@@ -9868,7 +9926,9 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const tronadoKeyMasked = maskSecret((await getSetting("tronado_api_key")) || "");
     const tetrapayKeyMasked = maskSecret((await getSetting("tetrapay_api_key")) || "");
     const plisioKeyMasked = maskSecret((await getSetting("plisio_api_key")) || "");
-    const usdRate = await getSetting("plisio_usd_rate_toman");
+    const plisioAutoRate = await getBoolSetting("plisio_auto_rate", true);
+    const plisioExtra = (await getSetting("plisio_usdt_extra_toman")) || "0";
+    const plisioFallback = (await getSetting("plisio_usdt_rate_fallback_toman")) || (await getSetting("plisio_usd_rate_toman")) || "";
     await tg("sendMessage", {
       chat_id: chatId,
       text:
@@ -9877,7 +9937,9 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `Tronado: ${tronadoKeyMasked}\n` +
         `TetraPay: ${tetrapayKeyMasked}\n` +
         `Plisio: ${plisioKeyMasked}\n` +
-        `نرخ دلار Plisio: ${usdRate ? `${usdRate} تومان` : "تنظیم نشده"}\n\n` +
+        `نرخ Plisio: ${plisioAutoRate ? "خودکار (IRR→USDT)" : "دستی"}\n` +
+        `حاشیه تومان/USDT: ${plisioExtra}\n` +
+        `${plisioFallback ? `نرخ دستی (fallback): ${plisioFallback}\n` : ""}\n` +
         `برای پاک‌کردن هر مورد: -`,
       reply_markup: {
         inline_keyboard: [
@@ -9885,7 +9947,9 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           [{ text: "🔑 کلید Tronado", callback_data: "admin_set_tronado_api_key" }],
           [{ text: "🔑 کلید TetraPay", callback_data: "admin_set_tetrapay_api_key" }],
           [{ text: "🔑 کلید Plisio", callback_data: "admin_set_plisio_api_key" }],
-          [{ text: "💱 نرخ دلار Plisio", callback_data: "admin_set_plisio_usd_rate" }],
+          [{ text: plisioAutoRate ? "✅ نرخ خودکار Plisio" : "❌ نرخ خودکار Plisio", callback_data: "admin_toggle_plisio_auto_rate" }],
+          [{ text: "➕ حاشیه تومان/USDT", callback_data: "admin_set_plisio_extra_toman" }],
+          [{ text: "🛟 نرخ دستی (fallback)", callback_data: "admin_set_plisio_fallback_rate" }],
           [{ text: "🔙 بازگشت", callback_data: "admin_settings" }]
         ]
       }
@@ -9912,9 +9976,20 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio را ارسال کنید.\nبرای پاک‌کردن: -" });
     return;
   }
-  if (data === "admin_set_plisio_usd_rate") {
-    await setState(userId, "admin_set_plisio_usd_rate");
-    await tg("sendMessage", { chat_id: chatId, text: "نرخ دلار را به تومان ارسال کنید (مثال: 60000).\nبرای پاک‌کردن: -" });
+  if (data === "admin_toggle_plisio_auto_rate") {
+    const current = await getBoolSetting("plisio_auto_rate", true);
+    await setSetting("plisio_auto_rate", (!current).toString());
+    await tg("sendMessage", { chat_id: chatId, text: `نرخ خودکار Plisio ${!current ? "فعال" : "غیرفعال"} شد ✅` });
+    return;
+  }
+  if (data === "admin_set_plisio_extra_toman") {
+    await setState(userId, "admin_set_plisio_extra_toman");
+    await tg("sendMessage", { chat_id: chatId, text: "حاشیه را به تومان (برای هر 1 USDT) ارسال کنید. مثال: 2000\nبرای پاک‌کردن: -" });
+    return;
+  }
+  if (data === "admin_set_plisio_fallback_rate") {
+    await setState(userId, "admin_set_plisio_fallback_rate");
+    await tg("sendMessage", { chat_id: chatId, text: "نرخ دستی USDT را به تومان ارسال کنید (fallback). مثال: 65000\nبرای پاک‌کردن: -" });
     return;
   }
   if (data === "admin_set_topup_price") {
