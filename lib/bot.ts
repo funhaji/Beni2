@@ -2,6 +2,7 @@ import { ensureSchema, sql } from "./db.js";
 import { adminIds, env } from "./env.js";
 import { logError, logInfo } from "./log.js";
 import { getOrderToken, getStatusByPaymentId, getTronPriceToman } from "./tronado.js";
+import { getBoolSetting, getNumberSetting, getPublicBaseUrl, getSetting, setSetting } from "./settings.js";
 import { escapeHtml, tg } from "./telegram.js";
 import { randomUUID } from "node:crypto";
 import * as crypto from "node:crypto";
@@ -1578,25 +1579,6 @@ async function getState(telegramId: number): Promise<UserState | null> {
   const rows = await sql`SELECT state, payload FROM user_states WHERE telegram_id = ${telegramId} LIMIT 1;`;
   if (!rows.length) return null;
   return { state: String(rows[0].state), payload: (rows[0].payload as Record<string, unknown>) || {} };
-}
-
-async function getSetting(key: string) {
-  const rows = await sql`SELECT value FROM settings WHERE key = ${key} LIMIT 1;`;
-  return rows.length ? String(rows[0].value) : null;
-}
-
-async function setSetting(key: string, value: string) {
-  await sql`
-    INSERT INTO settings (key, value)
-    VALUES (${key}, ${value})
-    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
-  `;
-}
-
-async function getBoolSetting(key: string, fallback = false) {
-  const value = await getSetting(key);
-  if (value === null) return fallback;
-  return value.toLowerCase() === "true";
 }
 
 async function isBanned(userId: number) {
@@ -4227,6 +4209,62 @@ async function parseAndApplyState(
     await tg("sendMessage", { chat_id: chatId, text: "آدرس کیف پول مقصد ذخیره شد ✅" });
     return true;
   }
+  if (state.state === "admin_set_public_base_url") {
+    const raw = text.trim();
+    if (raw === "-") {
+      await setSetting("public_base_url", "");
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت پاک شد ✅" });
+      return true;
+    }
+    if (!isValidHttpUrl(raw)) {
+      await tg("sendMessage", { chat_id: chatId, text: "آدرس معتبر نیست. مثال: https://example.com" });
+      return true;
+    }
+    await setSetting("public_base_url", raw);
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت ذخیره شد ✅" });
+    return true;
+  }
+  if (state.state === "admin_set_tronado_api_key") {
+    const raw = text.trim();
+    await setSetting("tronado_api_key", raw === "-" ? "" : raw);
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: "کلید Tronado ذخیره شد ✅" });
+    return true;
+  }
+  if (state.state === "admin_set_tetrapay_api_key") {
+    const raw = text.trim();
+    await setSetting("tetrapay_api_key", raw === "-" ? "" : raw);
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: "کلید TetraPay ذخیره شد ✅" });
+    return true;
+  }
+  if (state.state === "admin_set_plisio_api_key") {
+    const raw = text.trim();
+    await setSetting("plisio_api_key", raw === "-" ? "" : raw);
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio ذخیره شد ✅" });
+    return true;
+  }
+  if (state.state === "admin_set_plisio_usd_rate") {
+    const raw = text.trim();
+    if (raw === "-") {
+      await setSetting("plisio_usd_rate_toman", "");
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "نرخ دلار پاک شد ✅" });
+      return true;
+    }
+    const rate = Math.round(Number(raw));
+    if (!Number.isFinite(rate) || rate <= 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 60000" });
+      return true;
+    }
+    await setSetting("plisio_usd_rate_toman", String(rate));
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: `نرخ دلار Plisio ذخیره شد ✅\n${rate} تومان` });
+    return true;
+  }
   if (state.state === "admin_set_topup_price") {
     const pricePerGb = normalizePricePerGb(text.trim());
     if (!Number.isFinite(pricePerGb) || pricePerGb <= 0) {
@@ -6470,9 +6508,20 @@ async function createOrder(
     return;
   }
   if (paymentMethod === "tetrapay") {
-    const callbackBase = env.PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+    const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
     if (!callbackBase) {
-      await tg("sendMessage", { chat_id: chatId, text: "تنظیمات PUBLIC_BASE_URL انجام نشده است. لطفاً به ادمین اطلاع دهید." });
+      await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+      await notifyAdmins(`⚠️ تنظیمات Callback Base ناقص است (تتراپی)\nسفارش: ${purchaseId}`, {
+        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+      });
+      return;
+    }
+    const tetrapayApiKey = ((await getSetting("tetrapay_api_key")) || "").trim();
+    if (!tetrapayApiKey) {
+      await tg("sendMessage", { chat_id: chatId, text: "کلید تتراپی تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+      await notifyAdmins(`⚠️ کلید تتراپی تنظیم نشده است\nسفارش: ${purchaseId}`, {
+        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+      });
       return;
     }
     
@@ -6482,7 +6531,8 @@ async function createOrder(
         purchaseId,
         amountToman: finalPrice,
         description: `خرید محصول ${product.name}`,
-        callbackUrl: `${callbackBase}/api/tetrapay-callback`
+        callbackUrl: `${callbackBase}/api/tetrapay-callback`,
+        apiKey: tetrapayApiKey
       });
       
       if (!orderRes.ok) {
@@ -6526,6 +6576,81 @@ async function createOrder(
     return;
   }
 
+  if (paymentMethod === "plisio") {
+    const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
+    if (!callbackBase) {
+      await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+      await notifyAdmins(`⚠️ تنظیمات Callback Base ناقص است (Plisio)\nسفارش: ${purchaseId}`, {
+        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+      });
+      return;
+    }
+    const plisioApiKey = ((await getSetting("plisio_api_key")) || "").trim();
+    const usdRateToman = (await getNumberSetting("plisio_usd_rate_toman")) || 0;
+    if (!plisioApiKey || usdRateToman <= 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "تنظیمات Plisio کامل نیست. لطفاً به پشتیبانی پیام دهید." });
+      await notifyAdmins(
+        `⚠️ تنظیمات Plisio ناقص است\nسفارش: ${purchaseId}\nکلید: ${plisioApiKey ? "ok" : "missing"}\nنرخ دلار: ${usdRateToman || "missing"}`,
+        { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]] }
+      );
+      return;
+    }
+
+    const usdAmount = Math.max(0.01, Number((finalPrice / usdRateToman).toFixed(2)));
+    try {
+      const { createPlisioInvoice } = await import("./plisio.js");
+      const invoice = await createPlisioInvoice({
+        apiKey: plisioApiKey,
+        orderNumber: purchaseId.slice(1),
+        orderName: purchaseId,
+        sourceCurrency: "USD",
+        sourceAmount: usdAmount,
+        callbackUrl: `${callbackBase}/api/plisio-callback?json=true`
+      });
+
+      await sql`
+        INSERT INTO orders
+        (
+          purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
+          payment_method, discount_code, discount_amount, final_price, tron_amount, status, wallet_used,
+          plisio_txn_id, plisio_invoice_url, plisio_status
+        )
+        VALUES
+        (
+          ${purchaseId}, ${userId}, ${product.id}, ${String(product.name || "")}, ${sellMode}, ${product.panel_id || null}, ${parseDeliveryMode(String(product.panel_delivery_mode || ""))},
+          ${JSON.stringify(sanitizePanelConfig(product.panel_config))}::jsonb,
+          'plisio', ${discountCode}, ${discountAmount}, ${finalPrice}, 0, 'pending', ${walletUsed},
+          ${invoice.txnId}, ${invoice.invoiceUrl}, 'new'
+        );
+      `;
+
+      await tg("sendMessage", {
+        chat_id: chatId,
+        text:
+          `سفارش شما ساخته شد ✅\n` +
+          `شناسه خرید: ${purchaseId}\n` +
+          `محصول: ${product.name}\n` +
+          `مبلغ: ${formatPriceToman(finalPrice)} تومان\n` +
+          `معادل تقریبی: $${usdAmount}\n\n` +
+          `بعد از پرداخت، روی دکمه «بررسی پرداخت» بزنید.`,
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "💳 پرداخت با Plisio", url: invoice.invoiceUrl }],
+            [{ text: "✅ بررسی پرداخت", callback_data: `check_order_${purchaseId}` }],
+            [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+          ]
+        }
+      });
+    } catch (error) {
+      logError("create_plisio_invoice_failed", error, { chatId, userId, productId, purchaseId });
+      await notifyAdmins(`❌ خطا در ساخت فاکتور Plisio\nسفارش: ${purchaseId}\nعلت: ${(error as Error).message || String(error)}`, {
+        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+      });
+      await tg("sendMessage", { chat_id: chatId, text: "ساخت لینک پرداخت با خطا مواجه شد. لطفاً کمی بعد دوباره تلاش کنید یا به پشتیبانی پیام دهید." });
+    }
+    return;
+  }
+
   try {
     const walletFromSetting = await getSetting("business_wallet_address");
     const walletAddress = walletFromSetting || env.BUSINESS_WALLET_ADDRESS;
@@ -6533,18 +6658,23 @@ async function createOrder(
       await tg("sendMessage", { chat_id: chatId, text: "تنظیمات کیف پول کامل نیست. لطفاً به پشتیبانی پیام دهید." });
       return;
     }
-    const tronPrice = await getTronPriceToman();
+    const tronadoApiKey = ((await getSetting("tronado_api_key")) || "").trim();
+    const tronPrice = await getTronPriceToman(tronadoApiKey || undefined);
     const tronAmount = Number((finalPrice / tronPrice).toFixed(6));
-    const callbackBase = env.PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+    const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
     if (!callbackBase) {
-      await tg("sendMessage", { chat_id: chatId, text: "تنظیمات PUBLIC_BASE_URL انجام نشده است. لطفاً به ادمین اطلاع دهید." });
+      await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+      await notifyAdmins(`⚠️ تنظیمات Callback Base ناقص است (Tronado)\nسفارش: ${purchaseId}`, {
+        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+      });
       return;
     }
     const token = await getOrderToken({
       paymentId: purchaseId,
       walletAddress,
       tronAmount: Math.max(0.1, tronAmount),
-      callbackUrl: `${callbackBase}/api/tronado-callback`
+      callbackUrl: `${callbackBase}/api/tronado-callback`,
+      apiKey: tronadoApiKey || undefined
     });
     await sql`
       INSERT INTO orders
@@ -6939,7 +7069,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
   if (!rows.length) return { ok: false, reason: "order_not_found" };
   const order = rows[0];
 
-  if (order.payment_method === 'tronado' || order.payment_method === 'tetrapay') {
+  if (order.payment_method === 'tronado' || order.payment_method === 'tetrapay' || order.payment_method === 'plisio') {
     const walletUsed = Number(order.wallet_used || 0);
     if (walletUsed > 0) {
         const negativeWalletUsed = -walletUsed;
@@ -7205,11 +7335,12 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           await tg("sendMessage", { chat_id: chatId, text: "تنظیمات کیف پول کامل نیست. لطفاً به پشتیبانی پیام دهید." });
           return;
         }
-        const tronPrice = await getTronPriceToman();
+        const tronadoApiKey = ((await getSetting("tronado_api_key")) || "").trim();
+        const tronPrice = await getTronPriceToman(tronadoApiKey || undefined);
         const tronAmount = Number((amount / tronPrice).toFixed(6));
-        const callbackBase = env.PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+        const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
         if (!callbackBase) {
-          await tg("sendMessage", { chat_id: chatId, text: "تنظیمات PUBLIC_BASE_URL انجام نشده است. لطفاً به ادمین اطلاع دهید." });
+          await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
           return;
         }
 
@@ -7218,7 +7349,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           paymentId,
           walletAddress,
           tronAmount: Math.max(0.1, tronAmount),
-          callbackUrl: `${callbackBase}/api/tronado-callback`
+          callbackUrl: `${callbackBase}/api/tronado-callback`,
+          apiKey: tronadoApiKey || undefined
         });
         await sql`UPDATE wallet_topups SET receipt_file_id = ${paymentId} WHERE id = ${topupId}`;
         await tg("sendMessage", {
@@ -7233,9 +7365,14 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       }
     } else if (method === "tetrapay") {
       try {
-        const callbackBase = env.PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+        const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
         if (!callbackBase) {
-          await tg("sendMessage", { chat_id: chatId, text: "تنظیمات PUBLIC_BASE_URL انجام نشده است. لطفاً به ادمین اطلاع دهید." });
+          await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+          return;
+        }
+        const tetrapayApiKey = ((await getSetting("tetrapay_api_key")) || "").trim();
+        if (!tetrapayApiKey) {
+          await tg("sendMessage", { chat_id: chatId, text: "کلید تتراپی تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
           return;
         }
 
@@ -7245,7 +7382,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           purchaseId: paymentId,
           amountToman: amount,
           description: `شارژ کیف پول`,
-          callbackUrl: `${callbackBase}/api/tetrapay-callback`
+          callbackUrl: `${callbackBase}/api/tetrapay-callback`,
+          apiKey: tetrapayApiKey
         });
 
         if (!orderRes.ok) {
@@ -7255,7 +7393,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
 
         await sql`
           INSERT INTO wallet_topups (telegram_id, amount, payment_method, receipt_file_id)
-          VALUES (${userId}, ${amount}, 'tetrapay', ${orderRes.authority});
+          VALUES (${userId}, ${amount}, 'tetrapay', ${paymentId});
         `;
         
         await tg("sendMessage", {
@@ -7271,6 +7409,44 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         await clearState(userId);
       } catch (error) {
         logError("create_wallet_tetrapay_failed", error, { userId, amount });
+        await tg("sendMessage", { chat_id: chatId, text: "خطا در ایجاد لینک پرداخت." });
+      }
+    } else if (method === "plisio") {
+      try {
+        const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
+        if (!callbackBase) {
+          await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+          return;
+        }
+        const plisioApiKey = ((await getSetting("plisio_api_key")) || "").trim();
+        const usdRateToman = (await getNumberSetting("plisio_usd_rate_toman")) || 0;
+        if (!plisioApiKey || usdRateToman <= 0) {
+          await tg("sendMessage", { chat_id: chatId, text: "تنظیمات Plisio کامل نیست. لطفاً به پشتیبانی پیام دهید." });
+          return;
+        }
+        const paymentId = `W${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
+        const usdAmount = Math.max(0.01, Number((amount / usdRateToman).toFixed(2)));
+        const { createPlisioInvoice } = await import("./plisio.js");
+        const invoice = await createPlisioInvoice({
+          apiKey: plisioApiKey,
+          orderNumber: paymentId.slice(1),
+          orderName: paymentId,
+          sourceCurrency: "USD",
+          sourceAmount: usdAmount,
+          callbackUrl: `${callbackBase}/api/plisio-callback?json=true`
+        });
+        await sql`
+          INSERT INTO wallet_topups (telegram_id, amount, payment_method, receipt_file_id)
+          VALUES (${userId}, ${amount}, 'plisio', ${paymentId});
+        `;
+        await tg("sendMessage", {
+          chat_id: chatId,
+          text: `لینک پرداخت Plisio برای شارژ کیف پول آماده است:\nمبلغ: ${formatPriceToman(amount)} تومان\nمعادل تقریبی: $${usdAmount}`,
+          reply_markup: { inline_keyboard: [[{ text: "💳 پرداخت با Plisio", url: invoice.invoiceUrl }], [{ text: "🏠 منوی اصلی", callback_data: "home" }]] }
+        });
+        await clearState(userId);
+      } catch (error) {
+        logError("create_wallet_plisio_failed", error, { userId, amount });
         await tg("sendMessage", { chat_id: chatId, text: "خطا در ایجاد لینک پرداخت." });
       }
     } else if (method === "card2card") {
@@ -7294,6 +7470,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         chat_id: chatId,
         text: `مبلغ: ${formatPriceToman(amount)} تومان\n\nلطفاً مبلغ را به یکی از کارت‌های زیر واریز کنید:\n\n${cardsText}\n\nسپس تصویر رسید را همینجا ارسال کنید.`
       });
+    } else {
+      await tg("sendMessage", { chat_id: chatId, text: "این روش پرداخت برای شارژ کیف پول پشتیبانی نمی‌شود." });
     }
     return;
   }
@@ -7371,7 +7549,12 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       return;
     }
     try {
-      const orderRows = await sql`SELECT payment_method FROM orders WHERE purchase_id = ${purchaseId} LIMIT 1;`;
+      const orderRows = await sql`
+        SELECT payment_method, plisio_txn_id
+        FROM orders
+        WHERE purchase_id = ${purchaseId}
+        LIMIT 1;
+      `;
       if (!orderRows.length) {
         await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد." });
         return;
@@ -7383,10 +7566,40 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         await tg("sendMessage", { chat_id: chatId, text: "بررسی وضعیت پرداخت تتراپی به صورت خودکار انجام می‌شود. لطفاً چند لحظه صبر کنید." });
         return;
       } else if (paymentMethod === "tronado") {
-        const result = await getStatusByPaymentId(purchaseId) as any;
+        const tronadoApiKey = ((await getSetting("tronado_api_key")) || "").trim();
+        const result = await getStatusByPaymentId(purchaseId, tronadoApiKey || undefined) as any;
         const orderStatusTitle = result?.OrderStatusTitle || result?.Data?.OrderStatusTitle || result?.orderStatusTitle || result?.Data?.orderStatusTitle;
         const isPaid = result?.IsPaid === true || result?.Data?.IsPaid === true || result?.isPaid === true || result?.Data?.isPaid === true;
         isAccepted = orderStatusTitle === "PaymentAccepted" || isPaid;
+      } else if (paymentMethod === "plisio") {
+        const txnId = String(orderRows[0].plisio_txn_id || "").trim();
+        if (!txnId) {
+          await tg("sendMessage", { chat_id: chatId, text: "اطلاعات پرداخت Plisio ناقص است. لطفاً به پشتیبانی پیام دهید." });
+          await notifyAdmins(`⚠️ Plisio txn_id برای سفارش ثبت نشده است\nسفارش: ${purchaseId}`, {
+            inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+          });
+          return;
+        }
+        const plisioApiKey = ((await getSetting("plisio_api_key")) || "").trim();
+        if (!plisioApiKey) {
+          await tg("sendMessage", { chat_id: chatId, text: "تنظیمات Plisio کامل نیست. لطفاً به پشتیبانی پیام دهید." });
+          await notifyAdmins(`⚠️ کلید Plisio تنظیم نشده است\nسفارش: ${purchaseId}`, {
+            inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+          });
+          return;
+        }
+        const { getPlisioOperation } = await import("./plisio.js");
+        const op = await getPlisioOperation({ apiKey: plisioApiKey, operationId: txnId });
+        const s = String((op as any)?.status || "").toLowerCase().trim();
+        await sql`UPDATE orders SET plisio_status = ${s} WHERE purchase_id = ${purchaseId};`;
+        if (s === "expired" || s === "cancelled" || s === "error" || s === "cancelled duplicate") {
+          await tg("sendMessage", { chat_id: chatId, text: `وضعیت پرداخت Plisio: ${s}\nاگر پرداخت کرده‌اید ولی ثبت نشده، به پشتیبانی پیام دهید.` });
+          await notifyAdmins(`⚠️ وضعیت ناموفق Plisio\nسفارش: ${purchaseId}\nstatus: ${s}\ntxn: ${txnId}`, {
+            inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+          });
+          return;
+        }
+        isAccepted = s === "completed" || s === "mismatch";
       }
       
       if (isAccepted) {
@@ -9596,12 +9809,22 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const infiniteMode = await getBoolSetting("global_infinite_mode", false);
     const topupPricePerGb = normalizePricePerGb(await getSetting("topup_price_per_gb_toman"));
     const productPricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), topupPricePerGb);
+    const publicBaseUrl = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
+    const tronadoKeyMasked = maskSecret((await getSetting("tronado_api_key")) || "");
+    const tetrapayKeyMasked = maskSecret((await getSetting("tetrapay_api_key")) || "");
+    const plisioKeyMasked = maskSecret((await getSetting("plisio_api_key")) || "");
+    const plisioUsdRate = await getSetting("plisio_usd_rate_toman");
     await tg("sendMessage", {
       chat_id: chatId,
       text:
         `تنظیمات فعلی:\n` +
         `پشتیبانی: ${support ? `@${support}` : "تنظیم نشده"}\n` +
         `کیف پول مقصد: ${wallet}\n` +
+        `آدرس سایت (Callback Base): ${publicBaseUrl || "تنظیم نشده"}\n` +
+        `کلید Tronado: ${tronadoKeyMasked}\n` +
+        `کلید TetraPay: ${tetrapayKeyMasked}\n` +
+        `کلید Plisio: ${plisioKeyMasked}\n` +
+        `نرخ دلار برای Plisio: ${plisioUsdRate ? `${plisioUsdRate} تومان` : "تنظیم نشده"}\n` +
         `بینهایت سراسری: ${infiniteMode ? "روشن" : "خاموش"}\n` +
         `قیمت افزایش هر 1GB: ${formatPriceToman(topupPricePerGb)} تومان\n` +
         `قیمت پیشفرض هر 1GB محصول: ${formatPriceToman(productPricePerGb)} تومان`,
@@ -9610,6 +9833,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           [{ text: "📢 تنظیم کانال‌های اجباری", callback_data: "admin_set_mandatory_channels" }],
           [{ text: "🆘 تنظیم یوزرنیم پشتیبانی", callback_data: "admin_set_support" }],
           [{ text: "👛 تنظیم کیف پول مقصد", callback_data: "admin_set_wallet" }],
+          [{ text: "🔑 تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }],
           [{ text: "📈 قیمت افزایش هر 1GB", callback_data: "admin_set_topup_price" }],
           [{ text: "🏷 قیمت پیشفرض هر 1GB محصول", callback_data: "admin_set_product_price" }],
           [{ text: infiniteMode ? "♾️ خاموش‌کردن حالت بینهایت" : "♾️ روشن‌کردن حالت بینهایت", callback_data: "admin_toggle_global_infinite" }],
@@ -9637,6 +9861,60 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "admin_set_wallet") {
     await setState(userId, "admin_set_wallet");
     await tg("sendMessage", { chat_id: chatId, text: "آدرس کیف پول مقصد را ارسال کنید." });
+    return;
+  }
+  if (data === "admin_gateway_settings") {
+    const publicBaseUrl = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
+    const tronadoKeyMasked = maskSecret((await getSetting("tronado_api_key")) || "");
+    const tetrapayKeyMasked = maskSecret((await getSetting("tetrapay_api_key")) || "");
+    const plisioKeyMasked = maskSecret((await getSetting("plisio_api_key")) || "");
+    const usdRate = await getSetting("plisio_usd_rate_toman");
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        `تنظیمات درگاه‌ها:\n` +
+        `آدرس سایت (Callback Base): ${publicBaseUrl || "تنظیم نشده"}\n` +
+        `Tronado: ${tronadoKeyMasked}\n` +
+        `TetraPay: ${tetrapayKeyMasked}\n` +
+        `Plisio: ${plisioKeyMasked}\n` +
+        `نرخ دلار Plisio: ${usdRate ? `${usdRate} تومان` : "تنظیم نشده"}\n\n` +
+        `برای پاک‌کردن هر مورد: -`,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🌐 تنظیم آدرس سایت", callback_data: "admin_set_public_base_url" }],
+          [{ text: "🔑 کلید Tronado", callback_data: "admin_set_tronado_api_key" }],
+          [{ text: "🔑 کلید TetraPay", callback_data: "admin_set_tetrapay_api_key" }],
+          [{ text: "🔑 کلید Plisio", callback_data: "admin_set_plisio_api_key" }],
+          [{ text: "💱 نرخ دلار Plisio", callback_data: "admin_set_plisio_usd_rate" }],
+          [{ text: "🔙 بازگشت", callback_data: "admin_settings" }]
+        ]
+      }
+    });
+    return;
+  }
+  if (data === "admin_set_public_base_url") {
+    await setState(userId, "admin_set_public_base_url");
+    await tg("sendMessage", { chat_id: chatId, text: "آدرس کامل سایت را ارسال کنید. مثال: https://example.com\nبرای پاک‌کردن: -" });
+    return;
+  }
+  if (data === "admin_set_tronado_api_key") {
+    await setState(userId, "admin_set_tronado_api_key");
+    await tg("sendMessage", { chat_id: chatId, text: "کلید Tronado را ارسال کنید.\nبرای پاک‌کردن: -" });
+    return;
+  }
+  if (data === "admin_set_tetrapay_api_key") {
+    await setState(userId, "admin_set_tetrapay_api_key");
+    await tg("sendMessage", { chat_id: chatId, text: "کلید TetraPay را ارسال کنید.\nبرای پاک‌کردن: -" });
+    return;
+  }
+  if (data === "admin_set_plisio_api_key") {
+    await setState(userId, "admin_set_plisio_api_key");
+    await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio را ارسال کنید.\nبرای پاک‌کردن: -" });
+    return;
+  }
+  if (data === "admin_set_plisio_usd_rate") {
+    await setState(userId, "admin_set_plisio_usd_rate");
+    await tg("sendMessage", { chat_id: chatId, text: "نرخ دلار را به تومان ارسال کنید (مثال: 60000).\nبرای پاک‌کردن: -" });
     return;
   }
   if (data === "admin_set_topup_price") {

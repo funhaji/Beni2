@@ -1,6 +1,9 @@
 import { fulfillOrderByPaymentId } from "../lib/bot.js";
 import { logError, logInfo } from "../lib/log.js";
 import { getStatusByPaymentId } from "../lib/tronado.js";
+import { getSetting } from "../lib/settings.js";
+import { adminIds } from "../lib/env.js";
+import { tg } from "../lib/telegram.js";
 export default async function handler(req, res) {
     if (req.method !== "POST") {
         res.status(405).json({ ok: false, error: "Method not allowed" });
@@ -14,7 +17,8 @@ export default async function handler(req, res) {
         }
         // VERIFY with Tronado API that this payment is ACTUALLY successful
         try {
-            const statusRes = await getStatusByPaymentId(paymentId);
+            const apiKey = (await getSetting("tronado_api_key")) || "";
+            const statusRes = await getStatusByPaymentId(paymentId, apiKey);
             const orderStatusTitle = statusRes?.OrderStatusTitle || statusRes?.Data?.OrderStatusTitle || statusRes?.orderStatusTitle || statusRes?.Data?.orderStatusTitle;
             const isPaid = statusRes?.IsPaid === true || statusRes?.Data?.IsPaid === true || statusRes?.isPaid === true || statusRes?.Data?.isPaid === true;
             const isAccepted = orderStatusTitle === "PaymentAccepted" || isPaid;
@@ -26,6 +30,12 @@ export default async function handler(req, res) {
         }
         catch (statusErr) {
             logError("tronado_callback_verify_failed", statusErr, { paymentId });
+            for (const adminId of adminIds) {
+                await tg("sendMessage", {
+                    chat_id: adminId,
+                    text: `⚠️ خطا در تایید پرداخت Tronado\nسفارش: ${paymentId}\nعلت: ${statusErr.message || String(statusErr)}`
+                }).catch(() => { });
+            }
             res.status(500).json({ ok: false, error: "Could not verify payment status with Tronado" });
             return;
         }

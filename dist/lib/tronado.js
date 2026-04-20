@@ -18,7 +18,7 @@ export async function getOrderToken(input) {
     const res = await fetch(url, {
         method: "POST",
         headers: {
-            "x-api-key": getApiKey()
+            "x-api-key": (input.apiKey || "").trim() || getApiKey()
         },
         body: form
     });
@@ -32,14 +32,14 @@ export async function getOrderToken(input) {
         paymentUrl: data.Data.FullPaymentUrl
     };
 }
-export async function getStatusByPaymentId(paymentId) {
+export async function getStatusByPaymentId(paymentId, apiKey) {
     const url = `${env.TRONADO_BASE_URL}/Order/GetStatusByPaymentID`;
     const form = new FormData();
     form.append("Id", paymentId);
     const res = await fetch(url, {
         method: "POST",
         headers: {
-            "x-api-key": getApiKey()
+            "x-api-key": (apiKey || "").trim() || getApiKey()
         },
         body: form
     });
@@ -48,7 +48,7 @@ export async function getStatusByPaymentId(paymentId) {
     }
     return (await res.json());
 }
-export async function getTronPriceToman() {
+export async function getTronPriceToman(apiKey) {
     const candidates = [
         `${env.TRONADO_BASE_URL}/Price/Tron`,
         `${env.TRONADO_BASE_URL}/api/Price/Tron`
@@ -56,7 +56,7 @@ export async function getTronPriceToman() {
     for (const url of candidates) {
         try {
             const res = await fetch(url, {
-                headers: { "x-api-key": getApiKey() }
+                headers: { "x-api-key": (apiKey || "").trim() || getApiKey() }
             });
             if (!res.ok) {
                 continue;

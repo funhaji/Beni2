@@ -1,5 +1,5 @@
 import { ensureSchema, sql } from "../lib/db.js";
-import { verifyAdminToken, applyAdminSetDataLimitOnMarzban, applyAdminSetDataLimitOnSanaei, applyAdminSetExpiryOnMarzban, applyAdminSetExpiryOnSanaei, deleteMarzbanUser, revokeSanaeiClient, parseDeliveryPayload } from "../lib/bot.js";
+import { verifyAdminToken, applyAdminSetDataLimitOnMarzban, applyAdminSetDataLimitOnSanaei, applyAdminSetExpiryOnMarzban, applyAdminSetExpiryOnSanaei, applyAdminResetUsageOnMarzban, applyAdminResetUsageOnSanaei, deleteMarzbanUser, revokeSanaeiClient, parseDeliveryPayload } from "../lib/bot.js";
 export default async function handler(req, res) {
     try {
         await ensureSchema();
@@ -63,10 +63,24 @@ export default async function handler(req, res) {
         else if (action === "renew") {
             const expiryTimeMs = Date.now() + 30 * 24 * 60 * 60 * 1000;
             if (panelType === "marzban") {
-                result = await applyAdminSetExpiryOnMarzban(panel, username, expiryTimeMs);
+                const expiryRes = await applyAdminSetExpiryOnMarzban(panel, username, expiryTimeMs);
+                if (!expiryRes.ok) {
+                    result = expiryRes;
+                }
+                else {
+                    const resetRes = await applyAdminResetUsageOnMarzban(panel, username);
+                    result = resetRes.ok ? { ok: true, message: "Marzban renewed and usage reset." } : resetRes;
+                }
             }
             else if (panelType === "sanaei") {
-                result = await applyAdminSetExpiryOnSanaei(panel, inboundId, email, expiryTimeMs);
+                const expiryRes = await applyAdminSetExpiryOnSanaei(panel, inboundId, email, expiryTimeMs);
+                if (!expiryRes.ok) {
+                    result = expiryRes;
+                }
+                else {
+                    const resetRes = await applyAdminResetUsageOnSanaei(panel, inboundId, email);
+                    result = resetRes.ok ? { ok: true, message: "Sanaei renewed and usage reset." } : resetRes;
+                }
             }
         }
         else if (action === "delete") {

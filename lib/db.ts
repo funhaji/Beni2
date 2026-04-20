@@ -85,12 +85,18 @@ export function ensureSchema() {
           status TEXT NOT NULL DEFAULT 'pending',
           tronado_token TEXT,
           tronado_payment_url TEXT,
+          plisio_txn_id TEXT,
+          plisio_invoice_url TEXT,
+          plisio_status TEXT,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           paid_at TIMESTAMPTZ
         );
       `;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS card_id BIGINT;`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS product_name_snapshot TEXT;`;
+      await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS plisio_txn_id TEXT;`;
+      await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS plisio_invoice_url TEXT;`;
+      await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS plisio_status TEXT;`;
       await sql`
         CREATE TABLE IF NOT EXISTS topup_requests (
           id BIGSERIAL PRIMARY KEY,
@@ -287,7 +293,7 @@ export function ensureSchema() {
 
       await sql`
         INSERT INTO payment_methods (code, title, active)
-        VALUES ('tronado', 'TRON', TRUE), ('card2card', 'کارت‌به‌کارت', TRUE), ('tetrapay', 'تتراپی', TRUE)
+        VALUES ('tronado', 'TRON', TRUE), ('card2card', 'کارت‌به‌کارت', TRUE), ('tetrapay', 'تتراپی', TRUE), ('plisio', 'Plisio (Crypto)', TRUE)
         ON CONFLICT (code) DO NOTHING;
       `;
 
