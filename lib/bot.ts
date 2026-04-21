@@ -16,6 +16,8 @@ type TgUpdate = {
     text?: string;
     caption?: string;
     photo?: Array<{ file_id: string; file_size?: number; width?: number; height?: number }>;
+    sticker?: { file_id: string };
+    animation?: { file_id: string };
     from?: { id: number; username?: string; first_name?: string; last_name?: string };
     chat: { id: number };
   };
@@ -85,6 +87,7 @@ type DeliveryPayload = {
 };
 
 type ConfigLookupMode = "config" | "uuid";
+type StartMediaKind = "none" | "text" | "sticker" | "animation" | "photo";
 
 function isAdmin(userId: number) {
   return adminIds.includes(userId);
@@ -97,6 +100,52 @@ function randomCode(length = 8) {
 
 function qrCodeUrl(value: string) {
   return `https://quickchart.io/qr?size=320&text=${encodeURIComponent(value)}`;
+}
+
+function startMediaTitle(kind: StartMediaKind, value: string) {
+  const v = String(value || "").trim();
+  if (kind === "none" || !v) return "خاموش";
+  if (kind === "text") return `متن: ${v.slice(0, 40)}${v.length > 40 ? "…" : ""}`;
+  if (kind === "sticker") return "استیکر";
+  if (kind === "animation") return "گیف";
+  if (kind === "photo") return "عکس";
+  return "خاموش";
+}
+
+async function sendStartMedia(chatId: number) {
+  const kindRaw = (await getSetting("start_media_kind")) || "none";
+  const value = (await getSetting("start_media_value")) || "";
+  const kind = (["none", "text", "sticker", "animation", "photo"] as const).includes(kindRaw as any)
+    ? (kindRaw as StartMediaKind)
+    : "none";
+  const v = String(value || "").trim();
+  if (kind === "none" || !v) return;
+  try {
+    if (kind === "text") {
+      await tg("sendMessage", { chat_id: chatId, text: v });
+      return;
+    }
+    if (kind === "sticker") {
+      await tg("sendSticker", { chat_id: chatId, sticker: v });
+      return;
+    }
+    if (kind === "animation") {
+      await tg("sendAnimation", { chat_id: chatId, animation: v });
+      return;
+    }
+    if (kind === "photo") {
+      await tg("sendPhoto", { chat_id: chatId, photo: v });
+      return;
+    }
+  } catch (e) {
+    logError("send_start_media_failed", e, { kind, chatId });
+  }
+}
+
+function truncateText(value: string, max: number) {
+  const v = String(value || "");
+  if (v.length <= max) return v;
+  return v.slice(0, Math.max(0, max - 1)) + "…";
 }
 
 function formatPriceToman(value: number | string) {
@@ -3394,6 +3443,8 @@ async function parseAndApplyState(
   userId: number,
   text: string,
   photoFileId: string | null,
+  stickerFileId: string | null,
+  animationFileId: string | null,
   state: UserState
 ) {
   if (state.state === "await_wallet_custom_amount") {
@@ -3573,6 +3624,101 @@ async function parseAndApplyState(
     const walletUsed = Number(state.payload.walletUsed || 0);
     await clearState(userId);
     await createOrder(chatId, userId, productId, paymentMethod, text.trim() || null, walletUsed);
+    return true;
+  }
+  if (state.state === "await_crypto_receipt") {
+    if (!photoFileId) {
+      await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کن." });
+      return true;
+    }
+    const orderId = Number(state.payload.orderId);
+    const rows = await sql`
+      UPDATE orders
+      SET receipt_file_id = ${photoFileId}, status = 'receipt_submitted'
+      WHERE id = ${orderId}
+        AND telegram_id = ${userId}
+        AND status NOT IN ('paid', 'denied', 'cancelled')
+      RETURNING id;
+    `;
+    if (!rows.length) {
+      await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد یا قابل ثبت رسید نیست." });
+      await clearState(userId);
+      return true;
+    }
+    const infoRows = await sql`
+      SELECT
+        o.id,
+        o.purchase_id,
+        o.final_price,
+        o.wallet_used,
+        o.payment_method,
+        o.tron_amount,
+        o.tronado_token,
+        o.tronado_payment_url,
+        o.plisio_txn_id,
+        o.plisio_invoice_url,
+        o.plisio_status,
+        COALESCE(o.product_name_snapshot, p.name) AS product_name,
+        u.username,
+        u.first_name,
+        u.last_name
+      FROM orders o
+      INNER JOIN products p ON p.id = o.product_id
+      LEFT JOIN users u ON u.telegram_id = o.telegram_id
+      WHERE o.id = ${orderId}
+      LIMIT 1;
+    `;
+    const o: any = infoRows[0] || {};
+    const username = o.username ? `@${String(o.username)}` : "-";
+    const fullName = [o.first_name ? String(o.first_name) : "", o.last_name ? String(o.last_name) : ""].filter(Boolean).join(" ").trim() || "-";
+    const method = String(o.payment_method || "-");
+    const walletUsed = Number(o.wallet_used || 0);
+    const extraLines: string[] = [];
+    if (method === "tronado") {
+      extraLines.push(`مقدار TRON: ${String(o.tron_amount || "-")}`);
+      if (o.tronado_payment_url) extraLines.push(`لینک پرداخت: ${String(o.tronado_payment_url)}`);
+    } else if (method === "plisio") {
+      if (o.plisio_txn_id) extraLines.push(`txn: ${String(o.plisio_txn_id)}`);
+      if (o.plisio_status) extraLines.push(`status: ${String(o.plisio_status)}`);
+      if (o.plisio_invoice_url) extraLines.push(`لینک پرداخت: ${String(o.plisio_invoice_url)}`);
+    } else if (method === "tetrapay") {
+      if (o.tronado_token) extraLines.push(`authority: ${String(o.tronado_token)}`);
+      if (o.tronado_payment_url) extraLines.push(`لینک پرداخت: ${String(o.tronado_payment_url)}`);
+    }
+    const caption =
+      `رسید پرداخت کریپتو ارسال شد\n` +
+      `سفارش: ${String(o.purchase_id || "-")}\n` +
+      `کاربر: ${userId}\n` +
+      `یوزرنیم: ${username}\n` +
+      `نام: ${fullName}\n` +
+      `محصول: ${String(o.product_name || "-")}\n` +
+      `مبلغ: ${formatPriceToman(Number(o.final_price || 0))} تومان\n` +
+      `روش پرداخت: ${method}` +
+      (walletUsed > 0 ? `\nکسر از کیف پول: ${formatPriceToman(walletUsed)} تومان` : "") +
+      (extraLines.length ? `\n${extraLines.join("\n")}` : "");
+
+    await clearState(userId);
+    for (const adminId of adminIds) {
+      try {
+        await tg("sendPhoto", {
+          chat_id: adminId,
+          photo: photoFileId,
+          caption,
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: "✅ تایید", callback_data: `crypto_accept_${orderId}` },
+                { text: "❌ رد", callback_data: `crypto_deny_${orderId}` },
+                { text: "⛔ بن", callback_data: `crypto_ban_${orderId}_${userId}` }
+              ]
+            ]
+          }
+        });
+      } catch (e) {
+        logError("notify_admin_crypto_receipt_failed", e, { adminId, orderId, userId });
+      }
+    }
+    await tg("sendMessage", { chat_id: chatId, text: "اسکرین‌شات ارسال شد ✅\nبعد از بررسی ادمین نتیجه بهت خبر داده میشه." });
     return true;
   }
   if (state.state === "await_receipt") {
@@ -3755,6 +3901,67 @@ async function parseAndApplyState(
     return true;
   }
   if (!isAdmin(userId)) return false;
+  if (state.state === "admin_set_start_media") {
+    const kind = String(state.payload.kind || "").trim();
+    const raw = text.trim();
+    if (raw === "-") {
+      await setSetting("start_media_kind", "none");
+      await setSetting("start_media_value", "");
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "مدیای شروع پاک شد ✅" });
+      return true;
+    }
+    if (kind === "text") {
+      if (!raw) {
+        await tg("sendMessage", { chat_id: chatId, text: "متن نمی‌تواند خالی باشد." });
+        return true;
+      }
+      await setSetting("start_media_kind", "text");
+      await setSetting("start_media_value", raw);
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "ذخیره شد ✅" });
+      await tg("sendMessage", { chat_id: chatId, text: raw }).catch(() => {});
+      return true;
+    }
+    if (kind === "sticker") {
+      if (!stickerFileId) {
+        await tg("sendMessage", { chat_id: chatId, text: "لطفاً استیکر را ارسال کن (نه عکس)." });
+        return true;
+      }
+      await setSetting("start_media_kind", "sticker");
+      await setSetting("start_media_value", stickerFileId);
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "ذخیره شد ✅" });
+      await tg("sendSticker", { chat_id: chatId, sticker: stickerFileId }).catch(() => {});
+      return true;
+    }
+    if (kind === "animation") {
+      if (!animationFileId) {
+        await tg("sendMessage", { chat_id: chatId, text: "لطفاً گیف را ارسال کن." });
+        return true;
+      }
+      await setSetting("start_media_kind", "animation");
+      await setSetting("start_media_value", animationFileId);
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "ذخیره شد ✅" });
+      await tg("sendAnimation", { chat_id: chatId, animation: animationFileId }).catch(() => {});
+      return true;
+    }
+    if (kind === "photo") {
+      if (!photoFileId) {
+        await tg("sendMessage", { chat_id: chatId, text: "لطفاً عکس را ارسال کن." });
+        return true;
+      }
+      await setSetting("start_media_kind", "photo");
+      await setSetting("start_media_value", photoFileId);
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "ذخیره شد ✅" });
+      await tg("sendPhoto", { chat_id: chatId, photo: photoFileId }).catch(() => {});
+      return true;
+    }
+    await tg("sendMessage", { chat_id: chatId, text: "نوع مدیا نامعتبر است. از تنظیمات دوباره شروع کن." });
+    return true;
+  }
   if (state.state === "admin_product_wizard") {
     const mode = String(state.payload.mode || "add") as ProductWizardMode;
     const step = String(state.payload.step || "name") as ProductWizardStep;
@@ -6058,10 +6265,15 @@ async function sendConfigWithQr(
     text: `${prefixText ? `${prefixText}\n` : ""}شناسه خرید: ${purchaseId}\n\nکانفیگ شما:\n${escapeHtml(configValue)}`,
     reply_markup: { inline_keyboard: keyboard }
   });
+  const captionText =
+    `${prefixText ? `${prefixText}\n\n` : ""}` +
+    `شناسه خرید: ${purchaseId}\n\n` +
+    `کانفیگ:\n${configValue}`;
   await tg("sendPhoto", {
     chat_id: chatId,
     photo: qrCodeUrl(configValue),
-    caption: "QR کانفیگ"
+    parse_mode: "HTML",
+    caption: escapeHtml(truncateText(captionText, 900))
   });
 }
 
@@ -6093,11 +6305,18 @@ async function sendDeliveryPackage(
     text: escapeHtml(lines.join("\n\n")),
     reply_markup: { inline_keyboard: finalKeyboard }
   });
-  if (deliveryPayload.subscriptionUrl) {
+  const qrText = String(deliveryPayload.primaryQr || firstConfig || deliveryPayload.subscriptionUrl || fallbackConfigValue || "").trim();
+  if (qrText) {
+    const qrCaptionText =
+      `${prefixText ? `${prefixText}\n\n` : ""}` +
+      `شناسه خرید: ${purchaseId}\n\n` +
+      (deliveryPayload.subscriptionUrl ? `لینک ساب:\n${deliveryPayload.subscriptionUrl}\n\n` : "") +
+      (firstConfig ? `کانفیگ:\n${firstConfig}` : "");
     await tg("sendPhoto", {
       chat_id: chatId,
-      photo: qrCodeUrl(deliveryPayload.subscriptionUrl),
-      caption: "QR ساب"
+      photo: qrCodeUrl(qrText),
+      parse_mode: "HTML",
+      caption: escapeHtml(truncateText(qrCaptionText, 900))
     });
   }
 }
@@ -8106,7 +8325,16 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
 
       let isAccepted = false;
       if (paymentMethod === "tetrapay") {
-        await tg("sendMessage", { chat_id: chatId, text: "بررسی وضعیت پرداخت تتراپی به صورت خودکار انجام می‌شود. لطفاً چند لحظه صبر کنید." });
+        await tg("sendMessage", {
+          chat_id: chatId,
+          text: "بررسی وضعیت پرداخت تتراپی معمولاً به صورت خودکار انجام می‌شود.\nاگر پرداخت کرده‌ای ولی تایید نمی‌شود، اسکرین‌شات پرداخت را ارسال کن تا ادمین بررسی کند.",
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "📷 ارسال اسکرین‌شات پرداخت", callback_data: `crypto_receipt_${purchaseId}` }],
+              [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+            ]
+          }
+        });
         return;
       } else if (paymentMethod === "tronado") {
         const tronadoApiKey = ((await getSetting("tronado_api_key")) || "").trim();
@@ -8160,12 +8388,58 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           await tg("sendMessage", { chat_id: chatId, text: "پرداخت ثبت شد ولی موجودی صفر است. ادمین پیگیری می‌کند." });
         }
       } else {
-        await tg("sendMessage", { chat_id: chatId, text: "هنوز پرداخت تایید نشده است. چند لحظه بعد دوباره بررسی کنید." });
+        const allowManual = paymentMethod === "tronado" || paymentMethod === "plisio" || paymentMethod === "tetrapay";
+        await tg("sendMessage", {
+          chat_id: chatId,
+          text: "هنوز پرداخت تایید نشده است.\nاگر پرداخت کرده‌ای ولی تایید نمی‌شود، اسکرین‌شات پرداخت را ارسال کن تا ادمین بررسی کند.",
+          ...(allowManual
+            ? {
+                reply_markup: {
+                  inline_keyboard: [
+                    [{ text: "📷 ارسال اسکرین‌شات پرداخت", callback_data: `crypto_receipt_${purchaseId}` }],
+                    [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+                  ]
+                }
+              }
+            : {})
+        });
       }
     } catch (error) {
       logError("check_order_status_failed", error, { purchaseId, userId, chatId });
       await tg("sendMessage", { chat_id: chatId, text: "خطا در بررسی وضعیت پرداخت." });
     }
+    return;
+  }
+  if (data.startsWith("crypto_receipt_")) {
+    const purchaseId = data.replace("crypto_receipt_", "").trim();
+    if (!purchaseId) return;
+    const rows = await sql`
+      SELECT id, status, payment_method
+      FROM orders
+      WHERE purchase_id = ${purchaseId} AND telegram_id = ${userId}
+      LIMIT 1;
+    `;
+    if (!rows.length) {
+      await tg("sendMessage", { chat_id: chatId, text: "سفارش پیدا نشد." });
+      return;
+    }
+    const order = rows[0];
+    const method = String(order.payment_method || "").toLowerCase();
+    if (!(method === "tronado" || method === "plisio" || method === "tetrapay")) {
+      await tg("sendMessage", { chat_id: chatId, text: "این سفارش نیازی به ارسال اسکرین‌شات ندارد." });
+      return;
+    }
+    const status = String(order.status || "").toLowerCase();
+    if (status === "paid") {
+      await tg("sendMessage", { chat_id: chatId, text: "این سفارش قبلاً پرداخت شده است ✅" });
+      return;
+    }
+    if (status === "denied" || status === "cancelled") {
+      await tg("sendMessage", { chat_id: chatId, text: "این سفارش بسته شده است." });
+      return;
+    }
+    await setState(userId, "await_crypto_receipt", { orderId: Number(order.id) });
+    await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کن:" });
     return;
   }
   if (data.startsWith("show_configs_")) {
@@ -8821,7 +9095,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       return;
     }
     if (Number.isFinite(forcedDays) && forcedDays >= 0) {
-      await parseAndApplyState(chatId, userId, String(Math.round(forcedDays)), null, {
+      await parseAndApplyState(chatId, userId, String(Math.round(forcedDays)), null, null, null, {
         state: "admin_lookup_set_expiry",
         payload: { inventoryId }
       });
@@ -8959,7 +9233,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       return;
     }
     if (Number.isFinite(maybeDays) && maybeDays >= 0) {
-      await parseAndApplyState(chatId, userId, String(Math.round(maybeDays)), null, {
+      await parseAndApplyState(chatId, userId, String(Math.round(maybeDays)), null, null, null, {
         state: "admin_panel_set_expiry",
         payload: { panelId, panelKey }
       });
@@ -10438,6 +10712,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const plisioAutoRate = await getBoolSetting("plisio_auto_rate", true);
     const plisioExtra = (await getSetting("plisio_usdt_extra_toman")) || "0";
     const plisioFallback = (await getSetting("plisio_usdt_rate_fallback_toman")) || (await getSetting("plisio_usd_rate_toman")) || "";
+    const startMediaKind = ((await getSetting("start_media_kind")) || "none") as StartMediaKind;
+    const startMediaValue = (await getSetting("start_media_value")) || "";
     await tg("sendMessage", {
       chat_id: chatId,
       text:
@@ -10451,6 +10727,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `نرخ Plisio: ${plisioAutoRate ? "خودکار (USDT)" : "دستی"}\n` +
         `حاشیه تومان/USDT: ${plisioExtra}\n` +
         `${plisioFallback ? `نرخ دستی (fallback): ${plisioFallback}\n` : ""}` +
+        `مدیای شروع: ${startMediaTitle(startMediaKind, startMediaValue)}\n` +
         `بینهایت سراسری: ${infiniteMode ? "روشن" : "خاموش"}\n` +
         `قیمت افزایش هر 1GB: ${formatPriceToman(topupPricePerGb)} تومان\n` +
         `قیمت پیشفرض هر 1GB محصول: ${formatPriceToman(productPricePerGb)} تومان`,
@@ -10460,6 +10737,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           [cb("🆘 یوزرنیم پشتیبانی", "admin_set_support", "primary")],
           [cb("👛 کیف پول مقصد", "admin_set_wallet", "primary")],
           [cb("🔑 تنظیمات درگاه‌ها", "admin_gateway_settings", "primary")],
+          [cb("🎬 مدیای شروع", "admin_start_media", "primary")],
           [cb("📈 قیمت افزایش هر 1GB", "admin_set_topup_price", "primary")],
           [cb("🏷 قیمت پیشفرض هر 1GB محصول", "admin_set_product_price", "primary")],
           [
@@ -10473,6 +10751,55 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         ]
       }
     });
+    return;
+  }
+  if (data === "admin_start_media") {
+    const kindRaw = ((await getSetting("start_media_kind")) || "none") as StartMediaKind;
+    const value = (await getSetting("start_media_value")) || "";
+    const kind = (["none", "text", "sticker", "animation", "photo"] as const).includes(kindRaw as any)
+      ? kindRaw
+      : ("none" as StartMediaKind);
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        `🎬 مدیای شروع\n\n` +
+        `وضعیت فعلی: ${startMediaTitle(kind, value)}\n\n` +
+        `نکته: این مدیا فقط هنگام /start قبل از منوی اصلی ارسال می‌شود.`,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🙂 ایموجی/متن", callback_data: "admin_start_media_set_text" }],
+          [{ text: "🧩 استیکر", callback_data: "admin_start_media_set_sticker" }],
+          [{ text: "🎞 گیف", callback_data: "admin_start_media_set_animation" }],
+          [{ text: "🖼 عکس", callback_data: "admin_start_media_set_photo" }],
+          [{ text: "🚫 خاموش", callback_data: "admin_start_media_disable" }],
+          [{ text: "🔙 بازگشت", callback_data: "admin_settings" }]
+        ]
+      }
+    });
+    return;
+  }
+  if (data === "admin_start_media_disable") {
+    await setSetting("start_media_kind", "none");
+    await setSetting("start_media_value", "");
+    await tg("sendMessage", { chat_id: chatId, text: "مدیای شروع خاموش شد ✅" });
+    return;
+  }
+  if (data.startsWith("admin_start_media_set_")) {
+    const kind = data.replace("admin_start_media_set_", "").trim();
+    if (kind !== "text" && kind !== "sticker" && kind !== "animation" && kind !== "photo") {
+      await tg("sendMessage", { chat_id: chatId, text: "گزینه نامعتبر است." });
+      return;
+    }
+    await setState(userId, "admin_set_start_media", { kind });
+    const hints =
+      kind === "text"
+        ? "متن/ایموجی را ارسال کن.\nبرای پاک‌کردن: -"
+        : kind === "sticker"
+          ? "استیکر را ارسال کن.\nبرای پاک‌کردن: -"
+          : kind === "animation"
+            ? "گیف را ارسال کن.\nبرای پاک‌کردن: -"
+            : "عکس را ارسال کن.\nبرای پاک‌کردن: -";
+    await tg("sendMessage", { chat_id: chatId, text: `🎬 تنظیم مدیای شروع\n\n${hints}` });
     return;
   }
   if (data === "admin_set_mandatory_channels") {
@@ -10832,6 +11159,54 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", { chat_id: chatId, text: rows.length ? "کاربر بن شد ✅" : "بن شد ✅" });
     return;
   }
+  if (data.startsWith("crypto_accept_")) {
+    const orderId = Number(data.replace("crypto_accept_", ""));
+    if (await isRateLimited(userId, "crypto_accept", 2000)) {
+      await tg("sendMessage", { chat_id: chatId, text: "درخواست شما در حال پردازش است. لطفاً چند لحظه صبر کنید." });
+      return;
+    }
+    const result = await finalizeOrder(orderId, userId);
+    await tg("sendMessage", { chat_id: chatId, text: result.ok ? "سفارش تایید شد ✅" : `خطا: ${result.reason}` });
+    return;
+  }
+  if (data.startsWith("crypto_deny_")) {
+    const orderId = Number(data.replace("crypto_deny_", ""));
+    const rows = await sql`
+      UPDATE orders
+      SET status = 'denied', admin_decision_by = ${userId}
+      WHERE id = ${orderId}
+        AND status = 'receipt_submitted'
+        AND payment_method IN ('tronado', 'plisio', 'tetrapay')
+      RETURNING telegram_id, purchase_id;
+    `;
+    if (rows.length) {
+      await tg("sendMessage", { chat_id: Number(rows[0].telegram_id), text: `رسید پرداخت سفارش ${rows[0].purchase_id} رد شد ❌` }).catch(() => {});
+    }
+    await tg("sendMessage", { chat_id: chatId, text: rows.length ? "رد شد ✅" : "سفارش یافت نشد یا قابل رد نیست." });
+    return;
+  }
+  if (data.startsWith("crypto_ban_")) {
+    const payload = data.replace("crypto_ban_", "");
+    const [orderIdRaw, targetUserRaw] = payload.split("_");
+    const orderId = Number(orderIdRaw);
+    const targetUser = Number(targetUserRaw);
+    await sql`
+      INSERT INTO banned_users (telegram_id, reason, banned_by)
+      VALUES (${targetUser}, 'fake_crypto_receipt', ${userId})
+      ON CONFLICT (telegram_id) DO UPDATE SET reason = EXCLUDED.reason, banned_by = EXCLUDED.banned_by;
+    `;
+    const rows = await sql`
+      UPDATE orders
+      SET status = 'denied', admin_decision_by = ${userId}
+      WHERE id = ${orderId}
+        AND status = 'receipt_submitted'
+        AND payment_method IN ('tronado', 'plisio', 'tetrapay')
+      RETURNING purchase_id;
+    `;
+    await tg("sendMessage", { chat_id: targetUser, text: "به دلیل ارسال رسید نامعتبر، دسترسی شما مسدود شد." }).catch(() => {});
+    await tg("sendMessage", { chat_id: chatId, text: rows.length ? "کاربر بن شد ✅" : "بن شد ✅" });
+    return;
+  }
   if (data.startsWith("admin_provide_config_")) {
     const orderId = Number(data.replace("admin_provide_config_", ""));
     await setState(userId, "admin_provide_config", { orderId });
@@ -10977,7 +11352,7 @@ async function checkMandatoryChannels(userId: number, chatId: number, silent = f
 
       await tg("sendMessage", {
         chat_id: chatId,
-        text: "برای استفاده از ربات، ابتدا در کانال‌های زیر عضو شوید.\nبعد از عضویت، روی «بررسی عضویت» بزنید.",
+        text: "برای استفاده از ربات، اول باید در کانال‌های زیر عضو بشی.\nبعد از عضویت، روی «بررسی عضویت» بزن.",
         reply_markup: { inline_keyboard: buttons }
       });
     }
@@ -10989,8 +11364,10 @@ async function checkMandatoryChannels(userId: number, chatId: number, silent = f
 
 async function handleMessage(update: TgUpdate["message"]) {
   if (!update?.from) return;
-  const text = update.text?.trim() || "";
+  const text = (update.text ?? update.caption ?? "").trim();
   const photoFileId = update.photo?.length ? update.photo[update.photo.length - 1].file_id : null;
+  const stickerFileId = update.sticker?.file_id || null;
+  const animationFileId = update.animation?.file_id || null;
   const chatId = update.chat.id;
   const userId = update.from.id;
   await upsertUser(update.from);
@@ -11006,6 +11383,7 @@ async function handleMessage(update: TgUpdate["message"]) {
 
   if (text === "/start") {
     await clearState(userId);
+    await sendStartMedia(chatId);
     await sendMainMenu(chatId, userId);
     return;
   }
@@ -11031,7 +11409,7 @@ async function handleMessage(update: TgUpdate["message"]) {
     return;
   }
   if (state) {
-    const consumed = await parseAndApplyState(chatId, userId, text, photoFileId, state);
+    const consumed = await parseAndApplyState(chatId, userId, text, photoFileId, stickerFileId, animationFileId, state);
     if (consumed) return;
   }
   await sendMainMenu(chatId, userId, "دستور نامعتبر بود. از منوی زیر استفاده کنید:");
