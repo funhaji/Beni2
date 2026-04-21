@@ -5900,7 +5900,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       SET delivery_payload = jsonb_set(
         jsonb_set(COALESCE(delivery_payload, '{}'::jsonb), '{metadata}', COALESCE(delivery_payload->'metadata', '{}'::jsonb), true),
         '{metadata,label}',
-        to_jsonb(${label}),
+        to_jsonb(${label}::text),
         true
       )
       WHERE id = ${inventoryId};
@@ -9853,7 +9853,7 @@ async function handleCallback(update) {
         const next = panelConfig.custom_enabled !== true;
         await sql `
       UPDATE products
-      SET panel_config = jsonb_set(COALESCE(panel_config, '{}'::jsonb), '{custom_enabled}', to_jsonb(${next}), true)
+      SET panel_config = jsonb_set(COALESCE(panel_config, '{}'::jsonb), '{custom_enabled}', to_jsonb(${next}::boolean), true)
       WHERE id = ${productId};
     `;
         await tg("sendMessage", { chat_id: chatId, text: next ? "حالت سفارشی روشن شد ✅" : "حالت سفارشی خاموش شد ✅" });
@@ -10122,7 +10122,7 @@ async function handleCallback(update) {
       SET delivery_payload = jsonb_set(
         jsonb_set(COALESCE(delivery_payload, '{}'::jsonb), '{metadata}', COALESCE(delivery_payload->'metadata', '{}'::jsonb), true),
         '{metadata,revoked}',
-        to_jsonb(${!revoked}),
+        to_jsonb(${!revoked}::boolean),
         true
       )
       WHERE id = ${inventoryId};
