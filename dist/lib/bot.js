@@ -3003,7 +3003,7 @@ async function showProducts(chatId, forBuy) {
     ]);
     if (forBuy && customRow) {
         keyboard.push([
-            cb(`🎛 ${String(customRow.name || "سرویس سفارشی")} | از ${formatPriceToman(minCustomPrice)} تومان`, `buy_custom_v2ray_${customProductId}`, "success")
+            cb(`🎛 سفارشی | از ${formatPriceToman(minCustomPrice)} تومان`, `buy_custom_v2ray_${customProductId}`, "success")
         ]);
     }
     keyboard.push([homeButton()]);
@@ -3146,6 +3146,57 @@ async function showPaymentMethods(chatId, userId, productId, walletUsed = 0) {
             : "روش پرداخت را انتخاب کنید:",
         reply_markup: { inline_keyboard: keyboard }
     });
+}
+async function ensureCustomV2rayProduct() {
+    const name = "سفارشی";
+    const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
+    const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+    const minPrice = Math.max(1, pricePerGb + 30 * dayPrice);
+    const baseConfig = { product_kind: "v2ray", custom_v2ray_product: true, expire_days: 30, data_limit_mb: 1024 };
+    let productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+    try {
+        if (Number.isFinite(productId) && productId > 0) {
+            const existing = await sql `SELECT id FROM products WHERE id = ${productId} LIMIT 1;`;
+            if (existing.length) {
+                await sql `
+          UPDATE products
+          SET name = ${name},
+              size_mb = 1024,
+              price_toman = ${minPrice},
+              is_active = TRUE,
+              panel_config = COALESCE(panel_config, '{}'::jsonb) || ${JSON.stringify(baseConfig)}::jsonb
+          WHERE id = ${productId};
+        `;
+                return { ok: true, productId };
+            }
+        }
+        const byName = await sql `SELECT id FROM products WHERE name = ${name} LIMIT 1;`;
+        if (byName.length) {
+            productId = Number(byName[0].id);
+            await sql `
+        UPDATE products
+        SET size_mb = 1024,
+            price_toman = ${minPrice},
+            is_active = TRUE,
+            panel_config = COALESCE(panel_config, '{}'::jsonb) || ${JSON.stringify(baseConfig)}::jsonb
+        WHERE id = ${productId};
+      `;
+            await setSetting("custom_v2ray_product_id", String(productId));
+            return { ok: true, productId };
+        }
+        const inserted = await sql `
+      INSERT INTO products (name, size_mb, price_toman, is_active, is_infinite, sell_mode, panel_config)
+      VALUES (${name}, 1024, ${minPrice}, TRUE, FALSE, 'manual', ${JSON.stringify(baseConfig)}::jsonb)
+      RETURNING id;
+    `;
+        productId = Number(inserted[0].id);
+        await setSetting("custom_v2ray_product_id", String(productId));
+        return { ok: true, productId };
+    }
+    catch (error) {
+        logError("ensure_custom_v2ray_product_failed", error, { productId });
+        return { ok: false, productId: 0 };
+    }
 }
 async function startCustomV2rayWizard(chatId, userId, productId) {
     const enabled = await getBoolSetting("custom_v2ray_enabled", false);
@@ -4886,6 +4937,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             return true;
         }
         await setSetting("custom_v2ray_extra_day_toman", String(n));
+        const enabled = await getBoolSetting("custom_v2ray_enabled", false);
+        const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+        if (enabled && Number.isFinite(productId) && productId > 0) {
+            const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
+            const minPrice = Math.max(1, pricePerGb + 30 * Math.max(0, n));
+            await sql `UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
+        }
         await clearState(userId);
         await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nقیمت هر روز: ${formatPriceToman(n)} تومان` });
         return true;
@@ -10787,22 +10845,30 @@ async function handleCallback(update) {
         const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
         const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
         const minPrice = Math.max(1, pricePerGb + 30 * dayPrice);
-        const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
-        const productRows = productId ? await sql `SELECT name FROM products WHERE id = ${productId} LIMIT 1;` : [];
+        let productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+        if (enabled && (!Number.isFinite(productId) || productId <= 0)) {
+            const ensured = await ensureCustomV2rayProduct();
+            if (ensured.ok)
+                productId = ensured.productId;
+        }
+        const productRows = productId ? await sql `SELECT name, sell_mode, is_active FROM products WHERE id = ${productId} LIMIT 1;` : [];
         const productName = productRows.length ? String(productRows[0].name || "-") : "-";
+        const sellMode = productRows.length ? parseSellMode(String(productRows[0].sell_mode || "")) : "manual";
+        const isActive = productRows.length ? Boolean(productRows[0].is_active) : false;
         const keyboard = [];
         keyboard.push([cb(enabled ? "🚫 خاموش‌کردن سفارشی" : "✅ روشن‌کردن سفارشی", "admin_custom_v2ray_toggle", enabled ? "danger" : "success")]);
         keyboard.push([cb("📅 قیمت هر روز (سفارشی)", "admin_set_custom_v2ray_extra_day", "primary")]);
-        keyboard.push([cb("🧩 انتخاب محصول سفارشی", "admin_custom_v2ray_select_product", "primary")]);
         if (productId) {
             keyboard.push([cb("✏️ ویرایش محصول سفارشی", `admin_edit_product_${productId}`, "primary")]);
+            keyboard.push([cb(sellMode === "panel" ? "⚙️ حالت فروش: پنل" : "⚙️ حالت فروش: دستی", `admin_toggle_product_sell_mode_${productId}`, "primary")]);
+            keyboard.push([cb("🧩 تنظیم فروش پنل", `admin_configure_product_panel_${productId}`, "primary")]);
         }
         keyboard.push([backButton("admin_settings")]);
         await tg("sendMessage", {
             chat_id: chatId,
             text: `🎛 محصول سفارشی\n\n` +
                 `وضعیت: ${enabled ? "روشن ✅" : "خاموش 🚫"}\n` +
-                `محصول انتخاب‌شده: ${productId ? `${productName} (#${productId})` : "انتخاب نشده"}\n` +
+                `محصول: ${productId ? `${productName} (#${productId})${!isActive ? " (مخفی)" : ""}` : "ساخته نشده"}\n` +
                 `شروع خرید: 1GB / 30 روز\n` +
                 `قیمت هر 1GB: ${formatPriceToman(pricePerGb)} تومان\n` +
                 `قیمت هر روز: ${formatPriceToman(dayPrice)} تومان\n` +
@@ -10814,37 +10880,23 @@ async function handleCallback(update) {
     }
     if (data === "admin_custom_v2ray_toggle") {
         const current = await getBoolSetting("custom_v2ray_enabled", false);
-        await setSetting("custom_v2ray_enabled", (!current).toString());
-        await tg("sendMessage", { chat_id: chatId, text: !current ? "سفارشی روشن شد ✅" : "سفارشی خاموش شد ✅" });
-        return;
-    }
-    if (data === "admin_custom_v2ray_select_product") {
-        const rows = await sql `SELECT id, name, panel_config, is_active FROM products ORDER BY id ASC;`;
-        const items = rows
-            .map((r) => ({ id: Number(r.id), name: String(r.name || "-"), panel_config: r.panel_config, is_active: Boolean(r.is_active) }))
-            .filter((r) => parseProductKind(sanitizePanelConfig(r.panel_config).product_kind) === "v2ray");
-        if (!items.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "هیچ محصول v2ray یافت نشد." });
+        if (!current) {
+            const ensured = await ensureCustomV2rayProduct();
+            if (!ensured.ok) {
+                await tg("sendMessage", { chat_id: chatId, text: "خطا در ساخت/آماده‌سازی محصول سفارشی." });
+                return;
+            }
+            await sql `UPDATE products SET is_active = TRUE WHERE id = ${ensured.productId};`;
+            await setSetting("custom_v2ray_enabled", "true");
+            await tg("sendMessage", { chat_id: chatId, text: "سفارشی روشن شد ✅" });
             return;
         }
-        const keyboard = items.slice(0, 40).map((p) => [cb(`${p.is_active ? "✅" : "📦"} ${p.name} (#${p.id})`, `admin_custom_v2ray_set_product_${p.id}`, "primary")]);
-        keyboard.push([backButton("admin_custom_v2ray_menu")]);
-        await tg("sendMessage", { chat_id: chatId, text: "یک محصول v2ray را به عنوان «محصول سفارشی» انتخاب کنید:", reply_markup: { inline_keyboard: keyboard } });
-        return;
-    }
-    if (data.startsWith("admin_custom_v2ray_set_product_")) {
-        const productId = Number(data.replace("admin_custom_v2ray_set_product_", ""));
-        const rows = await sql `SELECT panel_config FROM products WHERE id = ${productId} LIMIT 1;`;
-        if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
-            return;
+        const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+        if (Number.isFinite(productId) && productId > 0) {
+            await sql `UPDATE products SET is_active = FALSE WHERE id = ${productId};`;
         }
-        if (parseProductKind(sanitizePanelConfig(rows[0].panel_config).product_kind) !== "v2ray") {
-            await tg("sendMessage", { chat_id: chatId, text: "این محصول v2ray نیست." });
-            return;
-        }
-        await setSetting("custom_v2ray_product_id", String(productId));
-        await tg("sendMessage", { chat_id: chatId, text: "محصول سفارشی انتخاب شد ✅" });
+        await setSetting("custom_v2ray_enabled", "false");
+        await tg("sendMessage", { chat_id: chatId, text: "سفارشی خاموش شد ✅" });
         return;
     }
     if (data === "admin_start_media_disable") {
