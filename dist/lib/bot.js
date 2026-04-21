@@ -2958,6 +2958,8 @@ async function completeMigration(migrationId, decidedBy, targetConfigValue) {
 }
 async function showProducts(chatId, forBuy) {
     const globalInfinite = await getBoolSetting("global_infinite_mode", false);
+    const customEnabled = forBuy ? await getBoolSetting("custom_v2ray_enabled", false) : false;
+    const customProductId = customEnabled ? Number((await getSetting("custom_v2ray_product_id")) || 0) : 0;
     const rows = await sql `
     SELECT
       p.id,
@@ -2989,9 +2991,21 @@ async function showProducts(chatId, forBuy) {
         await tg("sendMessage", { chat_id: chatId, text: "هیچ محصول فعالی تعریف نشده است." });
         return;
     }
-    const keyboard = rows.map((p) => [
+    const dayPrice = customEnabled ? Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0)) : 0;
+    const pricePerGb = customEnabled
+        ? normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")))
+        : 0;
+    const minCustomPrice = customEnabled ? Math.max(1, pricePerGb + 30 * dayPrice) : 0;
+    const standardRows = customEnabled && customProductId > 0 ? rows.filter((p) => Number(p.id) !== customProductId) : rows;
+    const customRow = customEnabled && customProductId > 0 ? rows.find((p) => Number(p.id) === customProductId) : null;
+    const keyboard = standardRows.map((p) => [
         cb(`${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`, forBuy ? `buy_product_${p.id}` : `admin_inventory_product_${p.id}`, "primary")
     ]);
+    if (forBuy && customRow) {
+        keyboard.push([
+            cb(`🎛 ${String(customRow.name || "سرویس سفارشی")} | از ${formatPriceToman(minCustomPrice)} تومان`, `buy_custom_v2ray_${customProductId}`, "success")
+        ]);
+    }
     keyboard.push([homeButton()]);
     await tg("sendMessage", {
         chat_id: chatId,
@@ -3013,39 +3027,30 @@ async function listProductsForAdmin(chatId, userId) {
       p.panel_id,
       p.panel_sell_limit,
       p.panel_delivery_mode,
-      p.panel_config,
       pnl.name AS panel_name
     FROM products p
     LEFT JOIN panels pnl ON pnl.id = p.panel_id
     WHERE (${showArchived} = TRUE OR p.is_active = TRUE)
     ORDER BY p.id ASC;
   `;
-    const keyboard = rows.flatMap((p) => {
-        const panelConfig = sanitizePanelConfig(p.panel_config);
-        const isV2ray = parseProductKind(panelConfig.product_kind) === "v2ray";
-        const customEnabled = panelConfig.custom_enabled === true;
-        return [
-            [
-                {
-                    text: `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
-                    callback_data: `admin_edit_product_${p.id}`
-                }
-            ],
-            [
-                cb("ویرایش", `admin_edit_product_${p.id}`, "primary"),
-                cb(p.is_active ? "غیرفعال‌سازی" : "فعال‌سازی", `admin_toggle_product_${p.id}`, p.is_active ? "danger" : "success"),
-                cb(parseSellMode(String(p.sell_mode || "")) === "panel" ? "فروش دستی" : "فروش از پنل", `admin_toggle_product_sell_mode_${p.id}`, "primary")
-            ],
-            [
-                cb(p.is_infinite ? "حذف ∞" : "∞", `admin_toggle_product_infinite_${p.id}`, "primary"),
-                cb("تنظیم فروش پنل", `admin_configure_product_panel_${p.id}`, "primary"),
-                cb("🗑 حذف", `admin_remove_product_${p.id}`, "danger")
-            ],
-            ...(isV2ray
-                ? [[cb(customEnabled ? "🎛 سفارشی: روشن" : "🎛 سفارشی: خاموش", `admin_toggle_product_custom_${p.id}`, customEnabled ? "success" : "danger")]]
-                : [])
-        ];
-    });
+    const keyboard = rows.flatMap((p) => [
+        [
+            {
+                text: `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
+                callback_data: `admin_edit_product_${p.id}`
+            }
+        ],
+        [
+            cb("ویرایش", `admin_edit_product_${p.id}`, "primary"),
+            cb(p.is_active ? "غیرفعال‌سازی" : "فعال‌سازی", `admin_toggle_product_${p.id}`, p.is_active ? "danger" : "success"),
+            cb(parseSellMode(String(p.sell_mode || "")) === "panel" ? "فروش دستی" : "فروش از پنل", `admin_toggle_product_sell_mode_${p.id}`, "primary")
+        ],
+        [
+            cb(p.is_infinite ? "حذف ∞" : "∞", `admin_toggle_product_infinite_${p.id}`, "primary"),
+            cb("تنظیم فروش پنل", `admin_configure_product_panel_${p.id}`, "primary"),
+            cb("🗑 حذف", `admin_remove_product_${p.id}`, "danger")
+        ]
+    ]);
     keyboard.push([cb(showArchived ? "📦 مخفی کردن آرشیو" : "📦 نمایش آرشیو", showArchived ? "admin_products_hide_archived" : "admin_products_show_archived", "primary")]);
     keyboard.push([cb("➕ افزودن محصول", "admin_add_product", "success")]);
     keyboard.push([backButton("admin_panel")]);
@@ -3143,6 +3148,12 @@ async function showPaymentMethods(chatId, userId, productId, walletUsed = 0) {
     });
 }
 async function startCustomV2rayWizard(chatId, userId, productId) {
+    const enabled = await getBoolSetting("custom_v2ray_enabled", false);
+    const selectedProductId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+    if (!enabled || !selectedProductId || selectedProductId !== productId) {
+        await tg("sendMessage", { chat_id: chatId, text: "محصول سفارشی فعال نیست یا درست تنظیم نشده است." });
+        return;
+    }
     const rows = await sql `
     SELECT id, name, price_toman, size_mb, is_infinite, sell_mode, panel_id, panel_delivery_mode, panel_config
     FROM products
@@ -3158,29 +3169,18 @@ async function startCustomV2rayWizard(chatId, userId, productId) {
         await tg("sendMessage", { chat_id: chatId, text: "این محصول سفارشی نیست." });
         return;
     }
-    const panelConfig = sanitizePanelConfig(product.panel_config);
-    if (panelConfig.custom_enabled !== true) {
-        await tg("sendMessage", { chat_id: chatId, text: "برای این محصول گزینه سفارشی فعال نیست." });
-        return;
-    }
-    if (parseSellMode(String(product.sell_mode || "")) !== "panel") {
-        await tg("sendMessage", { chat_id: chatId, text: "سفارش سفارشی فقط برای محصولات فروش از پنل فعال است." });
-        return;
-    }
-    const baseMb = Math.max(1024, Math.round(Number(product.size_mb || 0)));
-    const baseDays = Math.max(30, Math.round(Number(panelConfig.expire_days || 30)));
-    const basePrice = Math.max(0, Math.round(Number(product.price_toman || 0)));
+    const baseMb = 1024;
+    const baseDays = 30;
     const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
-    const extraDayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+    const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
     const statePayload = {
         productId,
         baseMb,
         baseDays,
-        basePrice,
         dataMb: baseMb,
         days: baseDays,
         pricePerGb,
-        extraDayPrice,
+        dayPrice,
         messageId: 0
     };
     await setState(userId, "custom_v2ray_wizard", statePayload);
@@ -3194,40 +3194,40 @@ async function renderCustomV2rayWizard(chatId, userId, messageId) {
     const productId = Number(p.productId);
     const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
     const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
-    const basePrice = Math.max(0, Math.round(Number(p.basePrice || 0)));
     const dataMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
     const days = Math.max(30, Math.round(Number(p.days || baseDays)));
     const pricePerGb = Math.max(1, Math.round(Number(p.pricePerGb || 500000)));
-    const extraDayPrice = Math.max(0, Math.round(Number(p.extraDayPrice || 0)));
-    const extraMb = Math.max(0, dataMb - baseMb);
-    const extraGb = extraMb / 1024;
-    const extraDataPrice = Math.ceil(extraGb * pricePerGb);
-    const extraDays = Math.max(0, days - baseDays);
-    const extraDaysPrice = extraDays * extraDayPrice;
-    const totalPrice = Math.max(1, basePrice + extraDataPrice + extraDaysPrice);
+    const dayPrice = Math.max(0, Math.round(Number(p.dayPrice || 0)));
+    const gb = Math.max(1, Math.round(dataMb / 1024));
+    const totalPrice = Math.max(1, gb * pricePerGb + days * dayPrice);
     const rows = await sql `SELECT name FROM products WHERE id = ${productId} LIMIT 1;`;
     const productName = rows.length ? String(rows[0].name || "-") : "-";
-    const gb = Math.max(1, Math.round(dataMb / 1024));
-    const baseGb = Math.max(1, Math.round(baseMb / 1024));
-    const text = `🎁 فاکتور خرید [سفارشی]\n\n` +
+    const text = `🎁 فاکتور خرید [${days} روز، ${gb} گیگابایت]\n\n` +
         `🔸 محصول: ${productName}\n` +
         `🔸 حجم: ${gb} گیگابایت\n` +
         `🔸 زمان: ${days} روز\n\n` +
         `💰 مبلغ: ${formatPriceToman(totalPrice)} تومان\n\n` +
-        `جزئیات:\n` +
-        `- پایه: ${formatPriceToman(basePrice)} تومان (${baseGb}GB / ${baseDays} روز)\n` +
-        `- افزایش دیتا: ${formatPriceToman(extraDataPrice)} تومان\n` +
-        `- افزایش روز: ${formatPriceToman(extraDaysPrice)} تومان`;
+        `📌 قیمت‌ها:\n` +
+        `- هر 1GB: ${formatPriceToman(pricePerGb)} تومان\n` +
+        `- هر روز: ${formatPriceToman(dayPrice)} تومان\n\n` +
+        `💡 نکته: بعد از پرداخت، کانفیگ بر اساس همین حجم و زمان ساخته می‌شود.`;
     const keyboard = [];
-    keyboard.push([cb("➕ افزایش دیتا", `custom_v2ray_inc_data`, "primary"), cb("➖ کاهش دیتا", `custom_v2ray_dec_data`, "primary")]);
-    keyboard.push([cb("➕ افزایش روز", `custom_v2ray_inc_days`, "primary"), cb("➖ کاهش روز", `custom_v2ray_dec_days`, "primary")]);
+    keyboard.push([
+        cb("کاهش -", "custom_v2ray_dec_data", "primary"),
+        cb(`${gb} گیگابایت`, "noop_custom_gb"),
+        cb("افزایش +", "custom_v2ray_inc_data", "primary")
+    ]);
+    keyboard.push([
+        cb("کاهش -", "custom_v2ray_dec_days", "primary"),
+        cb(`${days} روز`, "noop_custom_days"),
+        cb("افزایش +", "custom_v2ray_inc_days", "primary")
+    ]);
     keyboard.push([confirmButton(`custom_v2ray_confirm`, "✅ تایید و پرداخت")]);
     keyboard.push([backButton("buy_menu")]);
     const targetMessageId = Number(messageId || p.messageId || 0);
     if (targetMessageId > 0) {
-        await tg("editMessageText", { chat_id: chatId, message_id: targetMessageId, text, reply_markup: { inline_keyboard: keyboard } }).catch(async () => {
-            const msg = await tg("sendMessage", { chat_id: chatId, text, reply_markup: { inline_keyboard: keyboard } });
-            await setState(userId, "custom_v2ray_wizard", { ...p, messageId: Number(msg?.message_id || 0) });
+        await tg("editMessageText", { chat_id: chatId, message_id: targetMessageId, text, reply_markup: { inline_keyboard: keyboard } }).catch((e) => {
+            logError("custom_v2ray_edit_failed", e, { userId, chatId, messageId: targetMessageId });
         });
         return;
     }
@@ -3241,22 +3241,16 @@ async function computeCustomV2rayCheckout(userId) {
     const p = state.payload || {};
     const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
     const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
-    const basePrice = Math.max(0, Math.round(Number(p.basePrice || 0)));
     const dataMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
     const days = Math.max(30, Math.round(Number(p.days || baseDays)));
     const pricePerGb = Math.max(1, Math.round(Number(p.pricePerGb || 500000)));
-    const extraDayPrice = Math.max(0, Math.round(Number(p.extraDayPrice || 0)));
-    const extraMb = Math.max(0, dataMb - baseMb);
-    const extraGb = extraMb / 1024;
-    const extraDataPrice = Math.ceil(extraGb * pricePerGb);
-    const extraDays = Math.max(0, days - baseDays);
-    const extraDaysPrice = extraDays * extraDayPrice;
-    const totalPrice = Math.max(1, basePrice + extraDataPrice + extraDaysPrice);
+    const dayPrice = Math.max(0, Math.round(Number(p.dayPrice || 0)));
+    const gb = Math.max(1, Math.round(dataMb / 1024));
+    const totalPrice = Math.max(1, gb * pricePerGb + days * dayPrice);
     return {
         productId: Number(p.productId),
         baseMb,
         baseDays,
-        basePrice,
         dataMb,
         days,
         totalPrice
@@ -3590,10 +3584,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const totalPrice = Math.max(1, Math.round(Number(checkout.totalPrice || 0)));
         const dataMb = Math.max(1, Math.round(Number(checkout.dataMb || 0)));
         const days = Math.max(30, Math.round(Number(checkout.days || 30)));
+        const gb = Math.max(1, Math.round(dataMb / 1024));
         const overrides = {
             basePriceToman: totalPrice,
-            panelConfigPatch: { data_limit_mb: dataMb, expire_days: days },
-            productNameSuffix: "(سفارشی)"
+            panelConfigPatch: { data_limit_mb: dataMb, expire_days: days, force_awaiting_config: true },
+            productNameSuffix: `(سفارشی ${gb}GB / ${days} روز)`
         };
         await clearState(userId);
         await createOrder(chatId, userId, productId, paymentMethod, text.trim() || null, walletUsed, overrides);
@@ -4892,7 +4887,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         }
         await setSetting("custom_v2ray_extra_day_toman", String(n));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nهر روز اضافه: ${formatPriceToman(n)} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nقیمت هر روز: ${formatPriceToman(n)} تومان` });
         return true;
     }
     if (state.state === "admin_ban_username") {
@@ -6907,7 +6902,8 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         await tg("sendMessage", { chat_id: chatId, text: "فروش از پنل برای این محصول فعلاً در دسترس نیست." });
         return;
     }
-    if (sellMode !== "panel" && !globalInfinite && !product.is_infinite && Number(product.stock) <= 0) {
+    const allowNoStock = sanitizePanelConfig(overrides?.panelConfigPatch).force_awaiting_config === true;
+    if (sellMode !== "panel" && !globalInfinite && !product.is_infinite && Number(product.stock) <= 0 && !allowNoStock) {
         await tg("sendMessage", { chat_id: chatId, text: "موجودی این محصول تمام شده است." });
         return;
     }
@@ -7800,7 +7796,9 @@ async function finalizeOrder(orderId, decidedBy) {
     RETURNING id, config_value;
   `;
     if (!allocated.length) {
-        if (globalInfinite || order.is_infinite) {
+        const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
+        const forceAwaitingConfig = panelConfig.force_awaiting_config === true;
+        if (globalInfinite || order.is_infinite || forceAwaitingConfig) {
             await sql `
         UPDATE orders
         SET status = 'awaiting_config', paid_at = NOW(), admin_decision_by = ${decidedBy}
@@ -7810,7 +7808,12 @@ async function finalizeOrder(orderId, decidedBy) {
                 chat_id: Number(order.telegram_id),
                 text: `پرداخت شما تایید شد ✅\nشناسه خرید: ${order.purchase_id}\nدر حال آماده‌سازی کانفیگ هستیم.`
             }).catch(() => { });
-            await notifyAdmins(`🛠 سفارش ${order.purchase_id} نیاز به ساخت کانفیگ دستی دارد.`, {
+            const extraLines = [];
+            if (typeof panelConfig.data_limit_mb === "number")
+                extraLines.push(`حجم: ${Math.max(1, Math.round(Number(panelConfig.data_limit_mb) / 1024))} گیگابایت`);
+            if (typeof panelConfig.expire_days === "number")
+                extraLines.push(`زمان: ${Math.max(1, Math.round(Number(panelConfig.expire_days)))} روز`);
+            await notifyAdmins(`🛠 سفارش ${order.purchase_id} نیاز به ساخت کانفیگ دستی دارد.${extraLines.length ? `\n${extraLines.join("\n")}` : ""}`, {
                 inline_keyboard: [[{ text: "ارسال کانفیگ", callback_data: `admin_provide_config_${order.id}` }]]
             });
             return { ok: true, reason: "awaiting_config" };
@@ -8079,48 +8082,14 @@ async function handleCallback(update) {
         await showProducts(chatId, true);
         return;
     }
-    if (data.startsWith("buy_product_std_")) {
-        const productId = Number(data.replace("buy_product_std_", ""));
-        const userRows = await sql `SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
-        const walletBalance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
-        if (walletBalance > 0) {
-            await showWalletUsagePrompt(chatId, userId, productId, walletBalance);
-        }
-        else {
-            await showPaymentMethods(chatId, userId, productId, 0);
-        }
-        return;
-    }
-    if (data.startsWith("buy_product_custom_")) {
-        const productId = Number(data.replace("buy_product_custom_", ""));
+    if (data.startsWith("buy_custom_v2ray_")) {
+        const productId = Number(data.replace("buy_custom_v2ray_", ""));
         await clearState(userId);
         await startCustomV2rayWizard(chatId, userId, productId);
         return;
     }
     if (data.startsWith("buy_product_")) {
         const productId = Number(data.replace("buy_product_", ""));
-        const rows = await sql `SELECT sell_mode, panel_config FROM products WHERE id = ${productId} LIMIT 1;`;
-        if (rows.length) {
-            const panelConfig = sanitizePanelConfig(rows[0].panel_config);
-            const customEnabled = panelConfig.custom_enabled === true;
-            const isV2ray = parseProductKind(panelConfig.product_kind) === "v2ray";
-            const sellMode = parseSellMode(String(rows[0].sell_mode || ""));
-            if (customEnabled && isV2ray && sellMode === "panel") {
-                await clearState(userId);
-                await tg("sendMessage", {
-                    chat_id: chatId,
-                    text: "نوع خرید را انتخاب کنید:",
-                    reply_markup: {
-                        inline_keyboard: [
-                            [cb("📦 خرید معمولی", `buy_product_std_${productId}`, "primary")],
-                            [cb("🎛 خرید سفارشی", `buy_product_custom_${productId}`, "success")],
-                            [homeButton()]
-                        ]
-                    }
-                });
-                return;
-            }
-        }
         const userRows = await sql `SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
         const walletBalance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
         if (walletBalance > 0) {
@@ -8132,116 +8101,159 @@ async function handleCallback(update) {
         return;
     }
     if (data === "custom_v2ray_inc_data" || data === "custom_v2ray_dec_data" || data === "custom_v2ray_inc_days" || data === "custom_v2ray_dec_days") {
-        const state = await getState(userId);
-        if (!state || state.state !== "custom_v2ray_wizard")
-            return;
-        const p = state.payload || {};
-        const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
-        const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
-        const stepMb = 1024;
-        const stepDays = 7;
-        const curMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
-        const curDays = Math.max(baseDays, Math.round(Number(p.days || baseDays)));
-        let nextMb = curMb;
-        let nextDays = curDays;
-        if (data === "custom_v2ray_inc_data")
-            nextMb = curMb + stepMb;
-        if (data === "custom_v2ray_dec_data")
-            nextMb = Math.max(baseMb, curMb - stepMb);
-        if (data === "custom_v2ray_inc_days")
-            nextDays = curDays + stepDays;
-        if (data === "custom_v2ray_dec_days")
-            nextDays = Math.max(baseDays, curDays - stepDays);
-        await setState(userId, "custom_v2ray_wizard", { ...p, dataMb: nextMb, days: nextDays, messageId: Number(p.messageId || 0) });
-        await renderCustomV2rayWizard(chatId, userId, update.message.message_id);
+        try {
+            const state = await getState(userId);
+            if (!state || state.state !== "custom_v2ray_wizard")
+                return;
+            const p = state.payload || {};
+            const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
+            const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
+            const stepMb = 1024;
+            const stepDays = 7;
+            const curMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
+            const curDays = Math.max(baseDays, Math.round(Number(p.days || baseDays)));
+            let nextMb = curMb;
+            let nextDays = curDays;
+            if (data === "custom_v2ray_inc_data")
+                nextMb = curMb + stepMb;
+            if (data === "custom_v2ray_dec_data")
+                nextMb = Math.max(baseMb, curMb - stepMb);
+            if (data === "custom_v2ray_inc_days")
+                nextDays = curDays + stepDays;
+            if (data === "custom_v2ray_dec_days")
+                nextDays = Math.max(baseDays, curDays - stepDays);
+            await setState(userId, "custom_v2ray_wizard", { ...p, dataMb: nextMb, days: nextDays, messageId: Number(p.messageId || 0) });
+            await renderCustomV2rayWizard(chatId, userId, update.message.message_id);
+        }
+        catch (e) {
+            logError("custom_v2ray_adjust_failed", e, { userId, chatId, data });
+            await tg("sendMessage", { chat_id: chatId, text: "خطا در بروزرسانی فاکتور." });
+        }
         return;
     }
     if (data === "custom_v2ray_confirm") {
-        const checkout = await computeCustomV2rayCheckout(userId);
-        if (!checkout)
-            return;
-        await clearState(userId);
-        await setState(userId, "custom_v2ray_checkout", checkout);
-        await showCustomWalletUsagePrompt(chatId, userId, checkout.totalPrice);
+        try {
+            const checkout = await computeCustomV2rayCheckout(userId);
+            if (!checkout)
+                return;
+            await clearState(userId);
+            await setState(userId, "custom_v2ray_checkout", checkout);
+            await showCustomWalletUsagePrompt(chatId, userId, checkout.totalPrice);
+        }
+        catch (e) {
+            logError("custom_v2ray_confirm_failed", e, { userId, chatId });
+            await tg("sendMessage", { chat_id: chatId, text: "خطا در ادامه پرداخت." });
+        }
         return;
     }
     if (data === "custom_v2ray_use_wallet_custom") {
-        const state = await getState(userId);
-        if (!state || state.state !== "custom_v2ray_checkout") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
-            return;
+        try {
+            const state = await getState(userId);
+            if (!state || state.state !== "custom_v2ray_checkout") {
+                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                return;
+            }
+            await setState(userId, "await_custom_wallet_amount", { checkout: state.payload });
+            await tg("sendMessage", { chat_id: chatId, text: "مبلغی که می‌خواهی از کیف پول کسر شود را به تومان وارد کن (فقط عدد):" });
         }
-        await setState(userId, "await_custom_wallet_amount", { checkout: state.payload });
-        await tg("sendMessage", { chat_id: chatId, text: "مبلغی که می‌خواهی از کیف پول کسر شود را به تومان وارد کن (فقط عدد):" });
+        catch (e) {
+            logError("custom_v2ray_wallet_custom_failed", e, { userId, chatId });
+            await tg("sendMessage", { chat_id: chatId, text: "خطا در انتخاب کیف پول." });
+        }
         return;
     }
     if (data.startsWith("custom_v2ray_use_wallet_")) {
-        const amount = Number(data.replace("custom_v2ray_use_wallet_", ""));
-        const state = await getState(userId);
-        if (!state || state.state !== "custom_v2ray_checkout") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
-            return;
+        try {
+            const amount = Number(data.replace("custom_v2ray_use_wallet_", ""));
+            const state = await getState(userId);
+            if (!state || state.state !== "custom_v2ray_checkout") {
+                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                return;
+            }
+            const totalPrice = Math.max(1, Math.round(Number(state.payload.totalPrice || 0)));
+            await showCustomPaymentMethods(chatId, userId, totalPrice, Math.max(0, Math.round(amount)));
         }
-        const totalPrice = Math.max(1, Math.round(Number(state.payload.totalPrice || 0)));
-        await showCustomPaymentMethods(chatId, userId, totalPrice, Math.max(0, Math.round(amount)));
+        catch (e) {
+            logError("custom_v2ray_wallet_pick_failed", e, { userId, chatId });
+            await tg("sendMessage", { chat_id: chatId, text: "خطا در انتخاب کیف پول." });
+        }
         return;
     }
     if (data.startsWith("custom_v2ray_select_pay_")) {
-        const payload = data.replace("custom_v2ray_select_pay_", "");
-        const parts = payload.split("_");
-        const method = parts[0];
-        const walletUsed = Math.max(0, Math.round(Number(parts[1] || 0)));
-        const state = await getState(userId);
-        if (!state || state.state !== "custom_v2ray_checkout") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
-            return;
+        try {
+            const payload = data.replace("custom_v2ray_select_pay_", "");
+            const parts = payload.split("_");
+            const method = parts[0];
+            const walletUsed = Math.max(0, Math.round(Number(parts[1] || 0)));
+            const state = await getState(userId);
+            if (!state || state.state !== "custom_v2ray_checkout") {
+                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                return;
+            }
+            await showDiscountChoiceCustom(chatId, Number(state.payload.productId || 0), method, walletUsed);
         }
-        await showDiscountChoiceCustom(chatId, Number(state.payload.productId || 0), method, walletUsed);
+        catch (e) {
+            logError("custom_v2ray_select_pay_failed", e, { userId, chatId, data });
+            await tg("sendMessage", { chat_id: chatId, text: "خطا در انتخاب روش پرداخت." });
+        }
         return;
     }
     if (data.startsWith("custom_discount_yes_")) {
-        const payload = data.replace("custom_discount_yes_", "");
-        const parts = payload.split("_");
-        const productId = Number(parts[0]);
-        let walletUsed = 0;
-        if (parts.length >= 3 && !isNaN(Number(parts[parts.length - 1]))) {
-            walletUsed = Number(parts.pop());
+        try {
+            const payload = data.replace("custom_discount_yes_", "");
+            const parts = payload.split("_");
+            const productId = Number(parts[0]);
+            let walletUsed = 0;
+            if (parts.length >= 3 && !isNaN(Number(parts[parts.length - 1]))) {
+                walletUsed = Number(parts.pop());
+            }
+            const paymentMethod = parts.slice(1).join("_");
+            const state = await getState(userId);
+            if (!state || state.state !== "custom_v2ray_checkout") {
+                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                return;
+            }
+            await setState(userId, "await_custom_discount_code", { productId, paymentMethod, walletUsed, checkout: state.payload });
+            await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف را ارسال کنید:" });
         }
-        const paymentMethod = parts.slice(1).join("_");
-        const state = await getState(userId);
-        if (!state || state.state !== "custom_v2ray_checkout") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
-            return;
+        catch (e) {
+            logError("custom_v2ray_discount_yes_failed", e, { userId, chatId, data });
+            await tg("sendMessage", { chat_id: chatId, text: "خطا در مرحله تخفیف." });
         }
-        await setState(userId, "await_custom_discount_code", { productId, paymentMethod, walletUsed, checkout: state.payload });
-        await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف را ارسال کنید:" });
         return;
     }
     if (data.startsWith("custom_discount_no_")) {
-        const payload = data.replace("custom_discount_no_", "");
-        const parts = payload.split("_");
-        const productId = Number(parts[0]);
-        let walletUsed = 0;
-        if (parts.length >= 3 && !isNaN(Number(parts[parts.length - 1]))) {
-            walletUsed = Number(parts.pop());
+        try {
+            const payload = data.replace("custom_discount_no_", "");
+            const parts = payload.split("_");
+            const productId = Number(parts[0]);
+            let walletUsed = 0;
+            if (parts.length >= 3 && !isNaN(Number(parts[parts.length - 1]))) {
+                walletUsed = Number(parts.pop());
+            }
+            const paymentMethod = parts.slice(1).join("_");
+            const state = await getState(userId);
+            if (!state || state.state !== "custom_v2ray_checkout") {
+                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                return;
+            }
+            const checkout = state.payload || {};
+            const totalPrice = Math.max(1, Math.round(Number(checkout.totalPrice || 0)));
+            const dataMb = Math.max(1, Math.round(Number(checkout.dataMb || 0)));
+            const days = Math.max(30, Math.round(Number(checkout.days || 30)));
+            const gb = Math.max(1, Math.round(dataMb / 1024));
+            const overrides = {
+                basePriceToman: totalPrice,
+                panelConfigPatch: { data_limit_mb: dataMb, expire_days: days, force_awaiting_config: true },
+                productNameSuffix: `(سفارشی ${gb}GB / ${days} روز)`
+            };
+            await clearState(userId);
+            await createOrder(chatId, userId, productId, paymentMethod, null, paymentMethod === "wallet" ? 0 : walletUsed, overrides);
         }
-        const paymentMethod = parts.slice(1).join("_");
-        const state = await getState(userId);
-        if (!state || state.state !== "custom_v2ray_checkout") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
-            return;
+        catch (e) {
+            logError("custom_v2ray_discount_no_failed", e, { userId, chatId, data });
+            await tg("sendMessage", { chat_id: chatId, text: "خطا در ثبت سفارش." });
         }
-        const checkout = state.payload || {};
-        const totalPrice = Math.max(1, Math.round(Number(checkout.totalPrice || 0)));
-        const dataMb = Math.max(1, Math.round(Number(checkout.dataMb || 0)));
-        const days = Math.max(30, Math.round(Number(checkout.days || 30)));
-        const overrides = {
-            basePriceToman: totalPrice,
-            panelConfigPatch: { data_limit_mb: dataMb, expire_days: days },
-            productNameSuffix: "(سفارشی)"
-        };
-        await clearState(userId);
-        await createOrder(chatId, userId, productId, paymentMethod, null, paymentMethod === "wallet" ? 0 : walletUsed, overrides);
         return;
     }
     if (data.startsWith("use_wallet_custom_")) {
@@ -9838,28 +9850,6 @@ async function handleCallback(update) {
         await tg("sendMessage", { chat_id: chatId, text: "حالت بینهایت محصول تغییر کرد ✅" });
         return;
     }
-    if (data.startsWith("admin_toggle_product_custom_")) {
-        const productId = Number(data.replace("admin_toggle_product_custom_", ""));
-        const rows = await sql `SELECT panel_config FROM products WHERE id = ${productId} LIMIT 1;`;
-        if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
-            return;
-        }
-        const panelConfig = sanitizePanelConfig(rows[0].panel_config);
-        if (parseProductKind(panelConfig.product_kind) !== "v2ray") {
-            await tg("sendMessage", { chat_id: chatId, text: "فقط برای محصولات v2ray قابل فعال/غیرفعال‌سازی است." });
-            return;
-        }
-        const next = panelConfig.custom_enabled !== true;
-        await sql `
-      UPDATE products
-      SET panel_config = jsonb_set(COALESCE(panel_config, '{}'::jsonb), '{custom_enabled}', to_jsonb(${next}::boolean), true)
-      WHERE id = ${productId};
-    `;
-        await tg("sendMessage", { chat_id: chatId, text: next ? "حالت سفارشی روشن شد ✅" : "حالت سفارشی خاموش شد ✅" });
-        await listProductsForAdmin(chatId, userId);
-        return;
-    }
     if (data.startsWith("admin_toggle_product_sell_mode_")) {
         const productId = Number(data.replace("admin_toggle_product_sell_mode_", ""));
         const rows = await sql `
@@ -10748,7 +10738,7 @@ async function handleCallback(update) {
                 `بینهایت سراسری: ${infiniteMode ? "روشن" : "خاموش"}\n` +
                 `قیمت افزایش هر 1GB: ${formatPriceToman(topupPricePerGb)} تومان\n` +
                 `قیمت پیشفرض هر 1GB محصول: ${formatPriceToman(productPricePerGb)} تومان\n` +
-                `قیمت هر روز اضافه (سفارشی): ${formatPriceToman(customExtraDayPrice)} تومان`,
+                `قیمت هر روز (سفارشی): ${formatPriceToman(customExtraDayPrice)} تومان`,
             reply_markup: {
                 inline_keyboard: [
                     [cb("📢 کانال‌های اجباری", "admin_set_mandatory_channels", "primary")],
@@ -10758,7 +10748,7 @@ async function handleCallback(update) {
                     [cb("🎬 مدیای شروع", "admin_start_media", "primary")],
                     [cb("📈 قیمت افزایش هر 1GB", "admin_set_topup_price", "primary")],
                     [cb("🏷 قیمت پیشفرض هر 1GB محصول", "admin_set_product_price", "primary")],
-                    [cb("📅 قیمت هر روز اضافه (سفارشی)", "admin_set_custom_v2ray_extra_day", "primary")],
+                    [cb("🎛 محصول سفارشی", "admin_custom_v2ray_menu", "primary")],
                     [
                         cb(infiniteMode ? "♾️ خاموش‌کردن حالت بینهایت" : "♾️ روشن‌کردن حالت بینهایت", "admin_toggle_global_infinite", infiniteMode ? "danger" : "success")
                     ],
@@ -10790,6 +10780,71 @@ async function handleCallback(update) {
                 ]
             }
         });
+        return;
+    }
+    if (data === "admin_custom_v2ray_menu") {
+        const enabled = await getBoolSetting("custom_v2ray_enabled", false);
+        const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+        const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
+        const minPrice = Math.max(1, pricePerGb + 30 * dayPrice);
+        const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+        const productRows = productId ? await sql `SELECT name FROM products WHERE id = ${productId} LIMIT 1;` : [];
+        const productName = productRows.length ? String(productRows[0].name || "-") : "-";
+        const keyboard = [];
+        keyboard.push([cb(enabled ? "🚫 خاموش‌کردن سفارشی" : "✅ روشن‌کردن سفارشی", "admin_custom_v2ray_toggle", enabled ? "danger" : "success")]);
+        keyboard.push([cb("📅 قیمت هر روز (سفارشی)", "admin_set_custom_v2ray_extra_day", "primary")]);
+        keyboard.push([cb("🧩 انتخاب محصول سفارشی", "admin_custom_v2ray_select_product", "primary")]);
+        if (productId) {
+            keyboard.push([cb("✏️ ویرایش محصول سفارشی", `admin_edit_product_${productId}`, "primary")]);
+        }
+        keyboard.push([backButton("admin_settings")]);
+        await tg("sendMessage", {
+            chat_id: chatId,
+            text: `🎛 محصول سفارشی\n\n` +
+                `وضعیت: ${enabled ? "روشن ✅" : "خاموش 🚫"}\n` +
+                `محصول انتخاب‌شده: ${productId ? `${productName} (#${productId})` : "انتخاب نشده"}\n` +
+                `شروع خرید: 1GB / 30 روز\n` +
+                `قیمت هر 1GB: ${formatPriceToman(pricePerGb)} تومان\n` +
+                `قیمت هر روز: ${formatPriceToman(dayPrice)} تومان\n` +
+                `حداقل مبلغ شروع: ${formatPriceToman(minPrice)} تومان\n\n` +
+                `نکته: نوع تحویل (فروش از پنل یا دستی) از طریق ویرایش همین محصول تعیین می‌شود.`,
+            reply_markup: { inline_keyboard: keyboard }
+        });
+        return;
+    }
+    if (data === "admin_custom_v2ray_toggle") {
+        const current = await getBoolSetting("custom_v2ray_enabled", false);
+        await setSetting("custom_v2ray_enabled", (!current).toString());
+        await tg("sendMessage", { chat_id: chatId, text: !current ? "سفارشی روشن شد ✅" : "سفارشی خاموش شد ✅" });
+        return;
+    }
+    if (data === "admin_custom_v2ray_select_product") {
+        const rows = await sql `SELECT id, name, panel_config, is_active FROM products ORDER BY id ASC;`;
+        const items = rows
+            .map((r) => ({ id: Number(r.id), name: String(r.name || "-"), panel_config: r.panel_config, is_active: Boolean(r.is_active) }))
+            .filter((r) => parseProductKind(sanitizePanelConfig(r.panel_config).product_kind) === "v2ray");
+        if (!items.length) {
+            await tg("sendMessage", { chat_id: chatId, text: "هیچ محصول v2ray یافت نشد." });
+            return;
+        }
+        const keyboard = items.slice(0, 40).map((p) => [cb(`${p.is_active ? "✅" : "📦"} ${p.name} (#${p.id})`, `admin_custom_v2ray_set_product_${p.id}`, "primary")]);
+        keyboard.push([backButton("admin_custom_v2ray_menu")]);
+        await tg("sendMessage", { chat_id: chatId, text: "یک محصول v2ray را به عنوان «محصول سفارشی» انتخاب کنید:", reply_markup: { inline_keyboard: keyboard } });
+        return;
+    }
+    if (data.startsWith("admin_custom_v2ray_set_product_")) {
+        const productId = Number(data.replace("admin_custom_v2ray_set_product_", ""));
+        const rows = await sql `SELECT panel_config FROM products WHERE id = ${productId} LIMIT 1;`;
+        if (!rows.length) {
+            await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
+            return;
+        }
+        if (parseProductKind(sanitizePanelConfig(rows[0].panel_config).product_kind) !== "v2ray") {
+            await tg("sendMessage", { chat_id: chatId, text: "این محصول v2ray نیست." });
+            return;
+        }
+        await setSetting("custom_v2ray_product_id", String(productId));
+        await tg("sendMessage", { chat_id: chatId, text: "محصول سفارشی انتخاب شد ✅" });
         return;
     }
     if (data === "admin_start_media_disable") {
@@ -11073,7 +11128,7 @@ async function handleCallback(update) {
     }
     if (data === "admin_set_custom_v2ray_extra_day") {
         await setState(userId, "admin_set_custom_v2ray_extra_day");
-        await tg("sendMessage", { chat_id: chatId, text: "قیمت هر روز اضافه برای محصولات سفارشی را به تومان ارسال کنید. مثال: 10000\nبرای خاموش: 0" });
+        await tg("sendMessage", { chat_id: chatId, text: "قیمت هر روز برای محصول سفارشی را به تومان ارسال کنید. مثال: 10000\nبرای خاموش: 0" });
         return;
     }
     if (data === "admin_toggle_global_infinite") {
