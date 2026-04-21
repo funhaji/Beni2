@@ -12237,8 +12237,6 @@ async function handleMessage(update: TgUpdate["message"]) {
 }
 
 export async function handleTelegramUpdate(update: TgUpdate) {
-  await ensureSchema();
-  
   if (update.update_id) {
     const inserted = await sql`
       INSERT INTO processed_updates (update_id)
@@ -12254,6 +12252,7 @@ export async function handleTelegramUpdate(update: TgUpdate) {
     // Prune old updates asynchronously without awaiting
     sql`DELETE FROM processed_updates WHERE created_at < NOW() - INTERVAL '1 day'`.catch(() => {});
     sql`UPDATE orders SET status = 'cancelled' WHERE payment_method = 'crypto' AND status = 'pending' AND crypto_expires_at < NOW()`.catch(() => {});
+    sql`UPDATE wallet_topups SET status = 'cancelled' WHERE status = 'pending' AND crypto_expires_at IS NOT NULL AND crypto_expires_at < NOW()`.catch(() => {});
   }
 
   if (update.callback_query) {

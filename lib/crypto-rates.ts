@@ -1,4 +1,4 @@
-import { ensureSchema, sql } from "./db.js";
+import { sql } from "./db.js";
 
 const coingeckoIdCache = new Map<string, string>();
 
@@ -33,6 +33,17 @@ function pickNavasanApiKey() {
 }
 
 async function fetchNavasanUsdToman() {
+  const cached = await sql`
+    SELECT toman_per_unit
+    FROM crypto_rate_cache
+    WHERE symbol = 'USD_TOMAN'
+      AND updated_at > NOW() - INTERVAL '6 hours'
+    LIMIT 1;
+  `;
+  if (cached.length) {
+    const n = Number((cached[0] as any).toman_per_unit);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
   const apiKey = pickNavasanApiKey();
   if (!apiKey) {
     throw new Error("navasan_api_key_missing");
@@ -51,13 +62,29 @@ async function fetchNavasanUsdToman() {
   for (const key of candidates) {
     const v = data?.[key]?.value ?? data?.[key];
     const n = parseInt(String(v ?? ""), 10);
-    if (Number.isFinite(n) && n > 0) return n;
+    if (Number.isFinite(n) && n > 0) {
+      await sql`
+        INSERT INTO crypto_rate_cache (symbol, toman_per_unit, updated_at)
+        VALUES ('USD_TOMAN', ${n}, NOW())
+        ON CONFLICT (symbol) DO UPDATE
+          SET toman_per_unit = EXCLUDED.toman_per_unit, updated_at = NOW();
+      `;
+      return n;
+    }
   }
   for (const [k, obj] of Object.entries(data || {})) {
     if (!String(k).toLowerCase().includes("usd")) continue;
     const v = (obj as any)?.value ?? obj;
     const n = parseInt(String(v ?? ""), 10);
-    if (Number.isFinite(n) && n > 0) return n;
+    if (Number.isFinite(n) && n > 0) {
+      await sql`
+        INSERT INTO crypto_rate_cache (symbol, toman_per_unit, updated_at)
+        VALUES ('USD_TOMAN', ${n}, NOW())
+        ON CONFLICT (symbol) DO UPDATE
+          SET toman_per_unit = EXCLUDED.toman_per_unit, updated_at = NOW();
+      `;
+      return n;
+    }
   }
   throw new Error(`navasan_invalid_payload:${snippet(raw)}`);
 }
@@ -120,12 +147,12 @@ function coingeckoIdOverride(symbol: string) {
 export async function getCryptoTomanPerUnitCached(symbol: string, options?: { cacheMs?: number }) {
   const cacheMs = options?.cacheMs ?? 5 * 60_000;
   const key = symbol.toUpperCase();
-  await ensureSchema();
+  const cacheSeconds = Math.max(1, Math.floor(cacheMs / 1000));
   const fresh = await sql`
     SELECT toman_per_unit
     FROM crypto_rate_cache
     WHERE symbol = ${key}
-      AND updated_at > NOW() - INTERVAL '5 minutes'
+      AND updated_at > NOW() - (${cacheSeconds} || ' seconds')::interval
     LIMIT 1;
   `;
   if (fresh.length) {
