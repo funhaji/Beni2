@@ -88,6 +88,7 @@ type DeliveryPayload = {
 
 type ConfigLookupMode = "config" | "uuid";
 type StartMediaKind = "none" | "text" | "sticker" | "animation" | "photo";
+type CustomOrderMode = "data" | "days";
 
 function isAdmin(userId: number) {
   return adminIds.includes(userId);
@@ -415,6 +416,11 @@ function configSummaryLine(payload: DeliveryPayload) {
   if (payload.subscriptionUrl) return "فقط ساب";
   if (configCount) return `${configCount} کانفیگ`;
   return "نامشخص";
+}
+
+function getV2rayProductKindFromRow(row: Record<string, unknown>) {
+  const panelConfig = sanitizePanelConfig(row.panel_config);
+  return parseProductKind(panelConfig.product_kind);
 }
 
 function parseDelimitedOrFields(raw: string, orderedKeys: string[]) {
@@ -3424,6 +3430,90 @@ async function showPaymentMethods(chatId: number, userId: number, productId: num
   });
 }
 
+async function startCustomV2rayWizard(chatId: number, userId: number, productId: number) {
+  const rows = await sql`
+    SELECT id, name, price_toman, size_mb, is_infinite, sell_mode, panel_id, panel_delivery_mode, panel_config
+    FROM products
+    WHERE id = ${productId} AND is_active = TRUE
+    LIMIT 1;
+  `;
+  if (!rows.length) {
+    await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
+    return;
+  }
+  const product = rows[0] as any;
+  if (getV2rayProductKindFromRow(product) !== "v2ray") {
+    await tg("sendMessage", { chat_id: chatId, text: "این محصول سفارشی نیست." });
+    return;
+  }
+  const panelConfig = sanitizePanelConfig(product.panel_config);
+  if (panelConfig.custom_enabled !== true) {
+    await tg("sendMessage", { chat_id: chatId, text: "برای این محصول گزینه سفارشی فعال نیست." });
+    return;
+  }
+  const baseMb = Math.max(1, Math.round(Number(product.size_mb || 0)));
+  const baseDays = Math.max(30, Math.round(Number(panelConfig.expire_days || 30)));
+  const basePrice = Math.max(0, Math.round(Number(product.price_toman || 0)));
+  const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
+  const extraDayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+
+  const statePayload = {
+    productId,
+    baseMb,
+    baseDays,
+    basePrice,
+    dataMb: baseMb,
+    days: baseDays,
+    pricePerGb,
+    extraDayPrice
+  };
+  await setState(userId, "custom_v2ray_wizard", statePayload);
+  await renderCustomV2rayWizard(chatId, userId);
+}
+
+async function renderCustomV2rayWizard(chatId: number, userId: number) {
+  const state = await getState(userId);
+  if (!state || state.state !== "custom_v2ray_wizard") return;
+  const p: any = state.payload || {};
+  const productId = Number(p.productId);
+  const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
+  const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
+  const basePrice = Math.max(0, Math.round(Number(p.basePrice || 0)));
+  const dataMb = Math.max(1, Math.round(Number(p.dataMb || baseMb)));
+  const days = Math.max(30, Math.round(Number(p.days || baseDays)));
+  const pricePerGb = Math.max(1, Math.round(Number(p.pricePerGb || 500000)));
+  const extraDayPrice = Math.max(0, Math.round(Number(p.extraDayPrice || 0)));
+
+  const extraMb = Math.max(0, dataMb - baseMb);
+  const extraGb = extraMb / 1024;
+  const extraDataPrice = Math.ceil(extraGb * pricePerGb);
+  const extraDays = Math.max(0, days - baseDays);
+  const extraDaysPrice = extraDays * extraDayPrice;
+  const totalPrice = Math.max(1, basePrice + extraDataPrice + extraDaysPrice);
+
+  const rows = await sql`SELECT name FROM products WHERE id = ${productId} LIMIT 1;`;
+  const productName = rows.length ? String(rows[0].name || "-") : "-";
+
+  const text =
+    `🎁 فاکتور خرید [سفارشی]\n\n` +
+    `🔸 محصول: ${productName}\n` +
+    `🔸 حجم: ${Math.round(dataMb / 1024)} گیگابایت\n` +
+    `🔸 زمان: ${days} روز\n\n` +
+    `💰 مبلغ: ${formatPriceToman(totalPrice)} تومان\n\n` +
+    `جزئیات:\n` +
+    `- پایه: ${formatPriceToman(basePrice)} تومان (${Math.round(baseMb / 1024)}GB / ${baseDays} روز)\n` +
+    `- افزایش دیتا: ${formatPriceToman(extraDataPrice)} تومان\n` +
+    `- افزایش روز: ${formatPriceToman(extraDaysPrice)} تومان`;
+
+  const keyboard: any[] = [];
+  keyboard.push([cb("➕ افزایش دیتا", `custom_v2ray_inc_data`, "primary"), cb("➖ کاهش دیتا", `custom_v2ray_dec_data`, "primary")]);
+  keyboard.push([cb("➕ افزایش روز", `custom_v2ray_inc_days`, "primary"), cb("➖ کاهش روز", `custom_v2ray_dec_days`, "primary")]);
+  keyboard.push([confirmButton(`custom_v2ray_confirm_${totalPrice}`, "✅ تایید و پرداخت")]);
+  keyboard.push([backButton("buy_menu")]);
+
+  await tg("sendMessage", { chat_id: chatId, text, reply_markup: { inline_keyboard: keyboard } });
+}
+
 async function showDiscountChoice(chatId: number, productId: number, paymentMethod: string, walletUsed: number = 0) {
   await tg("sendMessage", {
     chat_id: chatId,
@@ -4914,6 +5004,18 @@ async function parseAndApplyState(
       chat_id: chatId,
       text: `قیمت پیشفرض محصولات ثبت شد ✅\nهر 1GB = ${formatPriceToman(Math.round(pricePerGb))} تومان`
     });
+    return true;
+  }
+  if (state.state === "admin_set_custom_v2ray_extra_day") {
+    const raw = text.trim();
+    const n = Math.round(Number(raw));
+    if (!Number.isFinite(n) || n < 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 10000\nبرای خاموش: 0" });
+      return true;
+    }
+    await setSetting("custom_v2ray_extra_day_toman", String(n));
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nهر روز اضافه: ${formatPriceToman(n)} تومان` });
     return true;
   }
   if (state.state === "admin_ban_username") {
@@ -10736,6 +10838,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const infiniteMode = await getBoolSetting("global_infinite_mode", false);
     const topupPricePerGb = normalizePricePerGb(await getSetting("topup_price_per_gb_toman"));
     const productPricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), topupPricePerGb);
+    const customExtraDayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
     const publicBaseUrl = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
     const tronadoKeyMasked = maskSecret((await getSetting("tronado_api_key")) || "");
     const tetrapayKeyMasked = maskSecret((await getSetting("tetrapay_api_key")) || "");
@@ -10761,7 +10864,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `مدیای شروع: ${startMediaTitle(startMediaKind, startMediaValue)}\n` +
         `بینهایت سراسری: ${infiniteMode ? "روشن" : "خاموش"}\n` +
         `قیمت افزایش هر 1GB: ${formatPriceToman(topupPricePerGb)} تومان\n` +
-        `قیمت پیشفرض هر 1GB محصول: ${formatPriceToman(productPricePerGb)} تومان`,
+        `قیمت پیشفرض هر 1GB محصول: ${formatPriceToman(productPricePerGb)} تومان\n` +
+        `قیمت هر روز اضافه (سفارشی): ${formatPriceToman(customExtraDayPrice)} تومان`,
       reply_markup: {
         inline_keyboard: [
           [cb("📢 کانال‌های اجباری", "admin_set_mandatory_channels", "primary")],
@@ -10771,6 +10875,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           [cb("🎬 مدیای شروع", "admin_start_media", "primary")],
           [cb("📈 قیمت افزایش هر 1GB", "admin_set_topup_price", "primary")],
           [cb("🏷 قیمت پیشفرض هر 1GB محصول", "admin_set_product_price", "primary")],
+          [cb("📅 قیمت هر روز اضافه (سفارشی)", "admin_set_custom_v2ray_extra_day", "primary")],
           [
             cb(
               infiniteMode ? "♾️ خاموش‌کردن حالت بینهایت" : "♾️ روشن‌کردن حالت بینهایت",
@@ -11090,6 +11195,11 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "admin_set_product_price") {
     await setState(userId, "admin_set_product_price");
     await tg("sendMessage", { chat_id: chatId, text: "قیمت پیشفرض هر 1GB محصول را به تومان ارسال کنید. مثال: 500000" });
+    return;
+  }
+  if (data === "admin_set_custom_v2ray_extra_day") {
+    await setState(userId, "admin_set_custom_v2ray_extra_day");
+    await tg("sendMessage", { chat_id: chatId, text: "قیمت هر روز اضافه برای محصولات سفارشی را به تومان ارسال کنید. مثال: 10000\nبرای خاموش: 0" });
     return;
   }
   if (data === "admin_toggle_global_infinite") {
