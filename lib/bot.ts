@@ -5959,6 +5959,9 @@ async function parseAndApplyState(
       by: userId
     });
     await clearState(userId);
+    const profile = await getTelegramProfileText(Number(order.telegram_id));
+    const productRows = await sql`SELECT name FROM products WHERE id = ${Number(order.product_id)} LIMIT 1;`;
+    const productName = productRows.length ? String(productRows[0].name || `#${Number(order.product_id)}`) : `#${Number(order.product_id)}`;
     await sendDeliveryPackage(
       Number(order.telegram_id),
       String(order.purchase_id),
@@ -5970,7 +5973,9 @@ async function parseAndApplyState(
       buildAdminDeliverySummary({
         purchaseId: String(order.purchase_id),
         userId: Number(order.telegram_id),
-        productName: `#${Number(order.product_id)}`,
+        telegramUsername: profile.username,
+        telegramFullName: profile.fullName,
+        productName,
         deliveryPayload: {}
       }),
       { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] }
@@ -6259,21 +6264,17 @@ async function sendConfigWithQr(
   keyboard: Array<Array<{ text: string; callback_data: string }>>,
   prefixText?: string
 ) {
-  await tg("sendMessage", {
-    chat_id: chatId,
-    parse_mode: "HTML",
-    text: `${prefixText ? `${prefixText}\n` : ""}شناسه خرید: ${purchaseId}\n\nکانفیگ شما:\n${escapeHtml(configValue)}`,
-    reply_markup: { inline_keyboard: keyboard }
-  });
-  const captionText =
-    `${prefixText ? `${prefixText}\n\n` : ""}` +
-    `شناسه خرید: ${purchaseId}\n\n` +
-    `کانفیگ:\n${configValue}`;
+  const captionLines = [
+    prefixText ? prefixText : null,
+    `شناسه خرید: ${purchaseId}`,
+    `کانفیگ:\n${configValue}`
+  ].filter(Boolean);
   await tg("sendPhoto", {
     chat_id: chatId,
     photo: qrCodeUrl(configValue),
     parse_mode: "HTML",
-    caption: escapeHtml(truncateText(captionText, 900))
+    caption: escapeHtml(truncateText(captionLines.join("\n\n"), 900)),
+    reply_markup: { inline_keyboard: keyboard }
   });
 }
 
@@ -6292,38 +6293,37 @@ async function sendDeliveryPackage(
   if (hasManyConfigs && purchaseId && purchaseId !== "-") {
     finalKeyboard.unshift([{ text: "📃 نمایش بقیه کانفیگ‌ها", callback_data: `show_configs_${purchaseId}_1` }]);
   }
-  const lines = [
+  const captionLines = [
     prefixText ? prefixText : null,
     `شناسه خرید: ${purchaseId}`,
     deliveryPayload.subscriptionUrl ? `لینک ساب:\n${deliveryPayload.subscriptionUrl}` : null,
     firstConfig ? `کانفیگ:\n${firstConfig}` : null,
     hasManyConfigs ? `(${configLinks.length - 1} کانفیگ دیگر هم موجود است)` : null
   ].filter(Boolean);
-  await tg("sendMessage", {
+  const qrText = String(firstConfig || deliveryPayload.subscriptionUrl || "").trim();
+  if (!qrText) {
+    await tg("sendMessage", {
+      chat_id: chatId,
+      parse_mode: "HTML",
+      text: escapeHtml(captionLines.join("\n\n")),
+      reply_markup: { inline_keyboard: finalKeyboard }
+    });
+    return;
+  }
+  await tg("sendPhoto", {
     chat_id: chatId,
+    photo: qrCodeUrl(qrText),
     parse_mode: "HTML",
-    text: escapeHtml(lines.join("\n\n")),
+    caption: escapeHtml(truncateText(captionLines.join("\n\n"), 900)),
     reply_markup: { inline_keyboard: finalKeyboard }
   });
-  const qrText = String(deliveryPayload.primaryQr || firstConfig || deliveryPayload.subscriptionUrl || fallbackConfigValue || "").trim();
-  if (qrText) {
-    const qrCaptionText =
-      `${prefixText ? `${prefixText}\n\n` : ""}` +
-      `شناسه خرید: ${purchaseId}\n\n` +
-      (deliveryPayload.subscriptionUrl ? `لینک ساب:\n${deliveryPayload.subscriptionUrl}\n\n` : "") +
-      (firstConfig ? `کانفیگ:\n${firstConfig}` : "");
-    await tg("sendPhoto", {
-      chat_id: chatId,
-      photo: qrCodeUrl(qrText),
-      parse_mode: "HTML",
-      caption: escapeHtml(truncateText(qrCaptionText, 900))
-    });
-  }
 }
 
 function buildAdminDeliverySummary(params: {
   purchaseId: string;
   userId: number;
+  telegramUsername: string;
+  telegramFullName: string;
   productName: string;
   deliveryPayload: DeliveryPayload;
   walletUsed?: number;
@@ -6338,6 +6338,8 @@ function buildAdminDeliverySummary(params: {
     "✅ سفارش تحویل شد",
     `شناسه خرید: ${params.purchaseId}`,
     `کاربر: ${params.userId}`,
+    `یوزرنیم: ${params.telegramUsername}`,
+    `نام: ${params.telegramFullName}`,
     `محصول: ${params.productName}`,
     params.walletUsed ? `کسر از کیف پول: ${formatPriceToman(params.walletUsed)} تومان` : null,
     params.deliveryPayload.subscriptionUrl ? `لینک ساب:\n${params.deliveryPayload.subscriptionUrl}` : null,
@@ -7599,6 +7601,19 @@ async function notifyAdmins(text: string, replyMarkup?: Record<string, unknown>)
   }
 }
 
+async function getTelegramProfileText(userId: number) {
+  const rows = await sql`
+    SELECT username, first_name, last_name
+    FROM users
+    WHERE telegram_id = ${userId}
+    LIMIT 1;
+  `;
+  const username = rows.length && rows[0].username ? `@${String(rows[0].username)}` : "-";
+  const fullName =
+    [rows[0]?.first_name ? String(rows[0].first_name) : "", rows[0]?.last_name ? String(rows[0].last_name) : ""].filter(Boolean).join(" ").trim() || "-";
+  return { username, fullName };
+}
+
 async function sendPurchaseLookupResult(chatId: number, purchaseId: string) {
   const orderRows = await sql`
     SELECT
@@ -7816,6 +7831,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
   `;
   if (!rows.length) return { ok: false, reason: "order_not_found" };
   const order = rows[0];
+  const profile = await getTelegramProfileText(Number(order.telegram_id));
 
   if (order.payment_method === 'tronado' || order.payment_method === 'tetrapay' || order.payment_method === 'plisio') {
     const walletUsed = Number(order.wallet_used || 0);
@@ -7919,6 +7935,8 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
       buildAdminDeliverySummary({
         purchaseId: String(order.purchase_id),
         userId: Number(order.telegram_id),
+        telegramUsername: profile.username,
+        telegramFullName: profile.fullName,
         productName: String(order.product_name || "-"),
         deliveryPayload: provision.deliveryPayload,
         walletUsed: Number(order.wallet_used || 0)
@@ -7987,6 +8005,8 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
     buildAdminDeliverySummary({
       purchaseId: String(order.purchase_id),
       userId: Number(order.telegram_id),
+      telegramUsername: profile.username,
+      telegramFullName: profile.fullName,
       productName: String(order.product_name || "-"),
       deliveryPayload: { configLinks: [String(allocated[0].config_value)] },
       walletUsed: Number(order.wallet_used || 0)
