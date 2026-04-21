@@ -1,3 +1,5 @@
+import { getBoolSetting, getNumberSetting } from "./settings.js";
+
 type CacheEntry = { value: number; updatedAt: number };
 
 let usdtTomanCache: CacheEntry | null = null;
@@ -11,6 +13,26 @@ function fetchWithTimeout(url: string, timeoutMs = 6000) {
 function snippet(raw: string, limit = 180) {
   const s = raw.trim().slice(0, limit);
   return s || "empty_response";
+}
+
+async function fetchUsdtIrrFromCoinGecko() {
+  const url = "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=irr";
+  const res = await fetchWithTimeout(url, 6000);
+  const raw = await res.text();
+  if (!res.ok) {
+    throw new Error(`coingecko_http_${res.status}:${snippet(raw)}`);
+  }
+  let data: any;
+  try {
+    data = JSON.parse(raw) as any;
+  } catch {
+    throw new Error(`coingecko_parse_failed:${snippet(raw)}`);
+  }
+  const irrPerUsdt = Number(data?.tether?.irr);
+  if (!Number.isFinite(irrPerUsdt) || irrPerUsdt <= 0) {
+    throw new Error(`coingecko_invalid_payload:${snippet(raw)}`);
+  }
+  return irrPerUsdt;
 }
 
 async function fetchUsdIrrFromOpenErApi() {
@@ -63,6 +85,26 @@ export async function getUsdtRateTomanCached(options?: { cacheMs?: number; allow
   }
 
   const errors: string[] = [];
+
+  const manual = (await getNumberSetting("usdt_toman_rate")) || 0;
+  if (manual > 0) {
+    usdtTomanCache = { value: manual, updatedAt: now };
+    return { rateTomanPerUsdt: manual, source: "setting" as const };
+  }
+  const autoEnabled = await getBoolSetting("usdt_auto_rate", true);
+  if (!autoEnabled) {
+    throw new Error("usdt_auto_rate_disabled_and_no_manual_rate");
+  }
+
+  try {
+    const irrPerUsdt = await fetchUsdtIrrFromCoinGecko();
+    const tomanPerUsdt = irrPerUsdt / 10;
+    usdtTomanCache = { value: tomanPerUsdt, updatedAt: now };
+    return { rateTomanPerUsdt: tomanPerUsdt, source: "coingecko" as const };
+  } catch (error) {
+    errors.push(String((error as Error)?.message || error));
+  }
+
   try {
     const irrPerUsd = await fetchUsdIrrFromOpenErApi();
     const tomanPerUsdt = irrPerUsd / 10;

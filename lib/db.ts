@@ -200,6 +200,16 @@ export function ensureSchema() {
         );
       `;
       await sql`
+        INSERT INTO payment_methods (code, title, active)
+        VALUES
+          ('card2card', 'کارت‌به‌کارت', TRUE),
+          ('tronado', 'ترونادو (TRX)', TRUE),
+          ('plisio', 'Plisio', TRUE),
+          ('tetrapay', 'تتراپی', TRUE),
+          ('crypto', 'کریپتو', TRUE)
+        ON CONFLICT (code) DO NOTHING;
+      `;
+      await sql`
         CREATE TABLE IF NOT EXISTS cards (
           id BIGSERIAL PRIMARY KEY,
           label TEXT NOT NULL,
