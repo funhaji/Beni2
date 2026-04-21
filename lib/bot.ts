@@ -3540,9 +3540,20 @@ async function parseAndApplyState(
     const orderId = Number(rows[0].id);
     await tg("sendMessage", { chat_id: chatId, text: "اسکرین‌شات ثبت شد ✅\nبعد از بررسی ادمین، سفارش تکمیل می‌شود." });
 
+    const profileRows = await sql`
+      SELECT username, first_name, last_name
+      FROM users
+      WHERE telegram_id = ${userId}
+      LIMIT 1;
+    `;
+    const tgUsername = profileRows.length && profileRows[0].username ? `@${String(profileRows[0].username)}` : "-";
+    const tgFullName = [profileRows[0]?.first_name, profileRows[0]?.last_name].filter(Boolean).join(" ").trim() || "-";
     const caption =
       `🪙 درخواست تایید پرداخت کریپتو\n` +
       `سفارش: ${rows[0].purchase_id}\n` +
+      `کاربر: ${userId}\n` +
+      `یوزرنیم: ${tgUsername}\n` +
+      `نام: ${tgFullName}\n` +
       `محصول: ${rows[0].product_name_snapshot || "-"}\n` +
       `مبلغ: ${formatPriceToman(Number(rows[0].final_price))} تومان\n` +
       `ارز: ${rows[0].crypto_currency || "-"}\n` +
