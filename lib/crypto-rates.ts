@@ -59,9 +59,28 @@ async function fetchCoinGeckoUsdPerUnitById(id: string) {
   return usd;
 }
 
+async function fetchCoinGeckoIrrPerUnitById(id: string) {
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(id)}&vs_currencies=irr`;
+  const res = await fetchWithTimeout(url, 6000);
+  const raw = await res.text();
+  if (!res.ok) throw new Error(`coingecko_irr_http_${res.status}:${snippet(raw)}`);
+  const data = JSON.parse(raw) as any;
+  const irr = Number(data?.[id]?.irr);
+  if (!Number.isFinite(irr) || irr <= 0) throw new Error(`coingecko_irr_invalid:${snippet(raw)}`);
+  return irr;
+}
+
 function isUsdPeg(symbol: string) {
   const s = symbol.toUpperCase();
   return s === "USDT" || s === "USDC" || s === "DAI" || s === "TUSD" || s === "BUSD";
+}
+
+function coingeckoIdOverride(symbol: string) {
+  const s = symbol.toUpperCase();
+  if (s === "USDT") return "tether";
+  if (s === "TRX") return "tron";
+  if (s === "TON") return "the-open-network";
+  return "";
 }
 
 export async function getCryptoTomanPerUnitCached(symbol: string, options?: { cacheMs?: number }) {
@@ -71,6 +90,18 @@ export async function getCryptoTomanPerUnitCached(symbol: string, options?: { ca
   const hit = cache.get(key);
   if (hit && now - hit.updatedAt < cacheMs) return hit.value;
 
+  const errors: string[] = [];
+
+  try {
+    const id = coingeckoIdOverride(key) || (await resolveCoinGeckoId(key));
+    const irrPerUnit = await fetchCoinGeckoIrrPerUnitById(id);
+    const v = irrPerUnit / 10;
+    cache.set(key, { value: v, updatedAt: now });
+    return v;
+  } catch (e) {
+    errors.push(String((e as Error)?.message || e));
+  }
+
   const { rateTomanPerUsdt } = await getUsdtRateTomanCached({ cacheMs: 60_000 });
 
   if (isUsdPeg(key)) {
@@ -79,7 +110,6 @@ export async function getCryptoTomanPerUnitCached(symbol: string, options?: { ca
     return v;
   }
 
-  const errors: string[] = [];
   try {
     const usdtPerUnit = await fetchBinanceUsdtPerUnit(key);
     const v = usdtPerUnit * rateTomanPerUsdt;
@@ -101,4 +131,3 @@ export async function getCryptoTomanPerUnitCached(symbol: string, options?: { ca
 
   throw new Error(`crypto_rate_fetch_failed:${errors.join(" | ")}`);
 }
-
