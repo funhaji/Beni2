@@ -1,8 +1,5 @@
-import { getUsdtRateTomanCached } from "./rates.js";
+import { ensureSchema, sql } from "./db.js";
 
-type CacheEntry = { value: number; updatedAt: number };
-
-const cache = new Map<string, CacheEntry>();
 const coingeckoIdCache = new Map<string, string>();
 
 function fetchWithTimeout(url: string, timeoutMs = 6000) {
@@ -26,6 +23,43 @@ async function fetchBinanceUsdtPerUnit(symbol: string) {
   const price = Number(data?.price);
   if (!Number.isFinite(price) || price <= 0) throw new Error(`binance_invalid_payload:${snippet(raw)}`);
   return price;
+}
+
+function pickNavasanApiKey() {
+  const a = (process.env.NAVASAN_KEY_1 || "").trim();
+  const b = (process.env.NAVASAN_KEY_2 || "").trim();
+  if (a && b) return Date.now() % 2 === 0 ? a : b;
+  return a || b || "";
+}
+
+async function fetchNavasanUsdToman() {
+  const apiKey = pickNavasanApiKey();
+  if (!apiKey) {
+    throw new Error("navasan_api_key_missing");
+  }
+  const url = `https://api.navasan.tech/latest/?api_key=${encodeURIComponent(apiKey)}`;
+  const res = await fetchWithTimeout(url, 6000);
+  const raw = await res.text();
+  if (!res.ok) throw new Error(`navasan_http_${res.status}:${snippet(raw)}`);
+  let data: any;
+  try {
+    data = JSON.parse(raw) as any;
+  } catch {
+    throw new Error(`navasan_parse_failed:${snippet(raw)}`);
+  }
+  const candidates = ["usd_sell", "usd", "usd_buy", "dollar_sell", "dollar", "usd_irr", "usd_market"];
+  for (const key of candidates) {
+    const v = data?.[key]?.value ?? data?.[key];
+    const n = parseInt(String(v ?? ""), 10);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  for (const [k, obj] of Object.entries(data || {})) {
+    if (!String(k).toLowerCase().includes("usd")) continue;
+    const v = (obj as any)?.value ?? obj;
+    const n = parseInt(String(v ?? ""), 10);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  throw new Error(`navasan_invalid_payload:${snippet(raw)}`);
 }
 
 async function resolveCoinGeckoId(symbol: string) {
@@ -84,50 +118,76 @@ function coingeckoIdOverride(symbol: string) {
 }
 
 export async function getCryptoTomanPerUnitCached(symbol: string, options?: { cacheMs?: number }) {
-  const cacheMs = options?.cacheMs ?? 60_000;
-  const now = Date.now();
+  const cacheMs = options?.cacheMs ?? 5 * 60_000;
   const key = symbol.toUpperCase();
-  const hit = cache.get(key);
-  if (hit && now - hit.updatedAt < cacheMs) return hit.value;
+  await ensureSchema();
+  const fresh = await sql`
+    SELECT toman_per_unit
+    FROM crypto_rate_cache
+    WHERE symbol = ${key}
+      AND updated_at > NOW() - INTERVAL '5 minutes'
+    LIMIT 1;
+  `;
+  if (fresh.length) {
+    const n = Number((fresh[0] as any).toman_per_unit);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
 
   const errors: string[] = [];
+  let tomanPerUnit = 0;
 
   try {
     const id = coingeckoIdOverride(key) || (await resolveCoinGeckoId(key));
     const irrPerUnit = await fetchCoinGeckoIrrPerUnitById(id);
-    const v = irrPerUnit / 10;
-    cache.set(key, { value: v, updatedAt: now });
-    return v;
+    tomanPerUnit = irrPerUnit / 10;
   } catch (e) {
     errors.push(String((e as Error)?.message || e));
   }
 
-  const { rateTomanPerUsdt } = await getUsdtRateTomanCached({ cacheMs: 60_000 });
+  if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
+    const usdTomanErrors: string[] = [];
+    let usdToman = 0;
+    try {
+      usdToman = await fetchNavasanUsdToman();
+    } catch (e) {
+      usdTomanErrors.push(String((e as Error)?.message || e));
+    }
 
-  if (isUsdPeg(key)) {
-    const v = rateTomanPerUsdt;
-    cache.set(key, { value: v, updatedAt: now });
-    return v;
+    if (usdToman > 0) {
+      if (isUsdPeg(key)) {
+        tomanPerUnit = usdToman;
+      } else {
+        try {
+          const usdtPerUnit = await fetchBinanceUsdtPerUnit(key);
+          tomanPerUnit = usdtPerUnit * usdToman;
+        } catch (e) {
+          errors.push(String((e as Error)?.message || e));
+        }
+        if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
+          try {
+            const id = coingeckoIdOverride(key) || (await resolveCoinGeckoId(key));
+            const usdPerUnit = await fetchCoinGeckoUsdPerUnitById(id);
+            tomanPerUnit = usdPerUnit * usdToman;
+          } catch (e) {
+            errors.push(String((e as Error)?.message || e));
+          }
+        }
+      }
+    } else if (usdTomanErrors.length) {
+      errors.push(...usdTomanErrors);
+    }
   }
 
-  try {
-    const usdtPerUnit = await fetchBinanceUsdtPerUnit(key);
-    const v = usdtPerUnit * rateTomanPerUsdt;
-    cache.set(key, { value: v, updatedAt: now });
-    return v;
-  } catch (e) {
-    errors.push(String((e as Error)?.message || e));
+  if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
+    throw new Error(`crypto_rate_fetch_failed:${errors.join(" | ")}`);
   }
 
-  try {
-    const id = await resolveCoinGeckoId(key);
-    const usdPerUnit = await fetchCoinGeckoUsdPerUnitById(id);
-    const v = usdPerUnit * rateTomanPerUsdt;
-    cache.set(key, { value: v, updatedAt: now });
-    return v;
-  } catch (e) {
-    errors.push(String((e as Error)?.message || e));
-  }
-
-  throw new Error(`crypto_rate_fetch_failed:${errors.join(" | ")}`);
+  const tomanPerUnitFixed = Number(tomanPerUnit);
+  await sql`
+    INSERT INTO crypto_rate_cache (symbol, toman_per_unit, updated_at)
+    VALUES (${key}, ${tomanPerUnitFixed}, NOW())
+    ON CONFLICT (symbol) DO UPDATE
+      SET toman_per_unit = EXCLUDED.toman_per_unit, updated_at = NOW();
+  `;
+  return tomanPerUnitFixed;
 }

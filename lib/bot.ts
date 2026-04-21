@@ -573,6 +573,58 @@ function cryptoWalletReady(w: CryptoWalletRow) {
   return w.active && hasAddress && hasRate;
 }
 
+async function getActiveCryptoWallets() {
+  const rows = await sql`
+    SELECT id, currency, network, address, rate_mode, rate_toman_per_unit, extra_toman_per_unit, active
+    FROM crypto_wallets
+    WHERE active = TRUE
+    ORDER BY currency ASC, network ASC, id ASC;
+  `;
+  return rows.map((w: any) => w as CryptoWalletRow);
+}
+
+async function createCryptoWalletTopup(chatId: number, userId: number, amount: number, w: CryptoWalletRow) {
+  const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
+  let tomanPerUnit = 0;
+  if (w.rate_mode === "auto") {
+    const base = await getCryptoTomanPerUnitCached(String(w.currency || ""));
+    tomanPerUnit = base + Number(w.extra_toman_per_unit || 0);
+  } else {
+    tomanPerUnit = Number(w.rate_toman_per_unit || 0) + Number(w.extra_toman_per_unit || 0);
+  }
+  if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
+    await tg("sendMessage", { chat_id: chatId, text: "نرخ کیف پول کریپتو معتبر نیست." });
+    return;
+  }
+  const decimals = String(w.currency).toUpperCase() === "USDT" ? 2 : 6;
+  const factor = 10 ** decimals;
+  const cryptoAmount = Math.ceil((amount / tomanPerUnit) * factor) / factor;
+  if (!Number.isFinite(cryptoAmount) || cryptoAmount <= 0) {
+    await tg("sendMessage", { chat_id: chatId, text: "مبلغ کریپتو معتبر نیست." });
+    return;
+  }
+  const rows = await sql`
+    INSERT INTO wallet_topups (telegram_id, amount, payment_method, crypto_network, crypto_address, crypto_amount, crypto_expires_at)
+    VALUES (${userId}, ${amount}, 'crypto', ${w.network}, ${String(w.address || "")}, ${cryptoAmount}, ${expiresAt.toISOString()})
+    RETURNING id;
+  `;
+  const topupId = Number(rows[0].id);
+  await setState(userId, "await_wallet_receipt", { topupId });
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text:
+      `شارژ کیف پول ساخته شد ✅\n` +
+      `مبلغ: ${formatPriceToman(amount)} تومان\n\n` +
+      `⏰ مهلت پرداخت: 20 دقیقه\n` +
+      `🪙 ارز: ${String(w.currency)}\n` +
+      `🌐 شبکه: ${String(w.network)}\n` +
+      `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
+      `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
+      `بعد از پرداخت، اسکرین‌شات/رسید پرداخت را همینجا ارسال کنید.`,
+    reply_markup: { inline_keyboard: [[backButton("wallet_menu", "🔙 بازگشت")]] }
+  });
+}
+
 function cb(text: string, callback_data: string, style?: "primary" | "success" | "danger") {
   return style ? { text, callback_data, style } : { text, callback_data };
 }
@@ -3410,12 +3462,8 @@ async function showPaymentMethods(chatId: number, userId: number, productId: num
   const hasTetrapayKey = Boolean(((await getSetting("tetrapay_api_key")) || "").trim());
   const hasTronadoKey = Boolean(((await getSetting("tronado_api_key")) || "").trim());
   const hasBusinessWallet = Boolean(((await getSetting("business_wallet_address")) || env.BUSINESS_WALLET_ADDRESS || "").trim());
-  const cryptoWalletRows = await sql`
-    SELECT id, currency, network, address, rate_mode, rate_toman_per_unit, extra_toman_per_unit, active
-    FROM crypto_wallets
-    WHERE active = TRUE;
-  `;
-  const hasCrypto = cryptoWalletRows.map((w: any) => w as CryptoWalletRow).some(cryptoWalletReady);
+  const cryptoWalletRows = await getActiveCryptoWallets();
+  const hasCrypto = cryptoWalletRows.some(cryptoWalletReady);
   const filtered = rows.filter((m) => {
     const code = String(m.code);
     if (code === "card2card") return hasCards;
@@ -3673,12 +3721,8 @@ async function showCustomPaymentMethods(chatId: number, userId: number, totalPri
   const hasTetrapayKey = Boolean(((await getSetting("tetrapay_api_key")) || "").trim());
   const hasTronadoKey = Boolean(((await getSetting("tronado_api_key")) || "").trim());
   const hasBusinessWallet = Boolean(((await getSetting("business_wallet_address")) || env.BUSINESS_WALLET_ADDRESS || "").trim());
-  const cryptoWalletRows = await sql`
-    SELECT id, currency, network, address, rate_mode, rate_toman_per_unit, extra_toman_per_unit, active
-    FROM crypto_wallets
-    WHERE active = TRUE;
-  `;
-  const hasCrypto = cryptoWalletRows.map((w: any) => w as CryptoWalletRow).some(cryptoWalletReady);
+  const cryptoWalletRows = await getActiveCryptoWallets();
+  const hasCrypto = cryptoWalletRows.some(cryptoWalletReady);
   const filtered = rows.filter((m) => {
     const code = String(m.code);
     if (code === "card2card") return hasCards;
@@ -3834,12 +3878,8 @@ async function parseAndApplyState(
     const hasTetrapayKey = Boolean(((await getSetting("tetrapay_api_key")) || "").trim());
     const hasTronadoKey = Boolean(((await getSetting("tronado_api_key")) || "").trim());
     const hasBusinessWallet = Boolean(((await getSetting("business_wallet_address")) || env.BUSINESS_WALLET_ADDRESS || "").trim());
-    const cryptoWalletRows = await sql`
-      SELECT id, currency, network, address, rate_mode, rate_toman_per_unit, extra_toman_per_unit, active
-      FROM crypto_wallets
-      WHERE active = TRUE;
-    `;
-    const hasCrypto = cryptoWalletRows.map((w: any) => w as CryptoWalletRow).some(cryptoWalletReady);
+    const cryptoWalletRows = await getActiveCryptoWallets();
+    const hasCrypto = cryptoWalletRows.some(cryptoWalletReady);
     const filtered = methods.filter((m: any) => {
       const code = String(m.code);
       if (code === "card2card") return hasCards;
@@ -3984,7 +4024,7 @@ async function parseAndApplyState(
               : paymentMethod || "-";
     const cryptoDetails =
       paymentMethod === "crypto"
-        ? `\nارز/شبکه: ${String(rows[0].crypto_network || "-")}\nمقدار: ${String(rows[0].crypto_amount || "-")}\nآدرس: ${shortAddr(String(rows[0].crypto_address || ""))}`
+        ? `\nشبکه: ${String(rows[0].crypto_network || "-")}\nمقدار: ${String(rows[0].crypto_amount || "-")}\nآدرس: ${shortAddr(String(rows[0].crypto_address || ""))}`
         : "";
     await clearState(userId);
     for (const adminId of adminIds) {
@@ -7509,13 +7549,8 @@ async function createOrder(
     paymentMethod = "crypto";
   }
   if (paymentMethod === "crypto" && cryptoWalletId === null) {
-    const wallets = await sql`
-      SELECT id, currency, network, address, rate_mode, rate_toman_per_unit, extra_toman_per_unit, active
-      FROM crypto_wallets
-      WHERE active = TRUE
-      ORDER BY currency ASC, network ASC, id ASC;
-    `;
-    const ready = wallets.map((w: any) => w as CryptoWalletRow).filter(cryptoWalletReady);
+    const wallets = await getActiveCryptoWallets();
+    const ready = wallets.filter(cryptoWalletReady);
     if (!ready.length) {
       await tg("sendMessage", { chat_id: chatId, text: "هیچ کیف پول کریپتوی فعالی برای پرداخت تنظیم نشده است." });
       return;
@@ -8705,13 +8740,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         await tg("sendMessage", { chat_id: chatId, text: "خطا در ایجاد لینک پرداخت." });
       }
     } else if (method === "crypto") {
-      const wallets = await sql`
-        SELECT id, currency, network, address, rate_mode, rate_toman_per_unit, extra_toman_per_unit, active
-        FROM crypto_wallets
-        WHERE active = TRUE
-        ORDER BY currency ASC, network ASC, id ASC;
-      `;
-      const ready = wallets.map((w: any) => w as CryptoWalletRow).filter(cryptoWalletReady);
+      const wallets = await getActiveCryptoWallets();
+      const ready = wallets.filter(cryptoWalletReady);
       if (!ready.length) {
         await tg("sendMessage", { chat_id: chatId, text: "هیچ کیف پول کریپتوی فعالی برای شارژ کیف پول تنظیم نشده است." });
         return;
@@ -8730,46 +8760,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         });
         return;
       }
-      const w = ready[0];
-      const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
-      let tomanPerUnit = 0;
-      if (w.rate_mode === "auto") {
-        const base = await getCryptoTomanPerUnitCached(String(w.currency || ""));
-        tomanPerUnit = base + Number(w.extra_toman_per_unit || 0);
-      } else {
-        tomanPerUnit = Number(w.rate_toman_per_unit || 0) + Number(w.extra_toman_per_unit || 0);
-      }
-      if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
-        await tg("sendMessage", { chat_id: chatId, text: "نرخ کیف پول کریپتو معتبر نیست." });
-        return;
-      }
-      const decimals = String(w.currency).toUpperCase() === "USDT" ? 2 : 6;
-      const factor = 10 ** decimals;
-      const cryptoAmount = Math.ceil((amount / tomanPerUnit) * factor) / factor;
-      if (!Number.isFinite(cryptoAmount) || cryptoAmount <= 0) {
-        await tg("sendMessage", { chat_id: chatId, text: "مبلغ کریپتو معتبر نیست." });
-        return;
-      }
-      const rows = await sql`
-        INSERT INTO wallet_topups (telegram_id, amount, payment_method, crypto_network, crypto_address, crypto_amount, crypto_expires_at)
-        VALUES (${userId}, ${amount}, 'crypto', ${w.network}, ${String(w.address || "")}, ${cryptoAmount}, ${expiresAt.toISOString()})
-        RETURNING id;
-      `;
-      const topupId = Number(rows[0].id);
-      await setState(userId, "await_wallet_receipt", { topupId });
-      await tg("sendMessage", {
-        chat_id: chatId,
-        text:
-          `شارژ کیف پول ساخته شد ✅\n` +
-          `مبلغ: ${formatPriceToman(amount)} تومان\n\n` +
-          `⏰ مهلت پرداخت: 20 دقیقه\n` +
-          `🪙 ارز: ${String(w.currency)}\n` +
-          `🌐 شبکه: ${String(w.network)}\n` +
-          `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
-          `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
-          `بعد از پرداخت، اسکرین‌شات/رسید پرداخت را همینجا ارسال کنید.`,
-        reply_markup: { inline_keyboard: [[backButton("wallet_menu", "🔙 بازگشت")]] }
-      });
+      await createCryptoWalletTopup(chatId, userId, amount, ready[0]);
     } else if (method === "card2card") {
       const cards = await sql`SELECT card_number, holder_name, bank_name FROM cards WHERE active = TRUE;`;
       if (!cards.length) {
@@ -8816,45 +8807,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو به‌درستی تنظیم نشده یا غیرفعال است." });
       return;
     }
-    const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
-    let tomanPerUnit = 0;
-    if (w.rate_mode === "auto") {
-      const base = await getCryptoTomanPerUnitCached(String(w.currency || ""));
-      tomanPerUnit = base + Number(w.extra_toman_per_unit || 0);
-    } else {
-      tomanPerUnit = Number(w.rate_toman_per_unit || 0) + Number(w.extra_toman_per_unit || 0);
-    }
-    if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
-      await tg("sendMessage", { chat_id: chatId, text: "نرخ کیف پول کریپتو معتبر نیست." });
-      return;
-    }
-    const decimals = String(w.currency).toUpperCase() === "USDT" ? 2 : 6;
-    const factor = 10 ** decimals;
-    const cryptoAmount = Math.ceil((amount / tomanPerUnit) * factor) / factor;
-    if (!Number.isFinite(cryptoAmount) || cryptoAmount <= 0) {
-      await tg("sendMessage", { chat_id: chatId, text: "مبلغ کریپتو معتبر نیست." });
-      return;
-    }
-    const rows = await sql`
-      INSERT INTO wallet_topups (telegram_id, amount, payment_method, crypto_network, crypto_address, crypto_amount, crypto_expires_at)
-      VALUES (${userId}, ${amount}, 'crypto', ${w.network}, ${String(w.address || "")}, ${cryptoAmount}, ${expiresAt.toISOString()})
-      RETURNING id;
-    `;
-    const topupId = Number(rows[0].id);
-    await setState(userId, "await_wallet_receipt", { topupId });
-    await tg("sendMessage", {
-      chat_id: chatId,
-      text:
-        `شارژ کیف پول ساخته شد ✅\n` +
-        `مبلغ: ${formatPriceToman(amount)} تومان\n\n` +
-        `⏰ مهلت پرداخت: 20 دقیقه\n` +
-        `🪙 ارز: ${String(w.currency)}\n` +
-        `🌐 شبکه: ${String(w.network)}\n` +
-        `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
-        `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
-        `بعد از پرداخت، اسکرین‌شات/رسید پرداخت را همینجا ارسال کنید.`,
-      reply_markup: { inline_keyboard: [[backButton("wallet_menu", "🔙 بازگشت")]] }
-    });
+    await createCryptoWalletTopup(chatId, userId, amount, w);
     return;
   }
   if (data === "buy_menu") {
@@ -12203,7 +12156,6 @@ async function checkMandatoryChannels(userId: number, chatId: number, silent = f
         notJoined.push({ id: channelId, name: name, url });
       }
     } catch (error) {
-      notJoined.push({ id: channelId, name: name, url });
       logError("check_channel_membership_failed", error, { channel: channelId, userId });
     }
   }
@@ -12260,6 +12212,9 @@ async function handleMessage(update: TgUpdate["message"]) {
   if (text === "/help") {
     if (isAdmin(userId)) {
       await adminHelp(chatId);
+    } else {
+      const support = ((await getSetting("support_username")) || "").trim();
+      await tg("sendMessage", { chat_id: chatId, text: support ? `Support: @${support.replace(/^@/, "")}` : "Support is not configured. Please contact the admin." });
     }
     return;
   }
@@ -12298,6 +12253,7 @@ export async function handleTelegramUpdate(update: TgUpdate) {
     
     // Prune old updates asynchronously without awaiting
     sql`DELETE FROM processed_updates WHERE created_at < NOW() - INTERVAL '1 day'`.catch(() => {});
+    sql`UPDATE orders SET status = 'cancelled' WHERE payment_method = 'crypto' AND status = 'pending' AND crypto_expires_at < NOW()`.catch(() => {});
   }
 
   if (update.callback_query) {

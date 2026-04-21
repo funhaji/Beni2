@@ -156,6 +156,13 @@ export function ensureSchema() {
         ON CONFLICT (currency, network) DO NOTHING;
       `;
       await sql`
+        CREATE TABLE IF NOT EXISTS crypto_rate_cache (
+          symbol TEXT PRIMARY KEY,
+          toman_per_unit NUMERIC NOT NULL,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `;
+      await sql`
         CREATE TABLE IF NOT EXISTS topup_requests (
           id BIGSERIAL PRIMARY KEY,
           purchase_id TEXT UNIQUE,
