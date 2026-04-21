@@ -3425,8 +3425,22 @@ async function showPaymentMethods(chatId: number, userId: number, productId: num
     if (code === "crypto") return hasCrypto;
     return true;
   });
-  if (!filtered.length && walletBalance < finalPayable) {
-    await tg("sendMessage", { chat_id: chatId, text: "روش پرداختی که به‌درستی تنظیم شده باشد یافت نشد." });
+  if (!filtered.length && finalPayable > 0) {
+    await tg("sendMessage", { chat_id: chatId, text: "فعلاً هیچ روش پرداختی که درست تنظیم شده باشد در دسترس نیست. لطفاً به پشتیبانی پیام دهید." });
+    await notifyAdmins(
+      `⚠️ هیچ روش پرداختی برای نمایش پیدا نشد\n` +
+        `user:${userId}\n` +
+        `product:${productId}\n` +
+        `finalPayable:${finalPayable}\n` +
+        `hasCards:${hasCards}\n` +
+        `callbackBase:${callbackBase ? "ok" : "missing"}\n` +
+        `plisioKey:${hasPlisioKey ? "ok" : "missing"}\n` +
+        `tetrapayKey:${hasTetrapayKey ? "ok" : "missing"}\n` +
+        `tronadoKey:${hasTronadoKey ? "ok" : "missing"}\n` +
+        `businessWallet:${hasBusinessWallet ? "ok" : "missing"}\n` +
+        `cryptoReady:${hasCrypto ? "ok" : "missing"}`,
+      { inline_keyboard: [[{ text: "⚙️ تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }]] }
+    );
     return;
   }
   
@@ -3674,8 +3688,21 @@ async function showCustomPaymentMethods(chatId: number, userId: number, totalPri
     if (code === "crypto") return hasCrypto;
     return true;
   });
-  if (!filtered.length && walletBalance < finalPayable) {
-    await tg("sendMessage", { chat_id: chatId, text: "روش پرداختی که به‌درستی تنظیم شده باشد یافت نشد." });
+  if (!filtered.length && finalPayable > 0) {
+    await tg("sendMessage", { chat_id: chatId, text: "فعلاً هیچ روش پرداختی که درست تنظیم شده باشد در دسترس نیست. لطفاً به پشتیبانی پیام دهید." });
+    await notifyAdmins(
+      `⚠️ هیچ روش پرداختی برای سفارش سفارشی پیدا نشد\n` +
+        `user:${userId}\n` +
+        `finalPayable:${finalPayable}\n` +
+        `hasCards:${hasCards}\n` +
+        `callbackBase:${callbackBase ? "ok" : "missing"}\n` +
+        `plisioKey:${hasPlisioKey ? "ok" : "missing"}\n` +
+        `tetrapayKey:${hasTetrapayKey ? "ok" : "missing"}\n` +
+        `tronadoKey:${hasTronadoKey ? "ok" : "missing"}\n` +
+        `businessWallet:${hasBusinessWallet ? "ok" : "missing"}\n` +
+        `cryptoReady:${hasCrypto ? "ok" : "missing"}`,
+      { inline_keyboard: [[{ text: "⚙️ تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }]] }
+    );
     return;
   }
   const keyboard: any[] = [];
@@ -3816,6 +3843,26 @@ async function parseAndApplyState(
       if (code === "tronado") return Boolean(callbackBase) && hasTronadoKey && hasBusinessWallet;
       return true;
     });
+    if (!filtered.length) {
+      await tg("sendMessage", {
+        chat_id: chatId,
+        text: "فعلاً هیچ روش پرداختی برای شارژ کیف پول در دسترس نیست. لطفاً به پشتیبانی پیام دهید.",
+        reply_markup: { inline_keyboard: [[backButton("wallet_menu", "🔙 بازگشت")]] }
+      });
+      await notifyAdmins(
+        `⚠️ هیچ روش پرداختی برای شارژ کیف پول پیدا نشد\n` +
+          `user:${userId}\n` +
+          `amount:${amount}\n` +
+          `hasCards:${hasCards}\n` +
+          `callbackBase:${callbackBase ? "ok" : "missing"}\n` +
+          `plisioKey:${hasPlisioKey ? "ok" : "missing"}\n` +
+          `tetrapayKey:${hasTetrapayKey ? "ok" : "missing"}\n` +
+          `tronadoKey:${hasTronadoKey ? "ok" : "missing"}\n` +
+          `businessWallet:${hasBusinessWallet ? "ok" : "missing"}`,
+        { inline_keyboard: [[{ text: "⚙️ تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }]] }
+      );
+      return true;
+    }
     const buttons = filtered.map((m: any) => [cb(String(m.title), `wallet_charge_method_${m.code}`, "primary")]);
     buttons.push([backButton("wallet_menu", "🔙 بازگشت")]);
     await tg("sendMessage", {
@@ -5086,6 +5133,24 @@ async function parseAndApplyState(
     await setSetting("plisio_api_key", raw === "-" ? "" : raw);
     await clearState(userId);
     await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio ذخیره شد ✅" });
+    return true;
+  }
+  if (state.state === "admin_set_usdt_toman_rate") {
+    const raw = text.trim();
+    if (raw === "-") {
+      await setSetting("usdt_toman_rate", "");
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "نرخ دستی USDT پاک شد ✅" });
+      return true;
+    }
+    const rate = Math.round(Number(raw));
+    if (!Number.isFinite(rate) || rate <= 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 460000" });
+      return true;
+    }
+    await setSetting("usdt_toman_rate", String(rate));
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: `نرخ دستی USDT ذخیره شد ✅\n${rate} تومان` });
     return true;
   }
   if (state.state === "admin_crypto_wallet_add_other_currency") {
@@ -7573,7 +7638,8 @@ async function createOrder(
       return;
     }
     const decimals = String(w.currency).toUpperCase() === "USDT" ? 2 : 5;
-    const cryptoAmount = Number((finalPrice / tomanPerUnit).toFixed(decimals));
+    const factor = 10 ** decimals;
+    const cryptoAmount = Math.ceil((finalPrice / tomanPerUnit) * factor) / factor;
     if (!Number.isFinite(cryptoAmount) || cryptoAmount <= 0) {
       await tg("sendMessage", { chat_id: chatId, text: "مبلغ کریپتو معتبر نیست." });
       return;
@@ -7769,8 +7835,20 @@ async function createOrder(
       return;
     }
     const tronadoApiKey = ((await getSetting("tronado_api_key")) || "").trim();
-    const tronPrice = await getTronPriceToman(tronadoApiKey || undefined);
-    const tronAmount = Number((finalPrice / tronPrice).toFixed(6));
+    const tronPriceCandidate = await getTronPriceToman(tronadoApiKey || undefined);
+    const tronPrice =
+      Number.isFinite(tronPriceCandidate) && tronPriceCandidate >= 1_000 && tronPriceCandidate <= 50_000_000
+        ? tronPriceCandidate
+        : await getCryptoTomanPerUnitCached("TRX");
+    const feePercentRaw = (await getNumberSetting("tronado_fee_percent")) ?? 0.2;
+    const feePercent = Math.max(0, Math.min(1, Number(feePercentRaw)));
+    const minFeeToman = Math.max(0, Math.round((await getNumberSetting("tronado_min_fee_toman")) ?? 11000));
+    const feeToman = feePercent > 0 ? Math.max(minFeeToman, Math.round(finalPrice * feePercent)) : 0;
+    const extraTrx = Math.max(0, Number((await getNumberSetting("tronado_extra_trx")) ?? 0.3));
+    const requiredToman = finalPrice + feeToman;
+    const baseTrx = requiredToman / tronPrice;
+    const scale = 1_000_000;
+    const tronAmount = Math.ceil((baseTrx + extraTrx) * scale) / scale;
     const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
     if (!callbackBase) {
       await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
@@ -7799,6 +7877,8 @@ async function createOrder(
         'tronado', ${discountCode}, ${discountAmount}, ${finalPrice}, ${Math.max(0.1, tronAmount)}, 'pending', ${token.token}, ${token.paymentUrl}, ${walletUsed}
       );
     `;
+    const feeLine = feeToman > 0 ? `کارمزد: ${formatPriceToman(feeToman)} تومان\n` : "";
+    const payableLine = feeToman > 0 ? `مبلغ نهایی: ${formatPriceToman(requiredToman)} تومان\n` : "";
     await tg("sendMessage", {
       chat_id: chatId,
       text:
@@ -7806,6 +7886,8 @@ async function createOrder(
         `شناسه خرید: ${purchaseId}\n` +
         `محصول: ${productNameSnapshot}\n` +
         `مبلغ: ${formatPriceToman(finalPrice)} تومان\n` +
+        feeLine +
+        payableLine +
         `مقدار TRON: ${Math.max(0.1, tronAmount)}\n\n` +
         `بعد از پرداخت، روی دکمه «بررسی پرداخت» بزنید.`,
       reply_markup: {
@@ -11444,6 +11526,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const tronadoKeyMasked = maskSecret((await getSetting("tronado_api_key")) || "");
     const tetrapayKeyMasked = maskSecret((await getSetting("tetrapay_api_key")) || "");
     const plisioKeyMasked = maskSecret((await getSetting("plisio_api_key")) || "");
+    const usdtAutoRate = await getBoolSetting("usdt_auto_rate", true);
+    const usdtManual = ((await getSetting("usdt_toman_rate")) || "").trim();
     const plisioAutoRate = await getBoolSetting("plisio_auto_rate", true);
     const plisioExtra = (await getSetting("plisio_usdt_extra_toman")) || "0";
     const plisioFallback = (await getSetting("plisio_usdt_rate_fallback_toman")) || (await getSetting("plisio_usd_rate_toman")) || "";
@@ -11455,6 +11539,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `Tronado: ${tronadoKeyMasked}\n` +
         `TetraPay: ${tetrapayKeyMasked}\n` +
         `Plisio: ${plisioKeyMasked}\n` +
+        `نرخ USDT: ${usdtAutoRate ? "خودکار (CoinGecko)" : "دستی"}${usdtManual ? ` | ${usdtManual} تومان` : ""}\n` +
         `نرخ Plisio: ${plisioAutoRate ? "خودکار (IRR→USDT)" : "دستی"}\n` +
         `حاشیه تومان/USDT: ${plisioExtra}\n` +
         `${plisioFallback ? `نرخ دستی (fallback): ${plisioFallback}\n` : ""}\n` +
@@ -11466,6 +11551,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           [cb("🔑 کلید TetraPay", "admin_set_tetrapay_api_key", "primary")],
           [cb("🔑 کلید Plisio", "admin_set_plisio_api_key", "primary")],
           [cb("🪙 کیف پول‌های کریپتو", "admin_crypto_wallets", "primary")],
+          [cb(usdtAutoRate ? "✅ نرخ خودکار USDT" : "❌ نرخ خودکار USDT", "admin_toggle_usdt_auto_rate", usdtAutoRate ? "success" : "danger")],
+          [cb("💱 نرخ دستی USDT", "admin_set_usdt_toman_rate", "primary")],
           [cb(plisioAutoRate ? "✅ نرخ خودکار Plisio" : "❌ نرخ خودکار Plisio", "admin_toggle_plisio_auto_rate", plisioAutoRate ? "success" : "danger")],
           [cb("➕ حاشیه تومان/USDT", "admin_set_plisio_extra_toman", "primary")],
           [cb("🛟 نرخ دستی (fallback)", "admin_set_plisio_fallback_rate", "primary")],
@@ -11645,6 +11732,17 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "admin_set_plisio_api_key") {
     await setState(userId, "admin_set_plisio_api_key");
     await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio را ارسال کنید.\nبرای پاک‌کردن: -" });
+    return;
+  }
+  if (data === "admin_toggle_usdt_auto_rate") {
+    const current = await getBoolSetting("usdt_auto_rate", true);
+    await setSetting("usdt_auto_rate", (!current).toString());
+    await tg("sendMessage", { chat_id: chatId, text: `نرخ خودکار USDT ${!current ? "فعال" : "غیرفعال"} شد ✅` });
+    return;
+  }
+  if (data === "admin_set_usdt_toman_rate") {
+    await setState(userId, "admin_set_usdt_toman_rate");
+    await tg("sendMessage", { chat_id: chatId, text: "نرخ 1 USDT را به تومان ارسال کنید. مثال: 460000\nبرای پاک‌کردن: -" });
     return;
   }
   if (data === "admin_toggle_plisio_auto_rate") {
