@@ -4984,11 +4984,36 @@ async function parseAndApplyState(
       await tg("sendMessage", { chat_id: chatId, text: "هیچ کانفیگی ارسال نشد." });
       return true;
     }
+    const uniq: string[] = [];
+    const seen = new Set<string>();
     for (const line of lines) {
+      if (seen.has(line)) continue;
+      seen.add(line);
+      uniq.push(line);
+    }
+    let added = 0;
+    let skipped = 0;
+    for (const line of uniq) {
+      const exists = await sql`
+        SELECT 1
+        FROM inventory
+        WHERE product_id = ${productId}
+          AND status = 'available'
+          AND config_value = ${line}
+        LIMIT 1;
+      `;
+      if (exists.length) {
+        skipped++;
+        continue;
+      }
       await sql`INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`;
+      added++;
     }
     await clearState(userId);
-    await tg("sendMessage", { chat_id: chatId, text: `${lines.length} کانفیگ اضافه شد ✅` });
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: skipped > 0 ? `${added} کانفیگ اضافه شد ✅\n${skipped} مورد تکراری بود و اضافه نشد.` : `${added} کانفیگ اضافه شد ✅`
+    });
     return true;
   }
   if (state.state === "admin_add_card") {
