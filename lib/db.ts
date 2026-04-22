@@ -131,6 +131,9 @@ export function ensureSchema() {
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_amount NUMERIC(18,6);`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_txid TEXT;`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS crypto_expires_at TIMESTAMPTZ;`;
+      await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS swapwallet_invoice_id TEXT;`;
+      await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS swapwallet_payment_url TEXT;`;
+      await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS swapwallet_status TEXT;`;
 
       await sql`
         CREATE TABLE IF NOT EXISTS crypto_wallets (
@@ -213,7 +216,8 @@ export function ensureSchema() {
           ('tronado', 'ترونادو (TRX)', TRUE),
           ('plisio', 'Plisio', TRUE),
           ('tetrapay', 'تتراپی', TRUE),
-          ('crypto', 'کریپتو', TRUE)
+          ('crypto', 'کریپتو', TRUE),
+          ('swapwallet', 'SwapWallet', TRUE)
         ON CONFLICT (code) DO NOTHING;
       `;
       await sql`

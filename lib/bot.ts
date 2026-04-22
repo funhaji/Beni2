@@ -161,6 +161,7 @@ function formatPaymentMethodTitle(methodRaw: unknown) {
   if (method === "tronado") return "TRON (Tronado)";
   if (method === "tetrapay") return "تتراپی";
   if (method === "plisio") return "Plisio";
+  if (method === "swapwallet") return "SwapWallet";
   if (method === "crypto") return "کریپتو";
   return methodRaw ? String(methodRaw) : "-";
 }
@@ -3190,6 +3191,7 @@ async function showOrderDetails(chatId: number, userId: number, purchaseId: stri
       o.inventory_id,
       o.tronado_payment_url,
       o.plisio_invoice_url,
+      o.swapwallet_payment_url,
       o.receipt_file_id
     FROM orders o
     INNER JOIN products p ON p.id = o.product_id
@@ -3215,7 +3217,7 @@ async function showOrderDetails(chatId: number, userId: number, purchaseId: stri
   ];
 
   const keyboard: any[] = [];
-  const paymentUrl = String(o.plisio_invoice_url || o.tronado_payment_url || "").trim();
+  const paymentUrl = String(o.plisio_invoice_url || o.tronado_payment_url || o.swapwallet_payment_url || "").trim();
   if (paymentUrl && (String(o.status || "").toLowerCase() === "pending")) {
     keyboard.push([{ text: "💳 پرداخت", url: paymentUrl }]);
   }
@@ -3461,6 +3463,8 @@ async function showPaymentMethods(chatId: number, userId: number, productId: num
   const hasPlisioKey = Boolean(((await getSetting("plisio_api_key")) || "").trim());
   const hasTetrapayKey = Boolean(((await getSetting("tetrapay_api_key")) || "").trim());
   const hasTronadoKey = Boolean(((await getSetting("tronado_api_key")) || "").trim());
+  const hasSwapwalletKey = Boolean(((await getSetting("swapwallet_api_key")) || "").trim());
+  const hasSwapwalletShop = Boolean(((await getSetting("swapwallet_shop_username")) || "").trim());
   const hasBusinessWallet = Boolean(((await getSetting("business_wallet_address")) || env.BUSINESS_WALLET_ADDRESS || "").trim());
   const cryptoWalletRows = await getActiveCryptoWallets();
   const hasCrypto = cryptoWalletRows.some(cryptoWalletReady);
@@ -3470,6 +3474,7 @@ async function showPaymentMethods(chatId: number, userId: number, productId: num
     if (code === "plisio") return Boolean(callbackBase) && hasPlisioKey;
     if (code === "tetrapay") return Boolean(callbackBase) && hasTetrapayKey;
     if (code === "tronado") return Boolean(callbackBase) && hasTronadoKey && hasBusinessWallet;
+    if (code === "swapwallet") return Boolean(callbackBase) && hasSwapwalletKey && hasSwapwalletShop;
     if (code === "crypto") return hasCrypto;
     return true;
   });
@@ -3485,6 +3490,8 @@ async function showPaymentMethods(chatId: number, userId: number, productId: num
         `plisioKey:${hasPlisioKey ? "ok" : "missing"}\n` +
         `tetrapayKey:${hasTetrapayKey ? "ok" : "missing"}\n` +
         `tronadoKey:${hasTronadoKey ? "ok" : "missing"}\n` +
+        `swapwalletKey:${hasSwapwalletKey ? "ok" : "missing"}\n` +
+        `swapwalletShop:${hasSwapwalletShop ? "ok" : "missing"}\n` +
         `businessWallet:${hasBusinessWallet ? "ok" : "missing"}\n` +
         `cryptoReady:${hasCrypto ? "ok" : "missing"}`,
       { inline_keyboard: [[{ text: "⚙️ تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }]] }
@@ -3720,6 +3727,8 @@ async function showCustomPaymentMethods(chatId: number, userId: number, totalPri
   const hasPlisioKey = Boolean(((await getSetting("plisio_api_key")) || "").trim());
   const hasTetrapayKey = Boolean(((await getSetting("tetrapay_api_key")) || "").trim());
   const hasTronadoKey = Boolean(((await getSetting("tronado_api_key")) || "").trim());
+  const hasSwapwalletKey = Boolean(((await getSetting("swapwallet_api_key")) || "").trim());
+  const hasSwapwalletShop = Boolean(((await getSetting("swapwallet_shop_username")) || "").trim());
   const hasBusinessWallet = Boolean(((await getSetting("business_wallet_address")) || env.BUSINESS_WALLET_ADDRESS || "").trim());
   const cryptoWalletRows = await getActiveCryptoWallets();
   const hasCrypto = cryptoWalletRows.some(cryptoWalletReady);
@@ -3729,6 +3738,7 @@ async function showCustomPaymentMethods(chatId: number, userId: number, totalPri
     if (code === "plisio") return Boolean(callbackBase) && hasPlisioKey;
     if (code === "tetrapay") return Boolean(callbackBase) && hasTetrapayKey;
     if (code === "tronado") return Boolean(callbackBase) && hasTronadoKey && hasBusinessWallet;
+    if (code === "swapwallet") return Boolean(callbackBase) && hasSwapwalletKey && hasSwapwalletShop;
     if (code === "crypto") return hasCrypto;
     return true;
   });
@@ -3743,6 +3753,8 @@ async function showCustomPaymentMethods(chatId: number, userId: number, totalPri
         `plisioKey:${hasPlisioKey ? "ok" : "missing"}\n` +
         `tetrapayKey:${hasTetrapayKey ? "ok" : "missing"}\n` +
         `tronadoKey:${hasTronadoKey ? "ok" : "missing"}\n` +
+        `swapwalletKey:${hasSwapwalletKey ? "ok" : "missing"}\n` +
+        `swapwalletShop:${hasSwapwalletShop ? "ok" : "missing"}\n` +
         `businessWallet:${hasBusinessWallet ? "ok" : "missing"}\n` +
         `cryptoReady:${hasCrypto ? "ok" : "missing"}`,
       { inline_keyboard: [[{ text: "⚙️ تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }]] }
@@ -3877,6 +3889,8 @@ async function parseAndApplyState(
     const hasPlisioKey = Boolean(((await getSetting("plisio_api_key")) || "").trim());
     const hasTetrapayKey = Boolean(((await getSetting("tetrapay_api_key")) || "").trim());
     const hasTronadoKey = Boolean(((await getSetting("tronado_api_key")) || "").trim());
+    const hasSwapwalletKey = Boolean(((await getSetting("swapwallet_api_key")) || "").trim());
+    const hasSwapwalletShop = Boolean(((await getSetting("swapwallet_shop_username")) || "").trim());
     const hasBusinessWallet = Boolean(((await getSetting("business_wallet_address")) || env.BUSINESS_WALLET_ADDRESS || "").trim());
     const cryptoWalletRows = await getActiveCryptoWallets();
     const hasCrypto = cryptoWalletRows.some(cryptoWalletReady);
@@ -3886,6 +3900,7 @@ async function parseAndApplyState(
       if (code === "plisio") return Boolean(callbackBase) && hasPlisioKey;
       if (code === "tetrapay") return Boolean(callbackBase) && hasTetrapayKey;
       if (code === "tronado") return Boolean(callbackBase) && hasTronadoKey && hasBusinessWallet;
+      if (code === "swapwallet") return Boolean(callbackBase) && hasSwapwalletKey && hasSwapwalletShop;
       if (code === "crypto") return hasCrypto;
       return true;
     });
@@ -3904,6 +3919,8 @@ async function parseAndApplyState(
           `plisioKey:${hasPlisioKey ? "ok" : "missing"}\n` +
           `tetrapayKey:${hasTetrapayKey ? "ok" : "missing"}\n` +
           `tronadoKey:${hasTronadoKey ? "ok" : "missing"}\n` +
+          `swapwalletKey:${hasSwapwalletKey ? "ok" : "missing"}\n` +
+          `swapwalletShop:${hasSwapwalletShop ? "ok" : "missing"}\n` +
           `businessWallet:${hasBusinessWallet ? "ok" : "missing"}\n` +
           `cryptoReady:${hasCrypto ? "ok" : "missing"}`,
         { inline_keyboard: [[{ text: "⚙️ تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }]] }
@@ -5197,6 +5214,20 @@ async function parseAndApplyState(
     await setSetting("plisio_api_key", raw === "-" ? "" : raw);
     await clearState(userId);
     await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio ذخیره شد ✅" });
+    return true;
+  }
+  if (state.state === "admin_set_swapwallet_api_key") {
+    const raw = text.trim();
+    await setSetting("swapwallet_api_key", raw === "-" ? "" : raw);
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: "کلید SwapWallet ذخیره شد ✅" });
+    return true;
+  }
+  if (state.state === "admin_set_swapwallet_shop_username") {
+    const raw = text.trim();
+    await setSetting("swapwallet_shop_username", raw === "-" ? "" : raw.replace("@", ""));
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: "Shop SwapWallet ذخیره شد ✅" });
     return true;
   }
   if (state.state === "admin_set_usdt_toman_rate") {
@@ -7567,6 +7598,41 @@ async function createOrder(
     cryptoWalletId = ready[0].id;
   }
 
+  let swapwalletToken: string | null = null;
+  let swapwalletNetwork: string | null = null;
+  if (paymentMethod.startsWith("swapwallet_")) {
+    const payload = paymentMethod.replace("swapwallet_", "");
+    const parts = payload.split("_").map((x) => x.trim()).filter(Boolean);
+    swapwalletToken = parts.length ? parts[0].toUpperCase() : null;
+    swapwalletNetwork = parts.length > 1 ? parts[1].toUpperCase() : null;
+    paymentMethod = "swapwallet";
+  }
+  if (paymentMethod === "swapwallet" && (!swapwalletToken || !swapwalletNetwork)) {
+    try {
+      const { getSwapwalletAllowedTokens } = await import("./swapwallet.js");
+      const tokens = await getSwapwalletAllowedTokens();
+      if (!tokens.length) {
+        await tg("sendMessage", { chat_id: chatId, text: "فعلاً هیچ روش پرداختی برای SwapWallet در دسترس نیست." });
+        return;
+      }
+      await setState(userId, "await_swapwallet_asset_select", { productId, discountInput, walletUsedParam, overrides });
+      await tg("sendMessage", {
+        chat_id: chatId,
+        text: "پرداخت با SwapWallet\nکدام ارز/شبکه را انتخاب می‌کنید؟",
+        reply_markup: {
+          inline_keyboard: tokens
+            .slice(0, 12)
+            .map((t) => [cb(`${t.token} (${t.network})`, `swapwallet_asset_${t.token}_${t.network}`, "primary")])
+            .concat([[homeButton()]])
+        }
+      });
+    } catch (e) {
+      logError("swapwallet_allowed_tokens_failed", e, { userId, chatId });
+      await tg("sendMessage", { chat_id: chatId, text: "خطا در دریافت گزینه‌های پرداخت SwapWallet." });
+    }
+    return;
+  }
+
   const purchaseId = `P${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
   if (discountCode) {
     await sql`UPDATE discounts SET used_count = used_count + 1 WHERE code = ${discountCode};`;
@@ -7740,6 +7806,88 @@ async function createOrder(
         ]
       }
     });
+    return;
+  }
+  if (paymentMethod === "swapwallet") {
+    const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
+    if (!callbackBase) {
+      await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+      await notifyAdmins(`⚠️ تنظیمات Callback Base ناقص است (SwapWallet)\nسفارش: ${purchaseId}`, {
+        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+      });
+      return;
+    }
+    const apiKey = ((await getSetting("swapwallet_api_key")) || "").trim();
+    const shopUsername = ((await getSetting("swapwallet_shop_username")) || "").trim();
+    if (!apiKey || !shopUsername) {
+      await tg("sendMessage", { chat_id: chatId, text: "تنظیمات SwapWallet کامل نیست. لطفاً به پشتیبانی پیام دهید." });
+      await notifyAdmins(`⚠️ تنظیمات SwapWallet ناقص است\nسفارش: ${purchaseId}\napiKey:${apiKey ? "ok" : "missing"}\nshop:${shopUsername ? "ok" : "missing"}`, {
+        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+      });
+      return;
+    }
+    try {
+      const { createSwapwalletTemporaryWalletInvoice } = await import("./swapwallet.js");
+      const invoice = await createSwapwalletTemporaryWalletInvoice({
+        apiKey,
+        shopUsername,
+        amountToman: finalPrice,
+        allowedToken: String(swapwalletToken || "USDT"),
+        network: String(swapwalletNetwork || "TRON"),
+        ttlSeconds: 20 * 60,
+        orderId: purchaseId,
+        webhookUrl: `${callbackBase}/api/swapwallet-callback`,
+        description: `خرید محصول ${productNameSnapshot}`,
+        customData: JSON.stringify({ purchaseId })
+      });
+      const linksRaw = Array.isArray((invoice.rawResult as any)?.links) ? ((invoice.rawResult as any).links as any[]) : [];
+      const links = linksRaw
+        .map((l) => ({ name: String(l?.name || "").trim(), url: String(l?.url || "").trim() }))
+        .filter((l) => l.url);
+      const primaryUrl = (links[0]?.url || invoice.urls[0] || "").trim() || null;
+      const invoiceId = String(invoice.invoiceId || "").trim();
+      await sql`
+        INSERT INTO orders
+        (
+          purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
+          payment_method, discount_code, discount_amount, final_price, tron_amount, status, wallet_used,
+          swapwallet_invoice_id, swapwallet_payment_url, swapwallet_status
+        )
+        VALUES
+        (
+          ${purchaseId}, ${userId}, ${product.id}, ${productNameSnapshot}, ${sellMode}, ${product.panel_id || null}, ${parseDeliveryMode(String(product.panel_delivery_mode || ""))},
+          ${JSON.stringify(panelConfigSnapshot)}::jsonb,
+          'swapwallet', ${discountCode}, ${discountAmount}, ${finalPrice}, 0, 'pending', ${walletUsed},
+          ${invoiceId}, ${primaryUrl}, 'new'
+        );
+      `;
+      const exp = invoice.expiredAt ? `\n⏰ مهلت پرداخت: ${String(invoice.expiredAt)}` : "";
+      await tg("sendMessage", {
+        chat_id: chatId,
+        text:
+          `سفارش شما ساخته شد ✅\n` +
+          `شناسه خرید: ${purchaseId}\n` +
+          `محصول: ${productNameSnapshot}\n` +
+          `مبلغ: ${formatPriceToman(finalPrice)} تومان\n` +
+          `روش: SwapWallet (${String(swapwalletToken)} / ${String(swapwalletNetwork)})\n\n` +
+          `📱 آدرس کیف پول:\n\n${invoice.walletAddress}\n` +
+          exp +
+          `\n\nبعد از پرداخت، روی «بررسی پرداخت» بزنید.`,
+        reply_markup: {
+          inline_keyboard: [
+            ...links.slice(0, 2).map((l) => [{ text: l.name ? `💳 ${l.name}` : "💳 پرداخت", url: l.url }]),
+            [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
+            [homeButton()]
+          ]
+        }
+      });
+    } catch (error) {
+      logError("create_swapwallet_invoice_failed", error, { chatId, userId, productId, purchaseId });
+      await notifyAdmins(`❌ خطا در ساخت فاکتور SwapWallet\nسفارش: ${purchaseId}\nعلت: ${(error as Error).message || String(error)}`, {
+        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+      });
+      await tg("sendMessage", { chat_id: chatId, text: "ساخت لینک پرداخت با خطا مواجه شد. لطفاً کمی بعد دوباره تلاش کنید یا به پشتیبانی پیام دهید." });
+    }
     return;
   }
   if (paymentMethod === "tetrapay") {
@@ -8267,6 +8415,8 @@ export async function fulfillOrderByPaymentId(paymentId: string) {
           ? "تتراپی"
           : paymentMethod === "plisio"
             ? "Plisio"
+            : paymentMethod === "swapwallet"
+              ? "SwapWallet"
             : paymentMethod === "crypto"
               ? "کریپتو"
               : paymentMethod || "-";
@@ -9009,6 +9159,22 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const overrides = state.payload.overrides ? (state.payload.overrides as any) : null;
     await clearState(userId);
     await createOrder(chatId, userId, productId, `crypto_${walletId}`, discountInput, walletUsedParam, overrides);
+    return;
+  }
+  if (data.startsWith("swapwallet_asset_")) {
+    const payload = data.replace("swapwallet_asset_", "");
+    const parts = payload.split("_").map((x) => x.trim()).filter(Boolean);
+    const token = parts.length ? parts[0].toUpperCase() : "";
+    const network = parts.length > 1 ? parts[1].toUpperCase() : "";
+    if (!token || !network) return;
+    const state = await getState(userId);
+    if (!state || state.state !== "await_swapwallet_asset_select") return;
+    const productId = Number(state.payload.productId);
+    const discountInput = state.payload.discountInput ? String(state.payload.discountInput) : null;
+    const walletUsedParam = Number(state.payload.walletUsedParam || 0);
+    const overrides = state.payload.overrides ? (state.payload.overrides as any) : null;
+    await clearState(userId);
+    await createOrder(chatId, userId, productId, `swapwallet_${token}_${network}`, discountInput, walletUsedParam, overrides);
     return;
   }
   if (data.startsWith("discount_yes_")) {
@@ -11443,6 +11609,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const tronadoKeyMasked = maskSecret((await getSetting("tronado_api_key")) || "");
     const tetrapayKeyMasked = maskSecret((await getSetting("tetrapay_api_key")) || "");
     const plisioKeyMasked = maskSecret((await getSetting("plisio_api_key")) || "");
+    const swapwalletKeyMasked = maskSecret((await getSetting("swapwallet_api_key")) || "");
+    const swapwalletShop = ((await getSetting("swapwallet_shop_username")) || "").trim();
     const plisioAutoRate = await getBoolSetting("plisio_auto_rate", true);
     const plisioExtra = (await getSetting("plisio_usdt_extra_toman")) || "0";
     const plisioFallback = (await getSetting("plisio_usdt_rate_fallback_toman")) || (await getSetting("plisio_usd_rate_toman")) || "";
@@ -11458,6 +11626,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `کلید Tronado: ${tronadoKeyMasked}\n` +
         `کلید TetraPay: ${tetrapayKeyMasked}\n` +
         `کلید Plisio: ${plisioKeyMasked}\n` +
+        `کلید SwapWallet: ${swapwalletKeyMasked}${swapwalletShop ? ` | ${swapwalletShop}` : ""}\n` +
         `نرخ Plisio: ${plisioAutoRate ? "خودکار (USDT)" : "دستی"}\n` +
         `حاشیه تومان/USDT: ${plisioExtra}\n` +
         `${plisioFallback ? `نرخ دستی (fallback): ${plisioFallback}\n` : ""}` +
@@ -11630,6 +11799,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const tronadoKeyMasked = maskSecret((await getSetting("tronado_api_key")) || "");
     const tetrapayKeyMasked = maskSecret((await getSetting("tetrapay_api_key")) || "");
     const plisioKeyMasked = maskSecret((await getSetting("plisio_api_key")) || "");
+    const swapwalletKeyMasked = maskSecret((await getSetting("swapwallet_api_key")) || "");
+    const swapwalletShop = ((await getSetting("swapwallet_shop_username")) || "").trim();
     const usdtAutoRate = await getBoolSetting("usdt_auto_rate", true);
     const usdtManual = ((await getSetting("usdt_toman_rate")) || "").trim();
     const plisioAutoRate = await getBoolSetting("plisio_auto_rate", true);
@@ -11643,6 +11814,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `Tronado: ${tronadoKeyMasked}\n` +
         `TetraPay: ${tetrapayKeyMasked}\n` +
         `Plisio: ${plisioKeyMasked}\n` +
+        `SwapWallet: ${swapwalletKeyMasked}${swapwalletShop ? ` | ${swapwalletShop}` : ""}\n` +
         `نرخ USDT: ${usdtAutoRate ? "خودکار (CoinGecko)" : "دستی"}${usdtManual ? ` | ${usdtManual} تومان` : ""}\n` +
         `نرخ Plisio: ${plisioAutoRate ? "خودکار (IRR→USDT)" : "دستی"}\n` +
         `حاشیه تومان/USDT: ${plisioExtra}\n` +
@@ -11654,6 +11826,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           [cb("🔑 کلید Tronado", "admin_set_tronado_api_key", "primary")],
           [cb("🔑 کلید TetraPay", "admin_set_tetrapay_api_key", "primary")],
           [cb("🔑 کلید Plisio", "admin_set_plisio_api_key", "primary")],
+          [cb("🔑 کلید SwapWallet", "admin_set_swapwallet_api_key", "primary")],
+          [cb("🏷 Shop SwapWallet", "admin_set_swapwallet_shop_username", "primary")],
           [cb("🪙 کیف پول‌های کریپتو", "admin_crypto_wallets", "primary")],
           [cb(usdtAutoRate ? "✅ نرخ خودکار USDT" : "❌ نرخ خودکار USDT", "admin_toggle_usdt_auto_rate", usdtAutoRate ? "success" : "danger")],
           [cb("💱 نرخ دستی USDT", "admin_set_usdt_toman_rate", "primary")],
@@ -11836,6 +12010,16 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "admin_set_plisio_api_key") {
     await setState(userId, "admin_set_plisio_api_key");
     await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio را ارسال کنید.\nبرای پاک‌کردن: -" });
+    return;
+  }
+  if (data === "admin_set_swapwallet_api_key") {
+    await setState(userId, "admin_set_swapwallet_api_key");
+    await tg("sendMessage", { chat_id: chatId, text: "کلید SwapWallet را ارسال کنید.\nبرای پاک‌کردن: -" });
+    return;
+  }
+  if (data === "admin_set_swapwallet_shop_username") {
+    await setState(userId, "admin_set_swapwallet_shop_username");
+    await tg("sendMessage", { chat_id: chatId, text: "username فروشگاه SwapWallet را ارسال کنید (بدون @).\nبرای پاک‌کردن: -" });
     return;
   }
   if (data === "admin_toggle_usdt_auto_rate") {
