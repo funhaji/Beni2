@@ -1,13 +1,19 @@
 import { handleTelegramUpdate } from "../lib/bot.js";
 import { tg } from "../lib/telegram.js";
 import { logError } from "../lib/log.js";
+import { ensureSchema } from "../lib/db.js"; 
+
 export default async function handler(req, res) {
     if (req.method !== "POST") {
         res.status(405).json({ ok: false, error: "Method not allowed" });
         return;
     }
+
     try {
+        await ensureSchema();
+
         await handleTelegramUpdate(req.body);
+
         res.status(200).json({ ok: true });
     }
     catch (error) {
@@ -16,7 +22,7 @@ export default async function handler(req, res) {
             hasBody: Boolean(req.body),
             updateId: req.body?.update_id
         });
-        // Attempt to notify the user that an internal error occurred so they don't face silent failure
+
         try {
             const chatId = req.body?.message?.chat?.id || req.body?.callback_query?.message?.chat?.id;
             if (chatId) {
@@ -25,10 +31,8 @@ export default async function handler(req, res) {
                     text: "❌ متاسفانه خطایی در سرور رخ داد. لطفا مجدداً تلاش کنید."
                 });
             }
-        }
-        catch (e) {
-            // Ignore errors here (e.g. if user blocked bot)
-        }
+        } catch (e) {}
+
         res.status(200).json({ ok: false, error: String(error.message || error) });
     }
 }
