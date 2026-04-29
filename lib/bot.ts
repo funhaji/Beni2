@@ -12421,6 +12421,8 @@ async function handleMessage(update: TgUpdate["message"]) {
 }
 
 export async function handleTelegramUpdate(update: TgUpdate) {
+  await ensureSchema();
+
   if (update.update_id) {
     const inserted = await sql`
       INSERT INTO processed_updates (update_id)
