@@ -3946,17 +3946,19 @@ async function parseAndApplyState(
     await showOrderDetails(chatId, userId, purchaseId);
     return true;
   }
-  if (state.state === "await_crypto_receipt") {
+  if (state.state === "await_crypto_receipt" && state.payload.purchaseId) {
     if (!photoFileId) {
       await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کنید." });
       return true;
     }
     const purchaseId = String(state.payload.purchaseId || "").trim();
-    if (!purchaseId) return true;
     const rows = await sql`
       UPDATE orders
       SET receipt_file_id = ${photoFileId}, status = 'receipt_submitted'
-      WHERE purchase_id = ${purchaseId} AND telegram_id = ${userId} AND status != 'denied'
+      WHERE purchase_id = ${purchaseId}
+        AND telegram_id = ${userId}
+        AND status = 'pending'
+        AND payment_method = 'crypto'
       RETURNING id, purchase_id, product_name_snapshot, final_price, crypto_currency, crypto_network, crypto_amount, crypto_address;
     `;
     await clearState(userId);
@@ -4099,7 +4101,7 @@ async function parseAndApplyState(
     await createOrder(chatId, userId, productId, paymentMethod, text.trim() || null, walletUsed, overrides);
     return true;
   }
-  if (state.state === "await_crypto_receipt") {
+  if (state.state === "await_crypto_receipt" && state.payload.orderId) {
     if (!photoFileId) {
       await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کن." });
       return true;
@@ -4110,7 +4112,8 @@ async function parseAndApplyState(
       SET receipt_file_id = ${photoFileId}, status = 'receipt_submitted'
       WHERE id = ${orderId}
         AND telegram_id = ${userId}
-        AND status NOT IN ('paid', 'denied', 'cancelled')
+        AND status = 'pending'
+        AND payment_method IN ('tronado', 'plisio', 'tetrapay')
       RETURNING id;
     `;
     if (!rows.length) {
@@ -4201,51 +4204,17 @@ async function parseAndApplyState(
     }
     const orderId = Number(state.payload.orderId);
 
-    const orderRows = await sql`SELECT wallet_used, product_name_snapshot FROM orders WHERE id = ${orderId} LIMIT 1;`;
-    if (!orderRows.length) {
-      await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد." });
-      await clearState(userId);
-      return true;
-    }
-    const walletUsed = Number(orderRows[0].wallet_used || 0);
-    if (walletUsed > 0) {
-      const userRows = await sql`SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
-      const walletBalance = Number(userRows[0]?.wallet_balance || 0);
-      if (walletBalance < walletUsed) {
-        await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای اعمال روی این سفارش کافی نیست. لطفاً سفارش جدیدی ثبت کنید." });
-        await sql`UPDATE orders SET status = 'cancelled' WHERE id = ${orderId}`;
-        await clearState(userId);
-        return true;
-      }
-    }
-
     let rows: Record<string, any>[] = [];
     try {
-      if (walletUsed > 0) {
-        rows = await sql`
-          WITH deducted AS (
-            UPDATE users SET wallet_balance = wallet_balance - ${walletUsed} WHERE telegram_id = ${userId} AND wallet_balance >= ${walletUsed}
-            RETURNING telegram_id
-          ),
-          txn AS (
-            INSERT INTO wallet_transactions (telegram_id, amount, type, description, created_at)
-            SELECT telegram_id, ${-walletUsed}, 'purchase', ${`کسر بخشی از مبلغ خرید محصول ${orderRows[0].product_name_snapshot}`}, NOW()
-            FROM deducted
-            RETURNING id
-          )
-          UPDATE orders
-          SET receipt_file_id = ${photoFileId}, status = 'receipt_submitted'
-          WHERE id = ${orderId} AND EXISTS (SELECT 1 FROM deducted)
-          RETURNING purchase_id, final_price, payment_method, wallet_used;
-        `;
-      } else {
-        rows = await sql`
-          UPDATE orders
-          SET receipt_file_id = ${photoFileId}, status = 'receipt_submitted'
-          WHERE id = ${orderId}
-          RETURNING purchase_id, final_price, payment_method, wallet_used;
-        `;
-      }
+      rows = await sql`
+        UPDATE orders
+        SET receipt_file_id = ${photoFileId}, status = 'receipt_submitted'
+        WHERE id = ${orderId}
+          AND telegram_id = ${userId}
+          AND status = 'awaiting_receipt'
+          AND payment_method = 'card2card'
+        RETURNING purchase_id, final_price, payment_method, wallet_used;
+      `;
     } catch (e) {
       logError("receipt_submit_transaction_failed", e, { orderId });
       await tg("sendMessage", { chat_id: chatId, text: "خطا در ثبت رسید. لطفاً دوباره تلاش کنید." });
@@ -4253,7 +4222,7 @@ async function parseAndApplyState(
     }
 
     if (!rows.length) {
-      await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد یا موجودی کیف پول کافی نیست." });
+      await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد یا امکان ثبت رسید برای آن وجود ندارد." });
       await clearState(userId);
       return true;
     }
@@ -6777,6 +6746,214 @@ async function resolveDiscount(code: string | null, basePrice: number) {
   return { discountAmount: Math.max(0, Math.min(discountAmount, basePrice)), discountCode: String(d.code) };
 }
 
+type OrderInsertInput = {
+  purchaseId: string;
+  telegramId: number;
+  productId: number;
+  productNameSnapshot: string;
+  sellMode: string;
+  sourcePanelId: number | null;
+  panelDeliveryMode: string;
+  panelConfigSnapshot: Record<string, unknown>;
+  paymentMethod: string;
+  cardId?: number | null;
+  discountCode: string | null;
+  discountAmount: number;
+  finalPrice: number;
+  tronAmount: number;
+  status: string;
+  walletUsed: number;
+  tronadoToken?: string | null;
+  tronadoPaymentUrl?: string | null;
+  plisioTxnId?: string | null;
+  plisioInvoiceUrl?: string | null;
+  plisioStatus?: string | null;
+  cryptoWalletId?: number | null;
+  cryptoCurrency?: string | null;
+  cryptoNetwork?: string | null;
+  cryptoAddress?: string | null;
+  cryptoAmount?: number | null;
+  cryptoExpiresAt?: string | null;
+  swapwalletInvoiceId?: string | null;
+  swapwalletPaymentUrl?: string | null;
+  swapwalletStatus?: string | null;
+  walletTransactionDescription?: string | null;
+};
+
+async function claimDiscountUsage(code: string) {
+  const rows = await sql`
+    UPDATE discounts
+    SET used_count = used_count + 1
+    WHERE code = ${code.toUpperCase()}
+      AND active = TRUE
+      AND (usage_limit IS NULL OR used_count < usage_limit)
+    RETURNING code;
+  `;
+  return rows.length > 0;
+}
+
+async function releaseDiscountUsage(code: string) {
+  await sql`
+    UPDATE discounts
+    SET used_count = CASE WHEN used_count > 0 THEN used_count - 1 ELSE 0 END
+    WHERE code = ${code.toUpperCase()};
+  `;
+}
+
+async function withClaimedDiscount<T>(discountCode: string | null, action: () => Promise<T>) {
+  let claimed = false;
+  try {
+    if (discountCode) {
+      claimed = await claimDiscountUsage(discountCode);
+      if (!claimed) {
+        throw new Error("discount_unavailable");
+      }
+    }
+    return await action();
+  } catch (error) {
+    if (claimed && discountCode) {
+      try {
+        await releaseDiscountUsage(discountCode);
+      } catch (releaseError) {
+        logError("release_discount_usage_failed", releaseError, { discountCode });
+      }
+    }
+    throw error;
+  }
+}
+
+async function insertOrderRecord(input: OrderInsertInput) {
+  const panelConfigJson = JSON.stringify(input.panelConfigSnapshot || {});
+  const walletUsed = Math.max(0, Math.round(Number(input.walletUsed || 0)));
+  const discountAmount = Math.max(0, Math.round(Number(input.discountAmount || 0)));
+  const finalPrice = Math.max(0, Math.round(Number(input.finalPrice || 0)));
+  const tronAmount = Number(input.tronAmount || 0);
+  const walletDescription =
+    input.walletTransactionDescription ||
+    `خرید محصول ${input.productNameSnapshot} (سفارش ${input.purchaseId})`;
+
+  if (walletUsed > 0) {
+    const rows = await sql`
+      WITH deducted AS (
+        UPDATE users
+        SET wallet_balance = wallet_balance - ${walletUsed}
+        WHERE telegram_id = ${input.telegramId}
+          AND wallet_balance >= ${walletUsed}
+        RETURNING telegram_id
+      ),
+      inserted AS (
+        INSERT INTO orders
+        (
+          purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
+          payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used,
+          tronado_token, tronado_payment_url,
+          plisio_txn_id, plisio_invoice_url, plisio_status,
+          crypto_wallet_id, crypto_currency, crypto_network, crypto_address, crypto_amount, crypto_expires_at,
+          swapwallet_invoice_id, swapwallet_payment_url, swapwallet_status
+        )
+        SELECT
+          ${input.purchaseId}, telegram_id, ${input.productId}, ${input.productNameSnapshot}, ${input.sellMode}, ${input.sourcePanelId}, ${input.panelDeliveryMode},
+          ${panelConfigJson}::jsonb,
+          ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed},
+          ${input.tronadoToken ?? null}, ${input.tronadoPaymentUrl ?? null},
+          ${input.plisioTxnId ?? null}, ${input.plisioInvoiceUrl ?? null}, ${input.plisioStatus ?? null},
+          ${input.cryptoWalletId ?? null}, ${input.cryptoCurrency ?? null}, ${input.cryptoNetwork ?? null}, ${input.cryptoAddress ?? null}, ${input.cryptoAmount ?? null}, ${input.cryptoExpiresAt ?? null},
+          ${input.swapwalletInvoiceId ?? null}, ${input.swapwalletPaymentUrl ?? null}, ${input.swapwalletStatus ?? null}
+        FROM deducted
+        RETURNING id
+      ),
+      txn AS (
+        INSERT INTO wallet_transactions (telegram_id, amount, type, description, created_at)
+        SELECT telegram_id, ${-walletUsed}, 'purchase', ${walletDescription}, NOW()
+        FROM deducted
+        WHERE EXISTS (SELECT 1 FROM inserted)
+        RETURNING id
+      )
+      SELECT id FROM inserted;
+    `;
+    if (!rows.length) {
+      throw new Error("wallet_insufficient");
+    }
+    return Number(rows[0].id);
+  }
+
+  const rows = await sql`
+    INSERT INTO orders
+    (
+      purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
+      payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used,
+      tronado_token, tronado_payment_url,
+      plisio_txn_id, plisio_invoice_url, plisio_status,
+      crypto_wallet_id, crypto_currency, crypto_network, crypto_address, crypto_amount, crypto_expires_at,
+      swapwallet_invoice_id, swapwallet_payment_url, swapwallet_status
+    )
+    VALUES
+    (
+      ${input.purchaseId}, ${input.telegramId}, ${input.productId}, ${input.productNameSnapshot}, ${input.sellMode}, ${input.sourcePanelId}, ${input.panelDeliveryMode},
+      ${panelConfigJson}::jsonb,
+      ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed},
+      ${input.tronadoToken ?? null}, ${input.tronadoPaymentUrl ?? null},
+      ${input.plisioTxnId ?? null}, ${input.plisioInvoiceUrl ?? null}, ${input.plisioStatus ?? null},
+      ${input.cryptoWalletId ?? null}, ${input.cryptoCurrency ?? null}, ${input.cryptoNetwork ?? null}, ${input.cryptoAddress ?? null}, ${input.cryptoAmount ?? null}, ${input.cryptoExpiresAt ?? null},
+      ${input.swapwalletInvoiceId ?? null}, ${input.swapwalletPaymentUrl ?? null}, ${input.swapwalletStatus ?? null}
+    )
+    RETURNING id;
+  `;
+  if (!rows.length) {
+    throw new Error("order_insert_failed");
+  }
+  return Number(rows[0].id);
+}
+
+async function refundWalletUsage(telegramId: number, amount: number, description: string) {
+  const safeAmount = Math.max(0, Math.round(Number(amount || 0)));
+  if (!safeAmount) return;
+  await sql`
+    WITH refunded AS (
+      UPDATE users
+      SET wallet_balance = wallet_balance + ${safeAmount}
+      WHERE telegram_id = ${telegramId}
+      RETURNING telegram_id
+    )
+    INSERT INTO wallet_transactions (telegram_id, amount, type, description, created_at)
+    SELECT telegram_id, ${safeAmount}, 'refund', ${description}, NOW()
+    FROM refunded;
+  `;
+}
+
+async function cancelExpiredCryptoOrders() {
+  const rows = await sql`
+    UPDATE orders
+    SET status = 'cancelled'
+    WHERE payment_method = 'crypto'
+      AND status = 'pending'
+      AND crypto_expires_at < NOW()
+    RETURNING telegram_id, purchase_id, wallet_used;
+  `;
+  for (const row of rows) {
+    const walletUsed = Number(row.wallet_used || 0);
+    if (walletUsed > 0) {
+      try {
+        await refundWalletUsage(
+          Number(row.telegram_id),
+          walletUsed,
+          `بازگشت مبلغ کیف پول به دلیل انقضای سفارش ${row.purchase_id}`
+        );
+      } catch (error) {
+        logError("refund_expired_crypto_wallet_failed", error, {
+          telegramId: Number(row.telegram_id),
+          purchaseId: String(row.purchase_id || ""),
+          walletUsed
+        });
+      }
+    }
+  }
+}
+
+function getOrderInsertErrorCode(error: unknown) {
+  return error instanceof Error ? error.message : "";
+}
+
 async function getProductPriceFromSizeMb(sizeMb: number) {
   const productRateRaw = await getSetting("product_price_per_gb_toman");
   const fallbackRateRaw = await getSetting("topup_price_per_gb_toman");
@@ -7634,11 +7811,54 @@ async function createOrder(
   }
 
   const purchaseId = `P${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
-  if (discountCode) {
-    await sql`UPDATE discounts SET used_count = used_count + 1 WHERE code = ${discountCode};`;
-  }
-  
   if (paymentMethod === "wallet") {
+    try {
+      const orderId = await withClaimedDiscount(discountCode, () =>
+        insertOrderRecord({
+          purchaseId,
+          telegramId: userId,
+          productId: Number(product.id),
+          productNameSnapshot,
+          sellMode,
+          sourcePanelId: product.panel_id ? Number(product.panel_id) : null,
+          panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
+          panelConfigSnapshot,
+          paymentMethod: "wallet",
+          discountCode,
+          discountAmount,
+          finalPrice: 0,
+          tronAmount: 0,
+          status: "pending",
+          walletUsed,
+          walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+        })
+      );
+
+      await tg("sendMessage", {
+        chat_id: chatId,
+        text: `✅ مبلغ ${formatPriceToman(walletUsed)} تومان از کیف پول شما کسر شد و سفارش ثبت گردید.\nدرحال آماده‌سازی محصول...`
+      });
+
+      const fulfill = await finalizeOrder(orderId, null);
+      if (!fulfill.ok && fulfill.reason === "stock_empty") {
+        await tg("sendMessage", { chat_id: chatId, text: "موجودی صفر است. ادمین پیگیری می‌کند." });
+      }
+    } catch (error) {
+      const code = getOrderInsertErrorCode(error);
+      if (code === "discount_unavailable") {
+        await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+        return;
+      }
+      if (code === "wallet_insufficient") {
+        await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما کافی نیست." });
+        return;
+      }
+      logError("create_wallet_order_failed", error, { chatId, userId, productId, purchaseId });
+      await tg("sendMessage", { chat_id: chatId, text: "ساخت سفارش با خطا مواجه شد. لطفاً دوباره تلاش کنید." });
+    }
+    return;
+  }
+  if (false && paymentMethod === "wallet") {
     // Atomic deduction and order insertion to prevent negative balance exploits
     const inserted = await sql`
       WITH deducted AS (
@@ -7696,6 +7916,73 @@ async function createOrder(
     const mainCardId = mainCardRaw ? Number(mainCardRaw) : NaN;
     const preferred = Number.isFinite(mainCardId) ? cards.find((c) => Number(c.id) === mainCardId) : null;
     const selected = randomMode ? cards[Math.floor(Math.random() * cards.length)] : preferred || cards[0];
+    try {
+      const orderId = await withClaimedDiscount(discountCode, () =>
+        insertOrderRecord({
+          purchaseId,
+          telegramId: userId,
+          productId: Number(product.id),
+          productNameSnapshot,
+          sellMode,
+          sourcePanelId: product.panel_id ? Number(product.panel_id) : null,
+          panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
+          panelConfigSnapshot,
+          paymentMethod: "card2card",
+          cardId: Number(selected.id),
+          discountCode,
+          discountAmount,
+          finalPrice,
+          tronAmount: 0,
+          status: "awaiting_receipt",
+          walletUsed,
+          walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+        })
+      );
+      await setState(userId, "await_receipt", { orderId });
+      await tg("sendMessage", {
+        chat_id: chatId,
+        text:
+          `سفارش شما ساخته شد ✅\n` +
+          `شناسه خرید: ${purchaseId}\n` +
+          `محصول: ${productNameSnapshot}\n` +
+          `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
+          `کارت مقصد:\n` +
+          `${selected.label}\n` +
+          `شماره کارت: ${selected.card_number}\n` +
+          `${selected.holder_name ? `صاحب کارت: ${selected.holder_name}\n` : ""}` +
+          `${selected.bank_name ? `بانک: ${selected.bank_name}\n` : ""}\n` +
+          `بعد از انتقال، اسکرین‌شات رسید را به صورت عکس ارسال کنید.`,
+        reply_markup: {
+          inline_keyboard: [[homeButton()]]
+        }
+      });
+    } catch (error) {
+      const code = getOrderInsertErrorCode(error);
+      if (code === "discount_unavailable") {
+        await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+        return;
+      }
+      if (code === "wallet_insufficient") {
+        await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+        return;
+      }
+      logError("create_card2card_order_failed", error, { chatId, userId, productId, purchaseId });
+      await tg("sendMessage", { chat_id: chatId, text: "ساخت سفارش با خطا مواجه شد. لطفاً دوباره تلاش کنید." });
+    }
+    return;
+  }
+
+  if (false && paymentMethod === "card2card") {
+    const cards = await sql`SELECT id, label, card_number, holder_name, bank_name FROM cards WHERE active = TRUE ORDER BY id ASC;`;
+    if (!cards.length) {
+      await tg("sendMessage", { chat_id: chatId, text: "فعلاً کارت فعالی برای پرداخت کارت‌به‌کارت ثبت نشده است." });
+      return;
+    }
+    const randomMode = await getBoolSetting("random_card_distribution", false);
+    const mainCardRaw = await getSetting("main_card_id");
+    const mainCardId = mainCardRaw ? Number(mainCardRaw) : NaN;
+    const preferred = Number.isFinite(mainCardId) ? cards.find((c) => Number(c.id) === mainCardId) : null;
+    const selected = randomMode ? cards[Math.floor(Math.random() * cards.length)] : preferred || cards[0];
     const inserted = await sql`
       INSERT INTO orders
       (
@@ -7731,6 +8018,110 @@ async function createOrder(
     return;
   }
   if (paymentMethod === "crypto") {
+    if (!cryptoWalletId) {
+      await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو انتخاب نشده است." });
+      return;
+    }
+    const walletRows = await sql`
+      SELECT id, currency, network, address, rate_mode, rate_toman_per_unit, extra_toman_per_unit, active
+      FROM crypto_wallets
+      WHERE id = ${cryptoWalletId}
+      LIMIT 1;
+    `;
+    if (!walletRows.length) {
+      await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو یافت نشد." });
+      return;
+    }
+    const w = walletRows[0] as CryptoWalletRow;
+    if (!cryptoWalletReady(w)) {
+      await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو به‌درستی تنظیم نشده یا غیرفعال است." });
+      return;
+    }
+    const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
+    let tomanPerUnit = 0;
+    if (w.rate_mode === "auto") {
+      const base = await getCryptoTomanPerUnitCached(String(w.currency || ""));
+      tomanPerUnit = base + Number(w.extra_toman_per_unit || 0);
+    } else {
+      tomanPerUnit = Number(w.rate_toman_per_unit || 0) + Number(w.extra_toman_per_unit || 0);
+    }
+    if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "نرخ کیف پول کریپتو معتبر نیست." });
+      return;
+    }
+    const decimals = String(w.currency).toUpperCase() === "USDT" ? 2 : 5;
+    const factor = 10 ** decimals;
+    const cryptoAmount = Math.ceil((finalPrice / tomanPerUnit) * factor) / factor;
+    if (!Number.isFinite(cryptoAmount) || cryptoAmount <= 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "مبلغ کریپتو معتبر نیست." });
+      return;
+    }
+    try {
+      await withClaimedDiscount(discountCode, () =>
+        insertOrderRecord({
+          purchaseId,
+          telegramId: userId,
+          productId: Number(product.id),
+          productNameSnapshot,
+          sellMode,
+          sourcePanelId: product.panel_id ? Number(product.panel_id) : null,
+          panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
+          panelConfigSnapshot,
+          paymentMethod: "crypto",
+          discountCode,
+          discountAmount,
+          finalPrice,
+          tronAmount: 0,
+          status: "pending",
+          walletUsed,
+          cryptoWalletId: Number(w.id),
+          cryptoCurrency: String(w.currency),
+          cryptoNetwork: String(w.network),
+          cryptoAddress: String(w.address || ""),
+          cryptoAmount,
+          cryptoExpiresAt: expiresAt.toISOString(),
+          walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+        })
+      );
+    } catch (error) {
+      const code = getOrderInsertErrorCode(error);
+      if (code === "discount_unavailable") {
+        await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+        return;
+      }
+      if (code === "wallet_insufficient") {
+        await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+        return;
+      }
+      logError("create_crypto_order_failed", error, { chatId, userId, productId, purchaseId, cryptoWalletId });
+      await tg("sendMessage", { chat_id: chatId, text: "ساخت سفارش با خطا مواجه شد. لطفاً دوباره تلاش کنید." });
+      return;
+    }
+
+    const cryptoText =
+      `سفارش شما ساخته شد ✅\n` +
+      `شناسه خرید: ${purchaseId}\n` +
+      `محصول: ${productNameSnapshot}\n` +
+      `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
+      `⏰ مهلت پرداخت: 20 دقیقه\n` +
+      `🪙 ارز: ${String(w.currency)}\n` +
+      `🌐 شبکه: ${String(w.network)}\n` +
+      `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
+      `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
+      `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`;
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: cryptoText,
+      reply_markup: {
+        inline_keyboard: [
+          [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
+          [homeButton()]
+        ]
+      }
+    });
+    return;
+  }
+  if (false && paymentMethod === "crypto") {
     if (!cryptoWalletId) {
       await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو انتخاب نشده است." });
       return;
@@ -7846,21 +8237,29 @@ async function createOrder(
         .filter((l) => l.url);
       const primaryUrl = (links[0]?.url || invoice.urls[0] || "").trim() || null;
       const invoiceId = String(invoice.invoiceId || "").trim();
-      await sql`
-        INSERT INTO orders
-        (
-          purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
-          payment_method, discount_code, discount_amount, final_price, tron_amount, status, wallet_used,
-          swapwallet_invoice_id, swapwallet_payment_url, swapwallet_status
-        )
-        VALUES
-        (
-          ${purchaseId}, ${userId}, ${product.id}, ${productNameSnapshot}, ${sellMode}, ${product.panel_id || null}, ${parseDeliveryMode(String(product.panel_delivery_mode || ""))},
-          ${JSON.stringify(panelConfigSnapshot)}::jsonb,
-          'swapwallet', ${discountCode}, ${discountAmount}, ${finalPrice}, 0, 'pending', ${walletUsed},
-          ${invoiceId}, ${primaryUrl}, 'new'
-        );
-      `;
+      await withClaimedDiscount(discountCode, () =>
+        insertOrderRecord({
+          purchaseId,
+          telegramId: userId,
+          productId: Number(product.id),
+          productNameSnapshot,
+          sellMode,
+          sourcePanelId: product.panel_id ? Number(product.panel_id) : null,
+          panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
+          panelConfigSnapshot,
+          paymentMethod: "swapwallet",
+          discountCode,
+          discountAmount,
+          finalPrice,
+          tronAmount: 0,
+          status: "pending",
+          walletUsed,
+          swapwalletInvoiceId: invoiceId,
+          swapwalletPaymentUrl: primaryUrl,
+          swapwalletStatus: "new",
+          walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+        })
+      );
       const exp = invoice.expiredAt ? `\n⏰ مهلت پرداخت: ${String(invoice.expiredAt)}` : "";
       await tg("sendMessage", {
         chat_id: chatId,
@@ -7882,6 +8281,15 @@ async function createOrder(
         }
       });
     } catch (error) {
+      const code = getOrderInsertErrorCode(error);
+      if (code === "discount_unavailable") {
+        await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+        return;
+      }
+      if (code === "wallet_insufficient") {
+        await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+        return;
+      }
       logError("create_swapwallet_invoice_failed", error, { chatId, userId, productId, purchaseId });
       await notifyAdmins(`❌ خطا در ساخت فاکتور SwapWallet\nسفارش: ${purchaseId}\nعلت: ${(error as Error).message || String(error)}`, {
         inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
@@ -7923,19 +8331,28 @@ async function createOrder(
         return;
       }
       
-      await sql`
-        INSERT INTO orders
-        (
-          purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
-          payment_method, discount_code, discount_amount, final_price, tron_amount, status, tronado_token, tronado_payment_url, wallet_used
-        )
-        VALUES
-        (
-          ${purchaseId}, ${userId}, ${product.id}, ${productNameSnapshot}, ${sellMode}, ${product.panel_id || null}, ${parseDeliveryMode(String(product.panel_delivery_mode || ""))},
-          ${JSON.stringify(panelConfigSnapshot)}::jsonb,
-          'tetrapay', ${discountCode}, ${discountAmount}, ${finalPrice}, 0, 'pending', ${orderRes.authority}, ${orderRes.paymentUrlBot}, ${walletUsed}
-        );
-      `;
+      await withClaimedDiscount(discountCode, () =>
+        insertOrderRecord({
+          purchaseId,
+          telegramId: userId,
+          productId: Number(product.id),
+          productNameSnapshot,
+          sellMode,
+          sourcePanelId: product.panel_id ? Number(product.panel_id) : null,
+          panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
+          panelConfigSnapshot,
+          paymentMethod: "tetrapay",
+          discountCode,
+          discountAmount,
+          finalPrice,
+          tronAmount: 0,
+          status: "pending",
+          walletUsed,
+          tronadoToken: orderRes.authority,
+          tronadoPaymentUrl: orderRes.paymentUrlBot,
+          walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+        })
+      );
       
       await tg("sendMessage", {
         chat_id: chatId,
@@ -7953,6 +8370,15 @@ async function createOrder(
         }
       });
     } catch (error) {
+      const code = getOrderInsertErrorCode(error);
+      if (code === "discount_unavailable") {
+        await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+        return;
+      }
+      if (code === "wallet_insufficient") {
+        await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+        return;
+      }
       logError("create_tetrapay_order_failed", error, { chatId, userId, productId });
       await tg("sendMessage", { chat_id: chatId, text: `ساخت سفارش با خطا مواجه شد: ${String((error as Error).message || error)}` });
     }
@@ -7991,21 +8417,29 @@ async function createOrder(
         callbackUrl: `${callbackBase}/api/plisio-callback?json=true`
       });
 
-      await sql`
-        INSERT INTO orders
-        (
-          purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
-          payment_method, discount_code, discount_amount, final_price, tron_amount, status, wallet_used,
-          plisio_txn_id, plisio_invoice_url, plisio_status
-        )
-        VALUES
-        (
-          ${purchaseId}, ${userId}, ${product.id}, ${productNameSnapshot}, ${sellMode}, ${product.panel_id || null}, ${parseDeliveryMode(String(product.panel_delivery_mode || ""))},
-          ${JSON.stringify(panelConfigSnapshot)}::jsonb,
-          'plisio', ${discountCode}, ${discountAmount}, ${finalPrice}, 0, 'pending', ${walletUsed},
-          ${invoice.txnId}, ${invoice.invoiceUrl}, 'new'
-        );
-      `;
+      await withClaimedDiscount(discountCode, () =>
+        insertOrderRecord({
+          purchaseId,
+          telegramId: userId,
+          productId: Number(product.id),
+          productNameSnapshot,
+          sellMode,
+          sourcePanelId: product.panel_id ? Number(product.panel_id) : null,
+          panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
+          panelConfigSnapshot,
+          paymentMethod: "plisio",
+          discountCode,
+          discountAmount,
+          finalPrice,
+          tronAmount: 0,
+          status: "pending",
+          walletUsed,
+          plisioTxnId: invoice.txnId,
+          plisioInvoiceUrl: invoice.invoiceUrl,
+          plisioStatus: "new",
+          walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+        })
+      );
 
       await tg("sendMessage", {
         chat_id: chatId,
@@ -8025,6 +8459,15 @@ async function createOrder(
         }
       });
     } catch (error) {
+      const code = getOrderInsertErrorCode(error);
+      if (code === "discount_unavailable") {
+        await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+        return;
+      }
+      if (code === "wallet_insufficient") {
+        await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+        return;
+      }
       logError("create_plisio_invoice_failed", error, { chatId, userId, productId, purchaseId });
       await notifyAdmins(`❌ خطا در ساخت فاکتور Plisio\nسفارش: ${purchaseId}\nعلت: ${(error as Error).message || String(error)}`, {
         inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
@@ -8071,19 +8514,28 @@ async function createOrder(
       callbackUrl: `${callbackBase}/api/tronado-callback`,
       apiKey: tronadoApiKey || undefined
     });
-    await sql`
-      INSERT INTO orders
-      (
-        purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
-        payment_method, discount_code, discount_amount, final_price, tron_amount, status, tronado_token, tronado_payment_url, wallet_used
-      )
-      VALUES
-      (
-        ${purchaseId}, ${userId}, ${product.id}, ${productNameSnapshot}, ${sellMode}, ${product.panel_id || null}, ${parseDeliveryMode(String(product.panel_delivery_mode || ""))},
-        ${JSON.stringify(panelConfigSnapshot)}::jsonb,
-        'tronado', ${discountCode}, ${discountAmount}, ${finalPrice}, ${Math.max(0.1, tronAmount)}, 'pending', ${token.token}, ${token.paymentUrl}, ${walletUsed}
-      );
-    `;
+    await withClaimedDiscount(discountCode, () =>
+      insertOrderRecord({
+        purchaseId,
+        telegramId: userId,
+        productId: Number(product.id),
+        productNameSnapshot,
+        sellMode,
+        sourcePanelId: product.panel_id ? Number(product.panel_id) : null,
+        panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
+        panelConfigSnapshot,
+        paymentMethod: "tronado",
+        discountCode,
+        discountAmount,
+        finalPrice,
+        tronAmount: Math.max(0.1, tronAmount),
+        status: "pending",
+        walletUsed,
+        tronadoToken: token.token,
+        tronadoPaymentUrl: token.paymentUrl,
+        walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+      })
+    );
     const feeLine = feeToman > 0 ? `کارمزد: ${formatPriceToman(feeToman)} تومان\n` : "";
     const payableLine = feeToman > 0 ? `مبلغ نهایی: ${formatPriceToman(requiredToman)} تومان\n` : "";
     await tg("sendMessage", {
@@ -8106,6 +8558,15 @@ async function createOrder(
       }
     });
   } catch (error) {
+    const code = getOrderInsertErrorCode(error);
+    if (code === "discount_unavailable") {
+      await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+      return;
+    }
+    if (code === "wallet_insufficient") {
+      await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+      return;
+    }
     logError("create_order_failed", error, { chatId, userId, productId, paymentMethod });
     await tg("sendMessage", { chat_id: chatId, text: `ساخت سفارش با خطا مواجه شد: ${String((error as Error).message || error)}` });
   }
@@ -8496,22 +8957,6 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
   if (!rows.length) return { ok: false, reason: "order_not_found" };
   const order = rows[0];
   const profile = await getTelegramProfileText(Number(order.telegram_id));
-
-  if (order.payment_method === 'tronado' || order.payment_method === 'tetrapay' || order.payment_method === 'plisio') {
-    const walletUsed = Number(order.wallet_used || 0);
-    if (walletUsed > 0) {
-        const negativeWalletUsed = -walletUsed;
-        await sql`
-          WITH deducted AS (
-            UPDATE users SET wallet_balance = wallet_balance - ${walletUsed} WHERE telegram_id = ${order.telegram_id}
-            RETURNING telegram_id
-          )
-          INSERT INTO wallet_transactions (telegram_id, amount, type, description, created_at)
-          SELECT telegram_id, ${negativeWalletUsed}, 'purchase', ${`کسر بخشی از مبلغ خرید محصول ${order.product_name}`}, NOW()
-          FROM deducted;
-        `;
-      }
-  }
 
   if (parseSellMode(String(order.sell_mode || "")) === "panel") {
     const panelRows = await sql`
@@ -9440,9 +9885,24 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       WHERE purchase_id = ${purchaseId}
         AND telegram_id = ${userId}
         AND status IN ('pending', 'awaiting_receipt')
-      RETURNING purchase_id;
+      RETURNING telegram_id, purchase_id, wallet_used;
     `;
-    await tg("sendMessage", { chat_id: chatId, text: rows.length ? "سفارش لغو شد ✅" : "امکان لغو این سفارش وجود ندارد." });
+    if (rows.length) {
+      const walletUsed = Number(rows[0].wallet_used || 0);
+      if (walletUsed > 0) {
+        await refundWalletUsage(
+          Number(rows[0].telegram_id),
+          walletUsed,
+          `بازگشت مبلغ کیف پول به دلیل لغو سفارش ${rows[0].purchase_id}`
+        );
+      }
+    }
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: rows.length
+        ? (Number(rows[0].wallet_used || 0) > 0 ? "سفارش لغو شد و مبلغ کیف پول شما برگشت ✅" : "سفارش لغو شد ✅")
+        : "امکان لغو این سفارش وجود ندارد."
+    });
     if (rows.length) {
       await showOrderDetails(chatId, userId, purchaseId);
     }
@@ -12085,15 +12545,20 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const rows = await sql`
       UPDATE orders
       SET status = 'denied', admin_decision_by = ${userId}
-      WHERE id = ${orderId} AND status != 'denied'
+      WHERE id = ${orderId}
+        AND status = 'receipt_submitted'
+        AND payment_method = 'card2card'
       RETURNING telegram_id, purchase_id, wallet_used;
     `;
     if (rows.length) {
       const order = rows[0];
       const walletUsed = Number(order.wallet_used || 0);
       if (walletUsed > 0) {
-        await sql`UPDATE users SET wallet_balance = wallet_balance + ${walletUsed} WHERE telegram_id = ${order.telegram_id};`;
-        await sql`INSERT INTO wallet_transactions (telegram_id, amount, type, description, created_at) VALUES (${order.telegram_id}, ${walletUsed}, 'refund', ${`برگشت وجه به دلیل رد رسید سفارش ${order.purchase_id}`}, NOW());`;
+        await refundWalletUsage(
+          Number(order.telegram_id),
+          walletUsed,
+          `برگشت وجه به دلیل رد رسید سفارش ${order.purchase_id}`
+        );
       }
       await tg("sendMessage", { chat_id: Number(order.telegram_id), text: `رسید سفارش ${order.purchase_id} رد شد ❌` });
     }
@@ -12115,15 +12580,20 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const rows = await sql`
       UPDATE orders
       SET status = 'denied', admin_decision_by = ${userId}
-      WHERE id = ${orderId} AND status != 'denied'
+      WHERE id = ${orderId}
+        AND status = 'receipt_submitted'
+        AND payment_method IN ('crypto', 'tronado', 'plisio', 'tetrapay')
       RETURNING telegram_id, purchase_id, wallet_used;
     `;
     if (rows.length) {
       const order = rows[0];
       const walletUsed = Number(order.wallet_used || 0);
       if (walletUsed > 0) {
-        await sql`UPDATE users SET wallet_balance = wallet_balance + ${walletUsed} WHERE telegram_id = ${order.telegram_id};`;
-        await sql`INSERT INTO wallet_transactions (telegram_id, amount, type, description, created_at) VALUES (${order.telegram_id}, ${walletUsed}, 'refund', ${`برگشت وجه به دلیل رد پرداخت کریپتو سفارش ${order.purchase_id}`}, NOW());`;
+        await refundWalletUsage(
+          Number(order.telegram_id),
+          walletUsed,
+          `برگشت وجه به دلیل رد پرداخت کریپتو سفارش ${order.purchase_id}`
+        );
       }
       await tg("sendMessage", { chat_id: Number(order.telegram_id), text: `پرداخت کریپتو سفارش ${order.purchase_id} رد شد ❌` });
     }
@@ -12132,82 +12602,64 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   }
   if (data.startsWith("receipt_ban_")) {
     const payload = data.replace("receipt_ban_", "");
-    const [orderIdRaw, targetUserRaw] = payload.split("_");
+    const [orderIdRaw] = payload.split("_");
     const orderId = Number(orderIdRaw);
-    const targetUser = Number(targetUserRaw);
-    await sql`
-      INSERT INTO banned_users (telegram_id, reason, banned_by)
-      VALUES (${targetUser}, 'fake_receipt', ${userId})
-      ON CONFLICT (telegram_id) DO UPDATE SET reason = EXCLUDED.reason, banned_by = EXCLUDED.banned_by;
-    `;
-    const rows = await sql`
-      UPDATE orders
-      SET status = 'denied', admin_decision_by = ${userId}
-      WHERE id = ${orderId} AND status != 'denied'
-      RETURNING purchase_id, wallet_used;
-    `;
-    if (rows.length) {
-      const order = rows[0];
-      const walletUsed = Number(order.wallet_used || 0);
-      if (walletUsed > 0) {
-        await sql`UPDATE users SET wallet_balance = wallet_balance + ${walletUsed} WHERE telegram_id = ${targetUser};`;
-        await sql`INSERT INTO wallet_transactions (telegram_id, amount, type, description, created_at) VALUES (${targetUser}, ${walletUsed}, 'refund', ${`برگشت وجه سفارش ${order.purchase_id}`}, NOW());`;
-      }
-    }
-    try {
-      await tg("sendMessage", { chat_id: targetUser, text: "به دلیل ارسال رسید نامعتبر، دسترسی شما مسدود شد." });
-    } catch (error) {
-      logError("ban_user_notify_failed", error, { targetUserId: targetUser, by: userId, mode: "receipt" });
-    }
-    await tg("sendMessage", { chat_id: chatId, text: rows.length ? "کاربر بن شد ✅" : "بن شد ✅" });
-    return;
-  }
-  if (data.startsWith("crypto_accept_")) {
-    const orderId = Number(data.replace("crypto_accept_", ""));
-    if (await isRateLimited(userId, "crypto_accept", 2000)) {
-      await tg("sendMessage", { chat_id: chatId, text: "درخواست شما در حال پردازش است. لطفاً چند لحظه صبر کنید." });
-      return;
-    }
-    const result = await finalizeOrder(orderId, userId);
-    await tg("sendMessage", { chat_id: chatId, text: result.ok ? "سفارش تایید شد ✅" : `خطا: ${result.reason}` });
-    return;
-  }
-  if (data.startsWith("crypto_deny_")) {
-    const orderId = Number(data.replace("crypto_deny_", ""));
     const rows = await sql`
       UPDATE orders
       SET status = 'denied', admin_decision_by = ${userId}
       WHERE id = ${orderId}
         AND status = 'receipt_submitted'
-        AND payment_method IN ('tronado', 'plisio', 'tetrapay')
-      RETURNING telegram_id, purchase_id;
+        AND payment_method = 'card2card'
+      RETURNING telegram_id, purchase_id, wallet_used;
     `;
     if (rows.length) {
-      await tg("sendMessage", { chat_id: Number(rows[0].telegram_id), text: `رسید پرداخت سفارش ${rows[0].purchase_id} رد شد ❌` }).catch(() => {});
+      const order = rows[0];
+      const targetUser = Number(order.telegram_id);
+      await sql`
+        INSERT INTO banned_users (telegram_id, reason, banned_by)
+        VALUES (${targetUser}, 'fake_receipt', ${userId})
+        ON CONFLICT (telegram_id) DO UPDATE SET reason = EXCLUDED.reason, banned_by = EXCLUDED.banned_by;
+      `;
+      const walletUsed = Number(order.wallet_used || 0);
+      if (walletUsed > 0) {
+        await refundWalletUsage(targetUser, walletUsed, `برگشت وجه سفارش ${order.purchase_id}`);
+      }
+      try {
+        await tg("sendMessage", { chat_id: targetUser, text: "به دلیل ارسال رسید نامعتبر، دسترسی شما مسدود شد." });
+      } catch (error) {
+        logError("ban_user_notify_failed", error, { targetUserId: targetUser, by: userId, mode: "receipt" });
+      }
     }
-    await tg("sendMessage", { chat_id: chatId, text: rows.length ? "رد شد ✅" : "سفارش یافت نشد یا قابل رد نیست." });
+    await tg("sendMessage", { chat_id: chatId, text: rows.length ? "کاربر بن شد ✅" : "سفارش یافت نشد یا قابل بن نیست." });
     return;
   }
   if (data.startsWith("crypto_ban_")) {
     const payload = data.replace("crypto_ban_", "");
-    const [orderIdRaw, targetUserRaw] = payload.split("_");
+    const [orderIdRaw] = payload.split("_");
     const orderId = Number(orderIdRaw);
-    const targetUser = Number(targetUserRaw);
-    await sql`
-      INSERT INTO banned_users (telegram_id, reason, banned_by)
-      VALUES (${targetUser}, 'fake_crypto_receipt', ${userId})
-      ON CONFLICT (telegram_id) DO UPDATE SET reason = EXCLUDED.reason, banned_by = EXCLUDED.banned_by;
-    `;
     const rows = await sql`
       UPDATE orders
       SET status = 'denied', admin_decision_by = ${userId}
       WHERE id = ${orderId}
         AND status = 'receipt_submitted'
         AND payment_method IN ('tronado', 'plisio', 'tetrapay')
-      RETURNING purchase_id;
+      RETURNING telegram_id, purchase_id, wallet_used;
     `;
-    await tg("sendMessage", { chat_id: targetUser, text: "به دلیل ارسال رسید نامعتبر، دسترسی شما مسدود شد." }).catch(() => {});
-    await tg("sendMessage", { chat_id: chatId, text: rows.length ? "کاربر بن شد ✅" : "بن شد ✅" });
+    if (rows.length) {
+      const order = rows[0];
+      const targetUser = Number(order.telegram_id);
+      await sql`
+        INSERT INTO banned_users (telegram_id, reason, banned_by)
+        VALUES (${targetUser}, 'fake_crypto_receipt', ${userId})
+        ON CONFLICT (telegram_id) DO UPDATE SET reason = EXCLUDED.reason, banned_by = EXCLUDED.banned_by;
+      `;
+      const walletUsed = Number(order.wallet_used || 0);
+      if (walletUsed > 0) {
+        await refundWalletUsage(targetUser, walletUsed, `برگشت وجه سفارش ${order.purchase_id}`);
+      }
+      await tg("sendMessage", { chat_id: targetUser, text: "به دلیل ارسال رسید نامعتبر، دسترسی شما مسدود شد." }).catch(() => {});
+    }
+    await tg("sendMessage", { chat_id: chatId, text: rows.length ? "کاربر بن شد ✅" : "سفارش یافت نشد یا قابل بن نیست." });
     return;
   }
   if (data.startsWith("admin_provide_config_")) {
@@ -12437,7 +12889,7 @@ export async function handleTelegramUpdate(update: TgUpdate) {
     
     // Prune old updates asynchronously without awaiting
     sql`DELETE FROM processed_updates WHERE created_at < NOW() - INTERVAL '1 day'`.catch(() => {});
-    sql`UPDATE orders SET status = 'cancelled' WHERE payment_method = 'crypto' AND status = 'pending' AND crypto_expires_at < NOW()`.catch(() => {});
+    cancelExpiredCryptoOrders().catch(() => {});
     sql`UPDATE wallet_topups SET status = 'cancelled' WHERE status = 'pending' AND crypto_expires_at IS NOT NULL AND crypto_expires_at < NOW()`.catch(() => {});
   }
 
