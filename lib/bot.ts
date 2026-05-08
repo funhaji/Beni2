@@ -332,9 +332,9 @@ async function getUserReferralRewardStatusSummary(userId: number) {
   };
 }
 
-async function captureReferralAttribution(userId: number, payload: string | null, canAssign: boolean) {
+async function captureReferralAttribution(userId: number, payload: string | null) {
   const normalized = String(payload || "").trim().toLowerCase();
-  if (!canAssign || !normalized.startsWith("ref_")) return false;
+  if (!normalized.startsWith("ref_")) return false;
   const inviterId = Number(normalized.slice(4));
   if (!Number.isFinite(inviterId) || inviterId <= 0 || inviterId === userId) return false;
   const inviterRows = await sql`SELECT telegram_id FROM users WHERE telegram_id = ${inviterId} LIMIT 1;`;
@@ -852,15 +852,26 @@ async function maybeQualifyReferralUser(userId: number) {
   if (settings.enabled) {
     const qualifiedCount = await countUserQualifiedReferrals(inviterId);
     const remaining = getReferralRemainingCount(qualifiedCount, settings.threshold);
-    if (remaining > 0) {
-      await tg("sendMessage", {
-        chat_id: inviterId,
-        text:
-          `👥 یک دعوت جدید برای شما ثبت شد.\n` +
-          `دعوت‌های تاییدشده: ${qualifiedCount}\n` +
-          `فقط ${remaining} نفر تا پاداش بعدی باقی مانده است.`
-      }).catch(() => {});
-    }
+    const referredRows = await sql`
+      SELECT username, first_name, last_name
+      FROM users
+      WHERE telegram_id = ${userId}
+      LIMIT 1;
+    `;
+    const referred = referredRows[0];
+    const referredName =
+      [String(referred?.first_name || "").trim(), String(referred?.last_name || "").trim()].filter(Boolean).join(" ").trim() ||
+      (referred?.username ? `@${String(referred.username).replace(/^@/, "").trim()}` : "یک کاربر");
+    const remainingLine =
+      remaining > 0 ? `فقط ${remaining} نفر تا پاداش بعدی باقی مانده است.` : "✅ آستانه پاداش تکمیل شد. پاداش شما در حال ثبت است.";
+    await tg("sendMessage", {
+      chat_id: inviterId,
+      text:
+        `👥 دعوت شما تایید شد!\n` +
+        `کاربر: ${referredName}\n` +
+        `دعوت‌های تاییدشده: ${qualifiedCount}\n` +
+        remainingLine
+    }).catch(() => {});
   }
   await maybeGrantReferralRewardsV2(inviterId);
 }
@@ -2628,6 +2639,7 @@ async function sendReferralMenu(chatId: number, userId: number) {
     ""
   ];
   lines.splice(3, 0, `این پاداش برای هر مضرب کامل از ${settings.threshold} دعوت، دوباره تکرار می‌شود.`);
+  lines.splice(4, 0, "نحوه دریافت جایزه: به صورت خودکار انجام می‌شود و نیازی به Claim دستی نیست.");
   lines.splice(8, 0, `جوایز در انتظار ادمین: ${rewardStatusSummary.awaitingAdmin}`);
   lines.splice(9, 0, `جوایز مسدودشده: ${rewardStatusSummary.blocked}`);
   if (inviteLink) {
@@ -2640,6 +2652,7 @@ async function sendReferralMenu(chatId: number, userId: number) {
   if (inviteLink) {
     keyboard.push([{ text: "📨 اشتراک‌گذاری لینک", url: buildReferralShareUrl(inviteLink) }]);
   }
+  keyboard.push([cb("🧭 راهنمای دریافت جایزه", "referral_claim_help", "primary")]);
   keyboard.push([cb("👥 فهرست دعوت‌ها", "referral_invitees", "primary"), cb("🧾 تاریخچه جوایز", "referral_rewards_history", "primary")]);
   keyboard.push([homeButton()]);
   await tg("sendMessage", {
@@ -2647,6 +2660,24 @@ async function sendReferralMenu(chatId: number, userId: number) {
     text: lines.join("\n"),
     parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+async function sendReferralClaimHelp(chatId: number) {
+  const settings = await getReferralSettingsSnapshot();
+  const rewardMode = settings.rewardType === "wallet" ? "اعتبار کیف پول" : "سفارش رایگان";
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text:
+      "🧭 راهنمای دریافت جایزه دعوت\n\n" +
+      "1) لینک اختصاصی خودت رو ارسال کن.\n" +
+      "2) وقتی کاربر با لینک تو وارد ربات بشه، لینک به اسم تو قفل میشه و تغییر نمی‌کنه.\n" +
+      "3) کاربر باید عضویت کانال‌ها رو کامل کنه.\n" +
+      "4) بعد از تایید عضویت، دعوت به حالت تاییدشده میره و بهت اعلان میاد.\n" +
+      `5) هر ${settings.threshold} دعوت تاییدشده، جایزه ${rewardMode} به صورت خودکار ثبت میشه.\n\n` +
+      "❌ نیازی به Claim دستی نیست.\n" +
+      "برای پیگیری وضعیت، از «فهرست دعوت‌ها» و «تاریخچه جوایز» استفاده کن.",
+    reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
   });
 }
 
@@ -10215,6 +10246,11 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await showReferralRewardHistory(chatId, userId);
     return;
   }
+  if (data === "referral_claim_help") {
+    await clearState(userId);
+    await sendReferralClaimHelp(chatId);
+    return;
+  }
   if (data === "wallet_charge") {
     await setState(userId, "await_wallet_charge_amount");
     await tg("sendMessage", {
@@ -13963,10 +13999,10 @@ async function handleMessage(update: TgUpdate["message"]) {
   const animationFileId = update.animation?.file_id || null;
   const chatId = update.chat.id;
   const userId = update.from.id;
-  const upserted = await upsertUser(update.from);
+  await upsertUser(update.from);
 
   if (startCommand?.payload) {
-    await captureReferralAttribution(userId, startCommand.payload, upserted.created);
+    await captureReferralAttribution(userId, startCommand.payload);
   }
 
   if (await isBanned(userId)) {
