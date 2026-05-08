@@ -668,7 +668,7 @@ async function maybeGrantReferralRewardsV2(inviterId: number) {
 
   for (let batch = 1; batch <= totalBatches; batch += 1) {
     let rewardRows = await sql`
-      SELECT id, status, failure_reason
+      SELECT id, status, failure_reason, order_id, updated_at
       FROM referral_rewards
       WHERE inviter_telegram_id = ${inviterId}
         AND reward_batch = ${batch}
@@ -703,14 +703,45 @@ async function maybeGrantReferralRewardsV2(inviterId: number) {
           ${`Reward batch ${batch}`},
           NOW()
         )
-        RETURNING id, status, failure_reason;
+        RETURNING id, status, failure_reason, order_id, updated_at;
       `;
     }
 
     const rewardId = Number(rewardRows[0].id);
     const previousStatus = String(rewardRows[0].status || "granted").toLowerCase() as ReferralRewardStatus;
     const previousFailureReason = String(rewardRows[0].failure_reason || "");
-    if (previousStatus === "granted" || previousStatus === "awaiting_admin") continue;
+    if (previousStatus === "granted") continue;
+    if (previousStatus === "awaiting_admin") {
+      const rewardOrderId = Number(rewardRows[0].order_id || 0);
+      const updatedAtMs = Date.parse(String(rewardRows[0].updated_at || ""));
+      const shouldRemind =
+        !Number.isFinite(updatedAtMs) ||
+        Date.now() - updatedAtMs >= 5 * 60 * 1000;
+      if (rewardOrderId > 0 && shouldRemind) {
+        const orderRows = await sql`
+          SELECT purchase_id, status
+          FROM orders
+          WHERE id = ${rewardOrderId}
+          LIMIT 1;
+        `;
+        if (orderRows.length && String(orderRows[0].status || "").toLowerCase() === "awaiting_config") {
+          await notifyAdmins(
+            `🛠 جایزه دعوت در انتظار اقدام ادمین است\nکاربر: ${inviterId}\nمرحله: ${batch}\nسفارش: ${String(orderRows[0].purchase_id || "-")}`,
+            { inline_keyboard: [[{ text: "ارسال کانفیگ جایزه", callback_data: `admin_provide_config_${rewardOrderId}` }]] }
+          );
+          if (adminIds.length === 0) {
+            await tg("sendMessage", {
+              chat_id: inviterId,
+              text:
+                "⚠️ جایزه شما در انتظار آماده‌سازی ادمین است اما هیچ ادمینی تنظیم نشده است.\n" +
+                "لطفاً ADMIN_IDS را تنظیم کنید یا به پشتیبانی پیام دهید."
+            }).catch(() => {});
+          }
+          await sql`UPDATE referral_rewards SET updated_at = NOW() WHERE id = ${rewardId};`;
+        }
+      }
+      continue;
+    }
 
     await sql`
       UPDATE referral_rewards
@@ -6068,11 +6099,32 @@ async function parseAndApplyState(
       await tg("sendMessage", { chat_id: chatId, text: "هیچ کانفیگی ارسال نشد." });
       return true;
     }
-    for (const line of lines) {
+    const deduped = Array.from(new Set(lines));
+    let insertedCount = 0;
+    let skippedCount = 0;
+    for (const line of deduped) {
+      const exists = await sql`
+        SELECT id
+        FROM inventory
+        WHERE product_id = ${productId}
+          AND config_value = ${line}
+        LIMIT 1;
+      `;
+      if (exists.length) {
+        skippedCount += 1;
+        continue;
+      }
       await sql`INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`;
+      insertedCount += 1;
     }
     await clearState(userId);
-    await tg("sendMessage", { chat_id: chatId, text: `${lines.length} کانفیگ اضافه شد ✅` });
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        `افزودن به انبار انجام شد ✅\n` +
+        `اضافه شد: ${insertedCount}\n` +
+        `تکراری/اسکیپ: ${skippedCount}`
+    });
     return true;
   }
   if (state.state === "admin_add_card") {
@@ -12496,7 +12548,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       text: `موجودی محصول:\nآزاد: ${availableCount}\nفروخته‌شده: ${soldCount}`,
       reply_markup: {
         inline_keyboard: [
-          [cb("➕ افزودن کانفیگ", `admin_add_stock_${productId}`, "success")],
+          [cb("➕ افزودن به انبار (Storage)", `admin_add_stock_${productId}`, "success")],
           [cb("🗑 لیست قابل حذف", `admin_available_list_${productId}`, "primary")],
           [cb("📦 لیست فروخته‌شده‌ها", `admin_sold_list_${productId}`, "primary")],
           [backButton("admin_inventory")]
@@ -12508,7 +12560,16 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data.startsWith("admin_add_stock_")) {
     const productId = Number(data.replace("admin_add_stock_", ""));
     await setState(userId, "admin_add_stock", { productId });
-    await tg("sendMessage", { chat_id: chatId, text: "هر کانفیگ را در یک خط بفرستید." });
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        "🗂 افزودن به انبار\n" +
+        "هر کانفیگ را در یک خط Paste کنید.\n" +
+        "نمونه:\n" +
+        "vmess://...\n" +
+        "vless://...\n" +
+        "trojan://..."
+    });
     return;
   }
   if (data.startsWith("admin_sold_list_")) {
