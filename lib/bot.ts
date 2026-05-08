@@ -90,7 +90,7 @@ type ConfigLookupMode = "config" | "uuid";
 type StartMediaKind = "none" | "text" | "sticker" | "animation" | "photo";
 type CustomOrderMode = "data" | "days";
 type ReferralRewardType = "wallet" | "config";
-type ReferralConfigDeliveryMode = "panel" | "storage" | "admin";
+type ReferralConfigDeliveryMode = "panel" | "admin";
 type ReferralRewardStatus = "pending" | "granted" | "awaiting_admin" | "blocked";
 
 type ReferralSettingsSnapshot = {
@@ -217,14 +217,14 @@ function normalizeReferralRewardType(raw: unknown): ReferralRewardType {
 
 function normalizeReferralConfigDeliveryMode(raw: unknown): ReferralConfigDeliveryMode {
   const value = String(raw || "").trim().toLowerCase();
-  if (value === "panel" || value === "storage" || value === "admin") return value;
+  if (value === "panel") return "panel";
+  if (value === "storage" || value === "admin") return "admin";
   return "admin";
 }
 
 function referralConfigDeliveryModeLabel(mode: ReferralConfigDeliveryMode) {
   if (mode === "panel") return "تحویل از پنل";
-  if (mode === "storage") return "تحویل از موجودی";
-  return "تحویل دستی ادمین";
+  return "تحویل دستی ادمین (اولویت با انبار)";
 }
 
 function referralRewardStatusLabel(status: ReferralRewardStatus) {
@@ -592,17 +592,17 @@ async function createReferralRewardOrderV2(
     }
     sellMode = "panel";
     sourcePanelId = Number(product.panel_id);
-  } else if (deliveryMode === "storage") {
-    if (Number(product.stock || 0) <= 0) {
-      return { ok: false as const, reason: "stock_empty", status: "blocked" as ReferralRewardStatus };
-    }
-    sellMode = "manual";
-    sourcePanelId = null;
-    panelConfigSnapshot = { ...basePanelConfig, force_require_inventory: true, force_awaiting_config: false };
   } else {
-    sellMode = "manual";
-    sourcePanelId = null;
-    panelConfigSnapshot = { ...basePanelConfig, force_awaiting_config: true };
+    // Manual mode: try reward inventory first, fallback to admin manual delivery.
+    if (Number(product.stock || 0) > 0) {
+      sellMode = "manual";
+      sourcePanelId = null;
+      panelConfigSnapshot = { ...basePanelConfig, force_require_inventory: true, force_awaiting_config: false };
+    } else {
+      sellMode = "manual";
+      sourcePanelId = null;
+      panelConfigSnapshot = { ...basePanelConfig, force_awaiting_config: true };
+    }
   }
 
   const orderId = await insertOrderRecord({
@@ -670,13 +670,13 @@ async function maybeGrantReferralRewardsV2(inviterId: number) {
     logInfo("referral_reward_skipped_wallet_amount_missing", { inviterId, walletAmount: settings.walletAmount });
     return;
   }
-  if (settings.rewardType === "config" && !settings.productId) {
-    logError("referral_reward_config_missing_product", new Error("referral_reward_product_id_missing"), { inviterId });
-    await notifyAdmins(`⚠️ جایزه دعوت تنظیم نشده است\nکاربر: ${inviterId}\nعلت: referral_reward_product_id خالی است.`);
+  if (settings.rewardType === "config" && settings.configDeliveryMode === "panel" && !settings.productId) {
+    logError("referral_reward_panel_missing_product", new Error("referral_reward_product_id_missing"), { inviterId });
+    await notifyAdmins(`⚠️ جایزه دعوت پنلی تنظیم نشده است\nکاربر: ${inviterId}\nعلت: referral_reward_product_id خالی است.`);
     await tg("sendMessage", {
       chat_id: inviterId,
       text:
-        "⚠️ سیستم دعوت فعال است اما محصول جایزه هنوز توسط ادمین تنظیم نشده.\n" +
+        "⚠️ حالت پنل برای جایزه دعوت فعال است اما محصول جایزه هنوز تنظیم نشده.\n" +
         "بعد از تنظیم محصول، جایزه شما ثبت می‌شود."
     }).catch(() => {});
     return;
@@ -819,17 +819,26 @@ async function maybeGrantReferralRewardsV2(inviterId: number) {
 
       const productId = Number(settings.productId || 0);
       if (!Number.isFinite(productId) || productId <= 0) {
+        const manualDescription = "جایزه دعوت - نیازمند تحویل دستی ادمین (محصول جایزه تنظیم نشده)";
         await sql`
           UPDATE referral_rewards
-          SET status = 'blocked',
-              failure_reason = 'product_not_configured',
-              description = 'جایزه دعوت - محصول تنظیم نشده',
+          SET status = 'awaiting_admin',
+              failure_reason = NULL,
+              description = ${manualDescription},
               updated_at = NOW()
           WHERE id = ${rewardId};
         `;
-        if (previousStatus !== "blocked" || previousFailureReason !== "product_not_configured") {
-          await notifyAdmins(`⚠️ جایزه دعوت مسدود شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nعلت: product_not_configured`);
+        if (previousStatus === "pending" || previousFailureReason) {
+          await notifyAdmins(
+            `🛠 جایزه دعوت نیازمند تحویل دستی ادمین است\nکاربر: ${inviterId}\nمرحله: ${batch}\nعلت: محصول جایزه تنظیم نشده\nراهنما: از ارسال دستی کانفیگ برای کاربر استفاده کنید.`
+          );
         }
+        await tg("sendMessage", {
+          chat_id: inviterId,
+          text:
+            "🎁 جایزه دعوت شما ثبت شد اما باید به صورت دستی توسط ادمین تحویل شود.\n" +
+            "به محض آماده‌سازی، برای شما ارسال می‌شود."
+        }).catch(() => {});
         continue;
       }
 
@@ -2819,8 +2828,8 @@ async function showAdminReferralSettings(chatId: number) {
       ? settings.walletAmount <= 0
         ? "\nهشدار: مبلغ جایزه کیف پول هنوز تنظیم نشده است."
         : ""
-      : !settings.productId
-        ? "\nهشدار: محصول جایزه هنوز انتخاب نشده است."
+      : settings.configDeliveryMode === "panel" && !settings.productId
+        ? "\nهشدار: برای حالت پنل باید محصول جایزه انتخاب شود."
         : "";
   const keyboard: any[] = [
     [cb(settings.enabled ? "⛔ غیرفعال‌کردن سیستم دعوت" : "✅ فعال‌کردن سیستم دعوت", "admin_toggle_referral_enabled", settings.enabled ? "danger" : "success")],
@@ -2832,8 +2841,7 @@ async function showAdminReferralSettings(chatId: number) {
   if (settings.rewardType === "config") {
     keyboard.push([
       cb(settings.configDeliveryMode === "panel" ? "✅ پنل" : "پنل", "admin_referral_delivery_panel", settings.configDeliveryMode === "panel" ? "success" : "primary"),
-      cb(settings.configDeliveryMode === "storage" ? "✅ موجودی" : "موجودی", "admin_referral_delivery_storage", settings.configDeliveryMode === "storage" ? "success" : "primary"),
-      cb(settings.configDeliveryMode === "admin" ? "✅ ادمین" : "ادمین", "admin_referral_delivery_admin", settings.configDeliveryMode === "admin" ? "success" : "primary")
+      cb(settings.configDeliveryMode === "admin" ? "✅ دستی (اولویت انبار)" : "دستی (اولویت انبار)", "admin_referral_delivery_admin", settings.configDeliveryMode === "admin" ? "success" : "primary")
     ]);
   }
   keyboard.push([backButton("admin_settings")]);
@@ -13379,8 +13387,11 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     return;
   }
   if (data === "admin_referral_delivery_storage") {
-    await setSetting("referral_config_delivery_mode", "storage");
-    await tg("sendMessage", { chat_id: chatId, text: "روش تحویل جایزه کانفیگ روی موجودی دستی تنظیم شد ✅" });
+    await setSetting("referral_config_delivery_mode", "admin");
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "این گزینه به حالت جدید منتقل شد ✅\nروش تحویل: دستی (اولویت انبار، در صورت خالی بودن تحویل دستی ادمین)"
+    });
     return;
   }
   if (data === "admin_referral_delivery_admin") {
