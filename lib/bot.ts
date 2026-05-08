@@ -791,6 +791,12 @@ async function maybeGrantReferralRewardsV2(inviterId: number) {
               updated_at = NOW()
           WHERE id = ${rewardId};
         `;
+        await tg("sendMessage", {
+          chat_id: inviterId,
+          text:
+            "⚠️ جایزه دعوت شما فعلاً قابل ثبت نیست.\n" +
+            "برای پیگیری، از پشتیبانی کمک بگیرید."
+        }).catch(() => {});
         if (previousStatus !== "blocked" || previousFailureReason !== granted.reason) {
           await notifyAdmins(
             `⚠️ جایزه دعوت کانفیگ پرداخت نشد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || productId}\nروش: ${settings.configDeliveryMode}\nعلت: ${granted.reason}`
@@ -825,6 +831,14 @@ async function maybeGrantReferralRewardsV2(inviterId: number) {
             inline_keyboard: [[{ text: "ارسال کانفیگ جایزه", callback_data: `admin_provide_config_${granted.orderId}` }]]
           }
         );
+        if (adminIds.length === 0) {
+          await tg("sendMessage", {
+            chat_id: inviterId,
+            text:
+              "⚠️ جایزه شما ثبت شد اما هیچ ادمینی برای تحویل کانفیگ تنظیم نشده است.\n" +
+              "لطفاً به پشتیبانی پیام دهید."
+          }).catch(() => {});
+        }
       } else if (granted.status === "granted") {
         await notifyAdmins(
           `🎁 جایزه دعوت کانفیگ ثبت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || productId}\nروش: ${settings.configDeliveryMode}\nسفارش: ${granted.purchaseId}`
@@ -835,9 +849,19 @@ async function maybeGrantReferralRewardsV2(inviterId: number) {
         UPDATE referral_rewards
         SET status = 'blocked',
             failure_reason = 'unexpected_error',
+            description = 'جایزه دعوت - unexpected_error',
             updated_at = NOW()
         WHERE id = ${rewardId};
       `;
+      await notifyAdmins(
+        `❌ خطا در ثبت جایزه دعوت\nکاربر: ${inviterId}\nمرحله: ${batch}\nعلت: ${String((error as Error)?.message || error || "unknown")}`
+      );
+      await tg("sendMessage", {
+        chat_id: inviterId,
+        text:
+          "❌ در ثبت جایزه دعوت خطای داخلی رخ داد.\n" +
+          "موضوع برای ادمین ارسال شد. لطفاً کمی بعد دوباره بررسی کنید."
+      }).catch(() => {});
       logError("grant_referral_reward_v2_failed", error, { inviterId, batch });
     }
   }
