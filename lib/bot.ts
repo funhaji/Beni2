@@ -90,7 +90,6 @@ type ConfigLookupMode = "config" | "uuid";
 type StartMediaKind = "none" | "text" | "sticker" | "animation" | "photo";
 type CustomOrderMode = "data" | "days";
 type ReferralRewardType = "wallet" | "config";
-type ReferralConfigDeliveryMode = "panel" | "storage" | "admin";
 
 type ReferralSettingsSnapshot = {
   enabled: boolean;
@@ -98,7 +97,6 @@ type ReferralSettingsSnapshot = {
   rewardType: ReferralRewardType;
   walletAmount: number;
   productId: number | null;
-  configDeliveryMode: ReferralConfigDeliveryMode;
 };
 
 let botUsernameCache: string | null | undefined;
