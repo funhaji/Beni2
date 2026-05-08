@@ -305,6 +305,10 @@ export function ensureSchema() {
       await sql`CREATE INDEX IF NOT EXISTS config_forensics_panel_user_idx ON config_forensics(panel_user_key);`;
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_balance INT NOT NULL DEFAULT 0;`;
       await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS wallet_used INT NOT NULL DEFAULT 0;`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by_telegram_id BIGINT;`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_joined_at TIMESTAMPTZ;`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS referral_qualified_at TIMESTAMPTZ;`;
+      await sql`CREATE INDEX IF NOT EXISTS users_referred_by_idx ON users(referred_by_telegram_id, referral_qualified_at DESC);`;
 
       await sql`
         UPDATE inventory
@@ -359,6 +363,24 @@ export function ensureSchema() {
       await sql`ALTER TABLE wallet_topups ADD COLUMN IF NOT EXISTS crypto_amount NUMERIC(18,6);`;
       await sql`ALTER TABLE wallet_topups ADD COLUMN IF NOT EXISTS crypto_txid TEXT;`;
       await sql`ALTER TABLE wallet_topups ADD COLUMN IF NOT EXISTS crypto_expires_at TIMESTAMPTZ;`;
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS referral_rewards (
+          id BIGSERIAL PRIMARY KEY,
+          inviter_telegram_id BIGINT NOT NULL REFERENCES users(telegram_id),
+          reward_batch INT NOT NULL,
+          referred_count_snapshot INT NOT NULL DEFAULT 0,
+          threshold_snapshot INT NOT NULL DEFAULT 0,
+          reward_type TEXT NOT NULL,
+          wallet_amount INT NOT NULL DEFAULT 0,
+          product_id INT REFERENCES products(id),
+          order_id BIGINT REFERENCES orders(id),
+          description TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `;
+      await sql`CREATE UNIQUE INDEX IF NOT EXISTS referral_rewards_inviter_batch_idx ON referral_rewards(inviter_telegram_id, reward_batch);`;
+      await sql`CREATE INDEX IF NOT EXISTS referral_rewards_inviter_created_idx ON referral_rewards(inviter_telegram_id, created_at DESC);`;
 
       await sql`
         INSERT INTO payment_methods (code, title, active)

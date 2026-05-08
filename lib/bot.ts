@@ -89,6 +89,19 @@ type DeliveryPayload = {
 type ConfigLookupMode = "config" | "uuid";
 type StartMediaKind = "none" | "text" | "sticker" | "animation" | "photo";
 type CustomOrderMode = "data" | "days";
+type ReferralRewardType = "wallet" | "config";
+type ReferralConfigDeliveryMode = "panel" | "storage" | "admin";
+
+type ReferralSettingsSnapshot = {
+  enabled: boolean;
+  threshold: number;
+  rewardType: ReferralRewardType;
+  walletAmount: number;
+  productId: number | null;
+  configDeliveryMode: ReferralConfigDeliveryMode;
+};
+
+let botUsernameCache: string | null | undefined;
 
 function isAdmin(userId: number) {
   return adminIds.includes(userId);
@@ -163,6 +176,7 @@ function formatPaymentMethodTitle(methodRaw: unknown) {
   if (method === "plisio") return "Plisio";
   if (method === "swapwallet") return "SwapWallet";
   if (method === "crypto") return "کریپتو";
+  if (method === "referral_reward") return "جایزه دعوت";
   return methodRaw ? String(methodRaw) : "-";
 }
 
@@ -177,6 +191,334 @@ function formatOrderStatusTitle(statusRaw: unknown) {
   if (status === "cancelled") return "🗑 لغو شده";
   if (status === "awaiting_config") return "🧩 نیازمند کانفیگ دستی";
   return statusRaw ? String(statusRaw) : "-";
+}
+
+function formatWalletTransactionType(typeRaw: unknown) {
+  const type = String(typeRaw || "").trim().toLowerCase();
+  if (type === "charge") return "شارژ کیف پول";
+  if (type === "purchase") return "خرید محصول";
+  if (type === "refund") return "بازگشت وجه";
+  if (type === "admin_add") return "افزایش توسط ادمین";
+  if (type === "admin_sub") return "کسر توسط ادمین";
+  if (type === "referral_reward") return "جایزه دعوت";
+  return typeRaw ? String(typeRaw) : "-";
+}
+
+function parseStartCommand(text: string) {
+  const match = text.trim().match(/^\/start(?:@\w+)?(?:\s+(.+))?$/i);
+  if (!match) return null;
+  return { payload: String(match[1] || "").trim() || null };
+}
+
+function normalizeReferralRewardType(raw: unknown): ReferralRewardType {
+  return String(raw || "").trim().toLowerCase() === "config" ? "config" : "wallet";
+}
+
+function getReferralRemainingCount(qualifiedCount: number, threshold: number) {
+  if (threshold <= 0) return 0;
+  const safeQualified = Math.max(0, Math.floor(qualifiedCount));
+  const remainder = safeQualified % threshold;
+  return remainder === 0 ? 0 : threshold - remainder;
+}
+
+function describeReferralReward(settings: ReferralSettingsSnapshot, productName?: string | null) {
+  if (settings.rewardType === "config") {
+    return productName ? `یک کانفیگ از محصول «${productName}»` : "یک کانفیگ رایگان";
+  }
+  return `${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول`;
+}
+
+async function getBotUsername() {
+  if (botUsernameCache !== undefined) return botUsernameCache;
+  try {
+    const me = await tg<{ username?: string }>("getMe", {});
+    botUsernameCache = me.username ? String(me.username).replace(/^@/, "").trim() : null;
+  } catch (error) {
+    logError("telegram_get_me_failed", error, {});
+    return null;
+  }
+  return botUsernameCache;
+}
+
+async function buildReferralInviteLink(userId: number) {
+  const username = await getBotUsername();
+  if (!username) return null;
+  return `https://t.me/${username}?start=ref_${userId}`;
+}
+
+function buildReferralShareUrl(inviteLink: string) {
+  const message = `با لینک من وارد ربات شو و از سرویس استفاده کن:\n${inviteLink}`;
+  return `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(message)}`;
+}
+
+async function getReferralSettingsSnapshot(): Promise<ReferralSettingsSnapshot> {
+  const rewardType = normalizeReferralRewardType(await getSetting("referral_reward_type"));
+  const thresholdRaw = await getNumberSetting("referral_invite_threshold");
+  const walletAmountRaw = await getNumberSetting("referral_wallet_amount_toman");
+  const productIdRaw = await getNumberSetting("referral_reward_product_id");
+  const threshold = Math.max(1, Math.round(Number(thresholdRaw || 5)));
+  const walletAmount = Math.max(0, Math.round(Number(walletAmountRaw || 0)));
+  const productId = Number.isFinite(Number(productIdRaw)) && Number(productIdRaw) > 0 ? Math.round(Number(productIdRaw)) : null;
+  return {
+    enabled: await getBoolSetting("referral_enabled", false),
+    threshold,
+    rewardType,
+    walletAmount,
+    productId
+  };
+}
+
+async function countUserReferralLeads(userId: number) {
+  const rows = await sql`SELECT COUNT(*)::int AS count FROM users WHERE referred_by_telegram_id = ${userId};`;
+  return Number(rows[0]?.count || 0);
+}
+
+async function countUserQualifiedReferrals(userId: number) {
+  const rows = await sql`
+    SELECT COUNT(*)::int AS count
+    FROM users
+    WHERE referred_by_telegram_id = ${userId}
+      AND referral_qualified_at IS NOT NULL;
+  `;
+  return Number(rows[0]?.count || 0);
+}
+
+async function countUserReferralRewards(userId: number) {
+  const rows = await sql`SELECT COUNT(*)::int AS count FROM referral_rewards WHERE inviter_telegram_id = ${userId};`;
+  return Number(rows[0]?.count || 0);
+}
+
+async function captureReferralAttribution(userId: number, payload: string | null, canAssign: boolean) {
+  const normalized = String(payload || "").trim().toLowerCase();
+  if (!canAssign || !normalized.startsWith("ref_")) return false;
+  const inviterId = Number(normalized.slice(4));
+  if (!Number.isFinite(inviterId) || inviterId <= 0 || inviterId === userId) return false;
+  const inviterRows = await sql`SELECT telegram_id FROM users WHERE telegram_id = ${inviterId} LIMIT 1;`;
+  if (!inviterRows.length) return false;
+  const updated = await sql`
+    UPDATE users
+    SET referred_by_telegram_id = ${inviterId},
+        referral_joined_at = COALESCE(referral_joined_at, NOW())
+    WHERE telegram_id = ${userId}
+      AND referred_by_telegram_id IS NULL
+    RETURNING telegram_id;
+  `;
+  return updated.length > 0;
+}
+
+async function createReferralRewardOrder(inviterId: number, productId: number, batch: number) {
+  const globalInfinite = await getBoolSetting("global_infinite_mode", false);
+  const rows = await sql`
+    SELECT
+      p.id,
+      p.name,
+      p.is_infinite,
+      p.sell_mode,
+      p.panel_id,
+      p.panel_sell_limit,
+      p.panel_delivery_mode,
+      p.panel_config,
+      pnl.active AS panel_active,
+      pnl.allow_new_sales AS panel_allow_new_sales,
+      (
+        SELECT COUNT(*)::int
+        FROM inventory i
+        WHERE i.product_id = p.id AND i.status = 'available'
+      ) AS stock,
+      (
+        SELECT COUNT(*)::int
+        FROM orders o
+        WHERE o.product_id = p.id
+          AND o.sell_mode = 'panel'
+          AND o.status NOT IN ('denied')
+      ) AS panel_sales_count
+    FROM products p
+    LEFT JOIN panels pnl ON pnl.id = p.panel_id
+    WHERE p.id = ${productId}
+    LIMIT 1;
+  `;
+  if (!rows.length) {
+    return { ok: false as const, reason: "product_not_found" };
+  }
+  const product = rows[0];
+  const purchaseId = `R${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
+  const originalSellMode = parseSellMode(String(product.sell_mode || ""));
+  const panelRemaining =
+    Number(product.panel_sell_limit || 0) > 0 ? Math.max(0, Number(product.panel_sell_limit) - Number(product.panel_sales_count || 0)) : Infinity;
+  let sellMode: SellMode = originalSellMode;
+  let sourcePanelId = product.panel_id ? Number(product.panel_id) : null;
+  let panelConfigSnapshot = sanitizePanelConfig(product.panel_config);
+  if (sellMode === "panel" && (!product.panel_id || !product.panel_active || !product.panel_allow_new_sales || panelRemaining <= 0)) {
+    sellMode = "manual";
+    sourcePanelId = null;
+    panelConfigSnapshot = { ...panelConfigSnapshot, force_awaiting_config: true };
+  }
+  if (sellMode !== "panel" && !globalInfinite && !Boolean(product.is_infinite) && Number(product.stock || 0) <= 0) {
+    panelConfigSnapshot = { ...panelConfigSnapshot, force_awaiting_config: true };
+  }
+  const orderId = await insertOrderRecord({
+    purchaseId,
+    telegramId: inviterId,
+    productId: Number(product.id),
+    productNameSnapshot: `${String(product.name || "").trim()} | جایزه دعوت (${batch})`,
+    sellMode,
+    sourcePanelId,
+    panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
+    panelConfigSnapshot,
+    paymentMethod: "referral_reward",
+    discountCode: null,
+    discountAmount: 0,
+    finalPrice: 0,
+    tronAmount: 0,
+    status: "pending",
+    walletUsed: 0,
+    walletTransactionDescription: `جایزه دعوت دوستان (${purchaseId})`
+  });
+  const result = await finalizeOrder(orderId, null);
+  if (!result.ok) {
+    await sql`DELETE FROM orders WHERE id = ${orderId} AND payment_method = 'referral_reward' AND status IN ('pending', 'receipt_submitted');`;
+    return { ok: false as const, reason: result.reason };
+  }
+  return { ok: true as const, orderId, purchaseId, reason: result.reason };
+}
+
+async function maybeGrantReferralRewards(inviterId: number) {
+  const settings = await getReferralSettingsSnapshot();
+  if (!settings.enabled || settings.threshold <= 0) return;
+  if (settings.rewardType === "wallet" && settings.walletAmount <= 0) return;
+  if (settings.rewardType === "config" && !settings.productId) return;
+  const qualifiedCount = await countUserQualifiedReferrals(inviterId);
+  const totalBatches = Math.floor(qualifiedCount / settings.threshold);
+  if (totalBatches <= 0) return;
+  let productName: string | null = null;
+  if (settings.rewardType === "config" && settings.productId) {
+    const productRows = await sql`SELECT name FROM products WHERE id = ${settings.productId} LIMIT 1;`;
+    productName = productRows.length ? String(productRows[0].name || "") : null;
+    if (!productName) {
+      await notifyAdmins(`⚠️ سیستم دعوت تنظیم شده اما محصول جایزه پیدا نشد.\nproduct_id: ${settings.productId}`);
+      return;
+    }
+  }
+  for (let batch = 1; batch <= totalBatches; batch += 1) {
+    const reserved = await sql`
+      INSERT INTO referral_rewards (
+        inviter_telegram_id,
+        reward_batch,
+        referred_count_snapshot,
+        threshold_snapshot,
+        reward_type,
+        wallet_amount,
+        product_id,
+        description
+      )
+      VALUES (
+        ${inviterId},
+        ${batch},
+        ${qualifiedCount},
+        ${settings.threshold},
+        ${settings.rewardType},
+        ${settings.rewardType === "wallet" ? settings.walletAmount : 0},
+        ${settings.rewardType === "config" ? settings.productId : null},
+        ${`Reward batch ${batch}`}
+      )
+      ON CONFLICT (inviter_telegram_id, reward_batch) DO NOTHING
+      RETURNING id;
+    `;
+    if (!reserved.length) continue;
+    const rewardId = Number(reserved[0].id);
+    try {
+      if (settings.rewardType === "wallet") {
+        await sql`
+          UPDATE users
+          SET wallet_balance = wallet_balance + ${settings.walletAmount}
+          WHERE telegram_id = ${inviterId};
+        `;
+        await sql`
+          INSERT INTO wallet_transactions (telegram_id, amount, type, description)
+          VALUES (
+            ${inviterId},
+            ${settings.walletAmount},
+            'referral_reward',
+            ${`جایزه دعوت دوستان - مرحله ${batch}`}
+          );
+        `;
+        await sql`
+          UPDATE referral_rewards
+          SET description = ${`جایزه دعوت دوستان - ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول`}
+          WHERE id = ${rewardId};
+        `;
+        await tg("sendMessage", {
+          chat_id: inviterId,
+          text:
+            `🎁 جایزه دعوت شما آماده شد!\n` +
+            `مرحله: ${batch}\n` +
+            `پاداش: ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول\n` +
+            `دعوت‌های تاییدشده: ${qualifiedCount}`
+        }).catch(() => {});
+        await notifyAdmins(
+          `🎁 جایزه دعوت پرداخت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nپاداش: ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول\nدعوت‌های تاییدشده: ${qualifiedCount}`
+        );
+        continue;
+      }
+      const granted = await createReferralRewardOrder(inviterId, Number(settings.productId), batch);
+      if (!granted.ok) {
+        await sql`DELETE FROM referral_rewards WHERE id = ${rewardId};`;
+        await notifyAdmins(
+          `⚠️ جایزه دعوت کانفیگ پرداخت نشد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || settings.productId}\nعلت: ${granted.reason}`
+        );
+        continue;
+      }
+      await sql`
+        UPDATE referral_rewards
+        SET order_id = ${granted.orderId},
+            description = ${`جایزه دعوت دوستان - ${productName || "کانفیگ رایگان"}`}
+        WHERE id = ${rewardId};
+      `;
+      await tg("sendMessage", {
+        chat_id: inviterId,
+        text:
+          `🎁 جایزه دعوت شما ثبت شد!\n` +
+          `مرحله: ${batch}\n` +
+          `پاداش: ${productName ? `کانفیگ ${productName}` : "کانفیگ رایگان"}\n` +
+          `شناسه سفارش: ${granted.purchaseId}`
+      }).catch(() => {});
+      await notifyAdmins(
+        `🎁 جایزه دعوت کانفیگ ثبت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || settings.productId}\nسفارش: ${granted.purchaseId}`
+      );
+    } catch (error) {
+      await sql`DELETE FROM referral_rewards WHERE id = ${rewardId};`;
+      logError("grant_referral_reward_failed", error, { inviterId, batch });
+    }
+  }
+}
+
+async function maybeQualifyReferralUser(userId: number) {
+  const qualified = await sql`
+    UPDATE users
+    SET referral_qualified_at = NOW()
+    WHERE telegram_id = ${userId}
+      AND referred_by_telegram_id IS NOT NULL
+      AND referral_qualified_at IS NULL
+    RETURNING referred_by_telegram_id;
+  `;
+  if (!qualified.length) return;
+  const inviterId = Number(qualified[0].referred_by_telegram_id || 0);
+  if (!Number.isFinite(inviterId) || inviterId <= 0) return;
+  const settings = await getReferralSettingsSnapshot();
+  if (settings.enabled) {
+    const qualifiedCount = await countUserQualifiedReferrals(inviterId);
+    const remaining = getReferralRemainingCount(qualifiedCount, settings.threshold);
+    if (remaining > 0) {
+      await tg("sendMessage", {
+        chat_id: inviterId,
+        text:
+          `👥 یک دعوت جدید برای شما ثبت شد.\n` +
+          `دعوت‌های تاییدشده: ${qualifiedCount}\n` +
+          `فقط ${remaining} نفر تا پاداش بعدی باقی مانده است.`
+      }).catch(() => {});
+    }
+  }
+  await maybeGrantReferralRewards(inviterId);
 }
 
 function normalizePricePerGb(raw: number | string | null | undefined, fallback = 500000) {
@@ -1737,9 +2079,9 @@ async function showPanelDetails(chatId: number, panelId: number, notice?: string
 
 function mainMenuMarkup(userId: number) {
   const rows = [
-    [cb("🛍 خرید کانفیگ", "buy_menu", "primary")],
-    [cb("📦 کانفیگ‌های من", "my_configs", "primary"), cb("👛 کیف پول", "wallet_menu", "success")],
-    [cb("🆘 پشتیبانی", "support", "success")]
+    [cb("🛍 خرید کانفیگ", "buy_menu", "primary"), cb("📦 سفارش‌ها و کانفیگ‌ها", "my_configs", "primary")],
+    [cb("👛 کیف پول", "wallet_menu", "success"), cb("🎁 دعوت دوستان", "referral_menu", "success")],
+    [cb("🆘 پشتیبانی", "support", "primary")]
   ];
   if (isAdmin(userId)) {
     rows.push([cb("🛠 پنل ادمین", "admin_panel", "primary")]);
@@ -1748,7 +2090,7 @@ function mainMenuMarkup(userId: number) {
 }
 
 async function upsertUser(user: { id: number; username?: string; first_name?: string; last_name?: string }) {
-  await sql`
+  const rows = await sql`
     INSERT INTO users (telegram_id, username, first_name, last_name)
     VALUES (${user.id}, ${user.username || null}, ${user.first_name || null}, ${user.last_name || null})
     ON CONFLICT (telegram_id)
@@ -1756,15 +2098,268 @@ async function upsertUser(user: { id: number; username?: string; first_name?: st
       username = EXCLUDED.username,
       first_name = EXCLUDED.first_name,
       last_name = EXCLUDED.last_name,
-      last_seen_at = NOW();
+      last_seen_at = NOW()
+    RETURNING (xmax = 0) AS inserted;
   `;
+  return { created: Boolean(rows[0]?.inserted) };
 }
 
 async function sendMainMenu(chatId: number, userId: number, text?: string) {
   await tg("sendMessage", {
     chat_id: chatId,
-    text: text || "سلام 👋\nبه ربات فروش کانفیگ خوش آمدید.\nاز منوی زیر انتخاب کنید:",
+    text:
+      text ||
+      "🏠 منوی اصلی\n\n" +
+        "از گزینه‌های زیر می‌توانید خرید، پیگیری سفارش، مدیریت کیف پول و دعوت دوستان را انجام دهید.",
     reply_markup: mainMenuMarkup(userId)
+  });
+}
+
+async function sendWalletMenu(chatId: number, userId: number) {
+  const userRows = await sql`SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
+  const balance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text:
+      `👛 کیف پول شما\n\n` +
+      `موجودی فعلی: ${formatPriceToman(balance)} تومان\n\n` +
+      `از این بخش می‌توانید کیف پول را شارژ کنید یا گردش اخیر را ببینید.`,
+    reply_markup: {
+      inline_keyboard: [
+        [cb("➕ شارژ کیف پول", "wallet_charge", "success"), cb("🧾 گردش کیف پول", "wallet_transactions", "primary")],
+        [cb("🎁 دعوت دوستان", "referral_menu", "primary")],
+        [homeButton()]
+      ]
+    }
+  });
+}
+
+async function showWalletTransactions(chatId: number, userId: number) {
+  const rows = await sql`
+    SELECT amount, type, description, created_at
+    FROM wallet_transactions
+    WHERE telegram_id = ${userId}
+    ORDER BY id DESC
+    LIMIT 12;
+  `;
+  if (!rows.length) {
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "🧾 هنوز تراکنشی برای کیف پول شما ثبت نشده است.",
+      reply_markup: { inline_keyboard: [[backButton("wallet_menu")], [homeButton()]] }
+    });
+    return;
+  }
+  const lines = rows.map((row: any, idx) => {
+    const amount = Number(row.amount || 0);
+    const amountText = `${amount >= 0 ? "+" : ""}${formatPriceToman(amount)} تومان`;
+    const title = formatWalletTransactionType(row.type);
+    const description = String(row.description || "").trim();
+    return `${idx + 1}. ${title}\n${amountText}\n${description || "-"}\n${String(row.created_at)}`;
+  });
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text: `🧾 گردش اخیر کیف پول\n\n${lines.join("\n\n")}`,
+    reply_markup: { inline_keyboard: [[backButton("wallet_menu")], [homeButton()]] }
+  });
+}
+
+async function showReferralInvitees(chatId: number, userId: number) {
+  const rows = await sql`
+    SELECT username, first_name, last_name, referral_joined_at, referral_qualified_at
+    FROM users
+    WHERE referred_by_telegram_id = ${userId}
+    ORDER BY COALESCE(referral_qualified_at, referral_joined_at, created_at) DESC
+    LIMIT 20;
+  `;
+  if (!rows.length) {
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "👥 هنوز کسی با لینک شما وارد ربات نشده است.",
+      reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
+    });
+    return;
+  }
+  const lines = rows.map((row: any, idx) => {
+    const username = row.username ? `@${String(row.username)}` : "-";
+    const fullName =
+      [row.first_name ? String(row.first_name) : "", row.last_name ? String(row.last_name) : ""].filter(Boolean).join(" ").trim() || "-";
+    const status = row.referral_qualified_at ? "✅ تاییدشده" : "⏳ در انتظار تایید";
+    return `${idx + 1}. ${username} | ${fullName}\nوضعیت: ${status}`;
+  });
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text: `👥 فهرست دعوت‌های شما\n\n${lines.join("\n\n")}`,
+    reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
+  });
+}
+
+async function showReferralRewardHistory(chatId: number, userId: number) {
+  const rows = await sql`
+    SELECT rr.reward_batch, rr.reward_type, rr.wallet_amount, rr.created_at, rr.order_id, p.name AS product_name
+    FROM referral_rewards rr
+    LEFT JOIN products p ON p.id = rr.product_id
+    WHERE rr.inviter_telegram_id = ${userId}
+    ORDER BY rr.id DESC
+    LIMIT 15;
+  `;
+  if (!rows.length) {
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "🎁 هنوز جایزه‌ای از بخش دعوت دوستان برای شما ثبت نشده است.",
+      reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
+    });
+    return;
+  }
+  const lines = rows.map((row: any, idx) => {
+    const rewardType = normalizeReferralRewardType(row.reward_type);
+    const rewardText =
+      rewardType === "config"
+        ? row.product_name
+          ? `کانفیگ ${String(row.product_name)}${row.order_id ? ` (#${row.order_id})` : ""}`
+          : row.order_id
+            ? `کانفیگ رایگان (#${row.order_id})`
+            : "کانفیگ رایگان"
+        : `${formatPriceToman(Number(row.wallet_amount || 0))} تومان اعتبار`;
+    return `${idx + 1}. مرحله ${Number(row.reward_batch || 0)}\nپاداش: ${rewardText}\nزمان: ${String(row.created_at)}`;
+  });
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text: `🎁 تاریخچه جوایز دعوت\n\n${lines.join("\n\n")}`,
+    reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
+  });
+}
+
+async function sendReferralMenu(chatId: number, userId: number) {
+  await maybeGrantReferralRewards(userId);
+  const settings = await getReferralSettingsSnapshot();
+  const productName =
+    settings.rewardType === "config" && settings.productId
+      ? String((await sql`SELECT name FROM products WHERE id = ${settings.productId} LIMIT 1;`)[0]?.name || "")
+      : "";
+  if (!settings.enabled) {
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        "🎁 سیستم دعوت دوستان\n\n" +
+        "در حال حاضر این بخش غیرفعال است.\n" +
+        "بعد از فعال‌سازی توسط ادمین، لینک اختصاصی و جزئیات پاداش شما اینجا نمایش داده می‌شود.",
+      reply_markup: { inline_keyboard: [[homeButton()]] }
+    });
+    return;
+  }
+  const inviteLink = await buildReferralInviteLink(userId);
+  const totalInvites = await countUserReferralLeads(userId);
+  const qualifiedInvites = await countUserQualifiedReferrals(userId);
+  const rewardCount = await countUserReferralRewards(userId);
+  const pendingInvites = Math.max(0, totalInvites - qualifiedInvites);
+  const remaining = getReferralRemainingCount(qualifiedInvites, settings.threshold);
+  const rewardSummary = describeReferralReward(settings, productName || null);
+  const lines = [
+    "🎁 سیستم دعوت دوستان",
+    "",
+    `پاداش هر ${settings.threshold} دعوت تاییدشده: ${rewardSummary}`,
+    `دعوت‌های ثبت‌شده: ${totalInvites}`,
+    `دعوت‌های تاییدشده: ${qualifiedInvites}`,
+    `در انتظار تایید: ${pendingInvites}`,
+    `جوایز دریافت‌شده: ${rewardCount}`,
+    `تا پاداش بعدی: ${remaining === 0 ? "آستانه تکمیل شده" : `${remaining} نفر`}`,
+    ""
+  ];
+  if (inviteLink) {
+    lines.push("لینک اختصاصی شما:");
+    lines.push(`<code>${escapeHtml(inviteLink)}</code>`);
+  } else {
+    lines.push("لینک اختصاصی شما فعلاً قابل تولید نیست. کمی بعد دوباره امتحان کنید.");
+  }
+  const keyboard: Array<Array<Record<string, unknown>>> = [];
+  if (inviteLink) {
+    keyboard.push([{ text: "📨 اشتراک‌گذاری لینک", url: buildReferralShareUrl(inviteLink) }]);
+  }
+  keyboard.push([cb("👥 فهرست دعوت‌ها", "referral_invitees", "primary"), cb("🧾 تاریخچه جوایز", "referral_rewards_history", "primary")]);
+  keyboard.push([homeButton()]);
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text: lines.join("\n"),
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+async function showAdminReferralProductPicker(chatId: number) {
+  const rows = await sql`
+    SELECT id, name, is_active, sell_mode
+    FROM products
+    ORDER BY is_active DESC, id ASC
+    LIMIT 30;
+  `;
+  const keyboard = rows.map((row: any) => {
+    const activeBadge = row.is_active ? "✅" : "⛔";
+    const sellModeBadge = parseSellMode(String(row.sell_mode || "")) === "panel" ? "⚙️" : "📦";
+    return [cb(`${activeBadge} ${sellModeBadge} ${String(row.name)} (#${Number(row.id)})`, `admin_referral_product_${Number(row.id)}`, "primary")];
+  });
+  keyboard.push([cb("🚫 پاک‌کردن محصول انتخاب‌شده", "admin_referral_clear_product", "danger")]);
+  keyboard.push([backButton("admin_referral_settings")]);
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text: "🎁 انتخاب محصول جایزه\n\nمحصولی را که باید به عنوان جایزه دعوت ثبت شود انتخاب کنید.",
+    reply_markup: { inline_keyboard: keyboard }
+  });
+}
+
+async function showAdminReferralSettings(chatId: number) {
+  const settings = await getReferralSettingsSnapshot();
+  const productName =
+    settings.productId
+      ? String((await sql`SELECT name FROM products WHERE id = ${settings.productId} LIMIT 1;`)[0]?.name || "")
+      : "";
+  const leadRows = await sql`
+    SELECT
+      COUNT(*)::int AS total_leads,
+      COUNT(*) FILTER (WHERE referral_qualified_at IS NOT NULL)::int AS qualified_leads,
+      COUNT(DISTINCT referred_by_telegram_id)::int AS inviters
+    FROM users
+    WHERE referred_by_telegram_id IS NOT NULL;
+  `;
+  const rewardRows = await sql`SELECT COUNT(*)::int AS reward_count FROM referral_rewards;`;
+  const rewardSummary = describeReferralReward(settings, productName || null);
+  const rewardModeText = settings.rewardType === "config" ? "کانفیگ" : "اعتبار کیف پول";
+  const qualifiedLeads = Number(leadRows[0]?.qualified_leads || 0);
+  const totalLeads = Number(leadRows[0]?.total_leads || 0);
+  const inviters = Number(leadRows[0]?.inviters || 0);
+  const rewardCount = Number(rewardRows[0]?.reward_count || 0);
+  const configurationWarning =
+    settings.rewardType === "wallet"
+      ? settings.walletAmount <= 0
+        ? "\nهشدار: مبلغ جایزه کیف پول هنوز تنظیم نشده است."
+        : ""
+      : !settings.productId
+        ? "\nهشدار: محصول جایزه هنوز انتخاب نشده است."
+        : "";
+  await tg("sendMessage", {
+    chat_id: chatId,
+    text:
+      `🎁 تنظیمات سیستم دعوت\n\n` +
+      `وضعیت: ${settings.enabled ? "فعال ✅" : "غیرفعال ⛔"}\n` +
+      `آستانه پاداش: هر ${settings.threshold} دعوت تاییدشده\n` +
+      `نوع پاداش: ${rewardModeText}\n` +
+      `پاداش فعلی: ${rewardSummary}\n\n` +
+      `آمار سریع:\n` +
+      `دعوت‌های ثبت‌شده: ${totalLeads}\n` +
+      `دعوت‌های تاییدشده: ${qualifiedLeads}\n` +
+      `تعداد معرف‌ها: ${inviters}\n` +
+      `جوایز پرداخت‌شده: ${rewardCount}` +
+      configurationWarning,
+    reply_markup: {
+      inline_keyboard: [
+        [cb(settings.enabled ? "⛔ غیرفعال‌کردن سیستم دعوت" : "✅ فعال‌کردن سیستم دعوت", "admin_toggle_referral_enabled", settings.enabled ? "danger" : "success")],
+        [cb("🎯 تنظیم آستانه دعوت", "admin_set_referral_threshold", "primary")],
+        [cb(settings.rewardType === "wallet" ? "✅ پاداش: کیف پول" : "کیف پول", "admin_referral_reward_wallet", settings.rewardType === "wallet" ? "success" : "primary"), cb(settings.rewardType === "config" ? "✅ پاداش: کانفیگ" : "کانفیگ", "admin_referral_reward_config", settings.rewardType === "config" ? "success" : "primary")],
+        [cb("💰 مبلغ جایزه کیف پول", "admin_set_referral_wallet_amount", "primary")],
+        [cb("📦 انتخاب محصول جایزه", "admin_referral_pick_product", "primary")],
+        [backButton("admin_settings")]
+      ]
+    }
   });
 }
 
@@ -5145,6 +5740,28 @@ async function parseAndApplyState(
     await setSetting("business_wallet_address", wallet);
     await clearState(userId);
     await tg("sendMessage", { chat_id: chatId, text: "آدرس کیف پول مقصد ذخیره شد ✅" });
+    return true;
+  }
+  if (state.state === "admin_set_referral_threshold") {
+    const threshold = Math.round(Number(text.trim()));
+    if (!Number.isFinite(threshold) || threshold <= 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "یک عدد معتبر بزرگ‌تر از صفر ارسال کنید. مثال: 5" });
+      return true;
+    }
+    await setSetting("referral_invite_threshold", String(threshold));
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: `آستانه دعوت ذخیره شد ✅\nهر ${threshold} دعوت تاییدشده = یک جایزه` });
+    return true;
+  }
+  if (state.state === "admin_set_referral_wallet_amount") {
+    const amount = Math.round(Number(text.trim()));
+    if (!Number.isFinite(amount) || amount < 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "مبلغ معتبر ارسال کنید. مثال: 50000" });
+      return true;
+    }
+    await setSetting("referral_wallet_amount_toman", String(amount));
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: `مبلغ جایزه کیف پول ذخیره شد ✅\n${formatPriceToman(amount)} تومان` });
     return true;
   }
   if (state.state === "admin_set_public_base_url") {
@@ -9156,6 +9773,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "check_membership") {
     const isMember = await checkMandatoryChannels(userId, chatId, true);
     if (isMember) {
+      await maybeQualifyReferralUser(userId);
       const msgId = update.message?.message_id || 0;
       if (msgId) {
         const deleted = await tg("deleteMessage", { chat_id: chatId, message_id: msgId }).catch(() => null);
@@ -9163,12 +9781,15 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           await tg("editMessageText", { chat_id: chatId, message_id: msgId, text: "عضویت شما تایید شد ✅" }).catch(() => {});
         }
       }
+      await sendStartMedia(chatId);
       await sendMainMenu(chatId, userId, "عضویت شما تایید شد ✅");
     } else {
       await tg("answerCallbackQuery", { callback_query_id: update.id, text: "هنوز در همه کانال‌ها عضو نشده‌اید!", show_alert: true }).catch(() => {});
     }
     return;
   }
+
+  await maybeQualifyReferralUser(userId);
 
   if (data === "home") {
     await clearState(userId);
@@ -9177,18 +9798,27 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   }
   if (data === "wallet_menu") {
     await clearState(userId);
-    const userRows = await sql`SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
-    const balance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
-    await tg("sendMessage", {
-      chat_id: chatId,
-      text: `👛 کیف پول\n\nموجودی فعلی: ${formatPriceToman(balance)} تومان`,
-      reply_markup: {
-        inline_keyboard: [
-          [cb("➕ شارژ موجودی", "wallet_charge", "success")],
-          [homeButton()]
-        ]
-      }
-    });
+    await sendWalletMenu(chatId, userId);
+    return;
+  }
+  if (data === "wallet_transactions") {
+    await clearState(userId);
+    await showWalletTransactions(chatId, userId);
+    return;
+  }
+  if (data === "referral_menu") {
+    await clearState(userId);
+    await sendReferralMenu(chatId, userId);
+    return;
+  }
+  if (data === "referral_invitees") {
+    await clearState(userId);
+    await showReferralInvitees(chatId, userId);
+    return;
+  }
+  if (data === "referral_rewards_history") {
+    await clearState(userId);
+    await showReferralRewardHistory(chatId, userId);
     return;
   }
   if (data === "wallet_charge") {
@@ -11823,6 +12453,13 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         COUNT(*) FILTER (WHERE status = 'pending')::int AS migrations_pending
       FROM panel_migrations;
     `;
+    const m6 = await sql`
+      SELECT
+        COUNT(*) FILTER (WHERE referred_by_telegram_id IS NOT NULL)::int AS referral_leads,
+        COUNT(*) FILTER (WHERE referred_by_telegram_id IS NOT NULL AND referral_qualified_at IS NOT NULL)::int AS referral_qualified
+      FROM users;
+    `;
+    const m7 = await sql`SELECT COUNT(*)::int AS referral_rewards FROM referral_rewards;`;
     const soldMb = Number(m1[0].sold_mb || 0);
     const totalMb = soldMb + Number(m2[0].topup_mb || 0);
     const totalGb = (totalMb / 1024).toFixed(2);
@@ -11839,6 +12476,9 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `درآمد کل: ${formatPriceToman(totalEarning)} تومان\n` +
         `کل کاربران: ${Number(m3[0].total_users || 0)}\n` +
         `تعداد مشتریان: ${Number(m4[0].customers || 0)}\n` +
+        `دعوت‌های ثبت‌شده: ${Number(m6[0].referral_leads || 0)}\n` +
+        `دعوت‌های تاییدشده: ${Number(m6[0].referral_qualified || 0)}\n` +
+        `جوایز دعوت پرداخت‌شده: ${Number(m7[0].referral_rewards || 0)}\n` +
         `انتقال‌های انجام‌شده: ${Number(m5[0].migrations_done || 0)}\n` +
         `انتقال‌های در صف: ${Number(m5[0].migrations_pending || 0)}`,
       reply_markup: {
@@ -12076,6 +12716,11 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const plisioFallback = (await getSetting("plisio_usdt_rate_fallback_toman")) || (await getSetting("plisio_usd_rate_toman")) || "";
     const startMediaKind = ((await getSetting("start_media_kind")) || "none") as StartMediaKind;
     const startMediaValue = (await getSetting("start_media_value")) || "";
+    const referralSettings = await getReferralSettingsSnapshot();
+    const referralProductName =
+      referralSettings.productId
+        ? String((await sql`SELECT name FROM products WHERE id = ${referralSettings.productId} LIMIT 1;`)[0]?.name || "")
+        : "";
     await tg("sendMessage", {
       chat_id: chatId,
       text:
@@ -12091,6 +12736,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `حاشیه تومان/USDT: ${plisioExtra}\n` +
         `${plisioFallback ? `نرخ دستی (fallback): ${plisioFallback}\n` : ""}` +
         `مدیای شروع: ${startMediaTitle(startMediaKind, startMediaValue)}\n` +
+        `سیستم دعوت: ${referralSettings.enabled ? "فعال" : "غیرفعال"} | هر ${referralSettings.threshold} دعوت = ${describeReferralReward(referralSettings, referralProductName || null)}\n` +
         `بینهایت سراسری: ${infiniteMode ? "روشن" : "خاموش"}\n` +
         `قیمت افزایش هر 1GB: ${formatPriceToman(topupPricePerGb)} تومان\n` +
         `قیمت پیشفرض هر 1GB محصول: ${formatPriceToman(productPricePerGb)} تومان\n` +
@@ -12100,6 +12746,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           [cb("📢 کانال‌های اجباری", "admin_set_mandatory_channels", "primary")],
           [cb("🆘 یوزرنیم پشتیبانی", "admin_set_support", "primary")],
           [cb("👛 کیف پول مقصد", "admin_set_wallet", "primary")],
+          [cb("🎁 سیستم دعوت", "admin_referral_settings", "primary")],
           [cb("🔑 تنظیمات درگاه‌ها", "admin_gateway_settings", "primary")],
           [cb("🎬 مدیای شروع", "admin_start_media", "primary")],
           [cb("📈 قیمت افزایش هر 1GB", "admin_set_topup_price", "primary")],
@@ -12116,6 +12763,57 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         ]
       }
     });
+    return;
+  }
+  if (data === "admin_referral_settings") {
+    await showAdminReferralSettings(chatId);
+    return;
+  }
+  if (data === "admin_toggle_referral_enabled") {
+    const current = await getBoolSetting("referral_enabled", false);
+    await setSetting("referral_enabled", (!current).toString());
+    await tg("sendMessage", { chat_id: chatId, text: `سیستم دعوت ${!current ? "فعال" : "غیرفعال"} شد ✅` });
+    return;
+  }
+  if (data === "admin_set_referral_threshold") {
+    await setState(userId, "admin_set_referral_threshold");
+    await tg("sendMessage", { chat_id: chatId, text: "تعداد دعوت لازم برای هر جایزه را ارسال کنید.\nمثال: 5" });
+    return;
+  }
+  if (data === "admin_set_referral_wallet_amount") {
+    await setState(userId, "admin_set_referral_wallet_amount");
+    await tg("sendMessage", { chat_id: chatId, text: "مبلغ جایزه کیف پول را به تومان ارسال کنید.\nمثال: 50000" });
+    return;
+  }
+  if (data === "admin_referral_reward_wallet") {
+    await setSetting("referral_reward_type", "wallet");
+    await tg("sendMessage", { chat_id: chatId, text: "نوع جایزه دعوت روی اعتبار کیف پول تنظیم شد ✅" });
+    return;
+  }
+  if (data === "admin_referral_reward_config") {
+    await setSetting("referral_reward_type", "config");
+    await tg("sendMessage", { chat_id: chatId, text: "نوع جایزه دعوت روی کانفیگ تنظیم شد ✅" });
+    return;
+  }
+  if (data === "admin_referral_pick_product") {
+    await showAdminReferralProductPicker(chatId);
+    return;
+  }
+  if (data === "admin_referral_clear_product") {
+    await setSetting("referral_reward_product_id", "");
+    await tg("sendMessage", { chat_id: chatId, text: "محصول جایزه دعوت پاک شد ✅" });
+    return;
+  }
+  if (data.startsWith("admin_referral_product_")) {
+    const productId = Number(data.replace("admin_referral_product_", ""));
+    const rows = await sql`SELECT name FROM products WHERE id = ${productId} LIMIT 1;`;
+    if (!rows.length) {
+      await tg("sendMessage", { chat_id: chatId, text: "محصول موردنظر پیدا نشد." });
+      return;
+    }
+    await setSetting("referral_reward_type", "config");
+    await setSetting("referral_reward_product_id", String(productId));
+    await tg("sendMessage", { chat_id: chatId, text: `محصول جایزه دعوت تنظیم شد ✅\n${String(rows[0].name)}` });
     return;
   }
   if (data === "admin_start_media") {
@@ -12819,12 +13517,17 @@ async function checkMandatoryChannels(userId: number, chatId: number, silent = f
 async function handleMessage(update: TgUpdate["message"]) {
   if (!update?.from) return;
   const text = (update.text ?? update.caption ?? "").trim();
+  const startCommand = parseStartCommand(text);
   const photoFileId = update.photo?.length ? update.photo[update.photo.length - 1].file_id : null;
   const stickerFileId = update.sticker?.file_id || null;
   const animationFileId = update.animation?.file_id || null;
   const chatId = update.chat.id;
   const userId = update.from.id;
-  await upsertUser(update.from);
+  const upserted = await upsertUser(update.from);
+
+  if (startCommand?.payload) {
+    await captureReferralAttribution(userId, startCommand.payload, upserted.created);
+  }
 
   if (await isBanned(userId)) {
     await tg("sendMessage", { chat_id: chatId, text: "دسترسی شما به دلیل تخلف مسدود شده است." });
@@ -12835,7 +13538,9 @@ async function handleMessage(update: TgUpdate["message"]) {
     return;
   }
 
-  if (text === "/start") {
+  await maybeQualifyReferralUser(userId);
+
+  if (startCommand) {
     await clearState(userId);
     await sendStartMedia(chatId);
     await sendMainMenu(chatId, userId);
