@@ -2688,6 +2688,10 @@ async function showAdminReferralSettings(chatId: number) {
   const rewardRows = await sql`SELECT COUNT(*)::int AS reward_count FROM referral_rewards;`;
   const rewardSummary = describeReferralReward(settings, productName || null);
   const rewardModeText = settings.rewardType === "config" ? "کانفیگ" : "اعتبار کیف پول";
+  const configDeliveryLine =
+    settings.rewardType === "config"
+      ? `روش تحویل کانفیگ: ${referralConfigDeliveryModeLabel(settings.configDeliveryMode)}\n`
+      : "";
   const qualifiedLeads = Number(leadRows[0]?.qualified_leads || 0);
   const totalLeads = Number(leadRows[0]?.total_leads || 0);
   const inviters = Number(leadRows[0]?.inviters || 0);
@@ -2700,6 +2704,21 @@ async function showAdminReferralSettings(chatId: number) {
       : !settings.productId
         ? "\nهشدار: محصول جایزه هنوز انتخاب نشده است."
         : "";
+  const keyboard: any[] = [
+    [cb(settings.enabled ? "⛔ غیرفعال‌کردن سیستم دعوت" : "✅ فعال‌کردن سیستم دعوت", "admin_toggle_referral_enabled", settings.enabled ? "danger" : "success")],
+    [cb("🎯 تنظیم آستانه دعوت", "admin_set_referral_threshold", "primary")],
+    [cb(settings.rewardType === "wallet" ? "✅ پاداش: کیف پول" : "کیف پول", "admin_referral_reward_wallet", settings.rewardType === "wallet" ? "success" : "primary"), cb(settings.rewardType === "config" ? "✅ پاداش: کانفیگ" : "کانفیگ", "admin_referral_reward_config", settings.rewardType === "config" ? "success" : "primary")],
+    [cb("💰 مبلغ جایزه کیف پول", "admin_set_referral_wallet_amount", "primary")],
+    [cb("📦 انتخاب محصول جایزه", "admin_referral_pick_product", "primary")]
+  ];
+  if (settings.rewardType === "config") {
+    keyboard.push([
+      cb(settings.configDeliveryMode === "panel" ? "✅ پنل" : "پنل", "admin_referral_delivery_panel", settings.configDeliveryMode === "panel" ? "success" : "primary"),
+      cb(settings.configDeliveryMode === "storage" ? "✅ موجودی" : "موجودی", "admin_referral_delivery_storage", settings.configDeliveryMode === "storage" ? "success" : "primary"),
+      cb(settings.configDeliveryMode === "admin" ? "✅ ادمین" : "ادمین", "admin_referral_delivery_admin", settings.configDeliveryMode === "admin" ? "success" : "primary")
+    ]);
+  }
+  keyboard.push([backButton("admin_settings")]);
   await tg("sendMessage", {
     chat_id: chatId,
     text:
@@ -2707,6 +2726,7 @@ async function showAdminReferralSettings(chatId: number) {
       `وضعیت: ${settings.enabled ? "فعال ✅" : "غیرفعال ⛔"}\n` +
       `آستانه پاداش: هر ${settings.threshold} دعوت تاییدشده\n` +
       `نوع پاداش: ${rewardModeText}\n` +
+      configDeliveryLine +
       `پاداش فعلی: ${rewardSummary}\n\n` +
       `آمار سریع:\n` +
       `دعوت‌های ثبت‌شده: ${totalLeads}\n` +
@@ -2714,16 +2734,7 @@ async function showAdminReferralSettings(chatId: number) {
       `تعداد معرف‌ها: ${inviters}\n` +
       `جوایز پرداخت‌شده: ${rewardCount}` +
       configurationWarning,
-    reply_markup: {
-      inline_keyboard: [
-        [cb(settings.enabled ? "⛔ غیرفعال‌کردن سیستم دعوت" : "✅ فعال‌کردن سیستم دعوت", "admin_toggle_referral_enabled", settings.enabled ? "danger" : "success")],
-        [cb("🎯 تنظیم آستانه دعوت", "admin_set_referral_threshold", "primary")],
-        [cb(settings.rewardType === "wallet" ? "✅ پاداش: کیف پول" : "کیف پول", "admin_referral_reward_wallet", settings.rewardType === "wallet" ? "success" : "primary"), cb(settings.rewardType === "config" ? "✅ پاداش: کانفیگ" : "کانفیگ", "admin_referral_reward_config", settings.rewardType === "config" ? "success" : "primary")],
-        [cb("💰 مبلغ جایزه کیف پول", "admin_set_referral_wallet_amount", "primary")],
-        [cb("📦 انتخاب محصول جایزه", "admin_referral_pick_product", "primary")],
-        [backButton("admin_settings")]
-      ]
-    }
+    reply_markup: { inline_keyboard: keyboard }
   });
 }
 
@@ -6126,6 +6137,24 @@ async function parseAndApplyState(
     await setSetting("referral_wallet_amount_toman", String(amount));
     await clearState(userId);
     await tg("sendMessage", { chat_id: chatId, text: `مبلغ جایزه کیف پول ذخیره شد ✅\n${formatPriceToman(amount)} تومان` });
+    return true;
+  }
+  if (state.state === "admin_reset_all_data") {
+    const confirmation = text.trim().toUpperCase();
+    if (confirmation !== "RESET ALL DATA") {
+      await tg("sendMessage", {
+        chat_id: chatId,
+        text: "عبارت تایید درست نیست.\nبرای انجام پاک‌سازی کامل دقیقاً بنویسید:\nRESET ALL DATA"
+      });
+      return true;
+    }
+    await resetBusinessDataPreserveCaches();
+    await clearState(userId);
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "پاک‌سازی کامل انجام شد ✅\nهمه داده‌های عملیاتی حذف شدند و فقط داده‌های کش مثل نرخ ارز حفظ شد."
+    });
+    await notifyAdmins(`🧨 پاک‌سازی کامل داده‌های ربات توسط ادمین ${userId} انجام شد.\nداده‌های کش حفظ شدند.`).catch(() => {});
     return true;
   }
   if (state.state === "admin_set_public_base_url") {
@@ -10051,7 +10080,8 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
   if (!allocated.length) {
     const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
     const forceAwaitingConfig = panelConfig.force_awaiting_config === true;
-    if (globalInfinite || order.is_infinite || forceAwaitingConfig) {
+    const forceRequireInventory = panelConfig.force_require_inventory === true;
+    if (!forceRequireInventory && (globalInfinite || order.is_infinite || forceAwaitingConfig)) {
       await sql`
         UPDATE orders
         SET status = 'awaiting_config', paid_at = NOW(), admin_decision_by = ${decidedBy}
@@ -12929,6 +12959,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
           [cb("🔎 یافتن کانفیگ‌های مرده", "admin_dead_configs", "primary")],
           [cb("🚫 لیست بن‌شده‌ها", "admin_banned_list_1", "primary")],
           [cb("🔁 انتقال مستقیم کانفیگ", "admin_tool_direct_migrate", "primary")],
+          [cb("🧨 پاک‌سازی همه داده‌ها", "admin_reset_all_prompt", "danger")],
           [backButton("admin_panel")]
         ]
       }
@@ -13044,6 +13075,36 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await startDirectMigrateWizard(chatId, userId);
     return;
   }
+  if (data === "admin_reset_all_prompt") {
+    await clearState(userId);
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        "⚠️ هشدار پاک‌سازی کامل\n\n" +
+        "این عملیات همه داده‌های عملیاتی ربات را حذف می‌کند:\n" +
+        "کاربران، سفارش‌ها، کیف پول‌ها، محصولات، موجودی، پنل‌ها، کارت‌ها، تخفیف‌ها، تنظیمات، داده‌های دعوت و تراکنش‌ها.\n\n" +
+        "فقط داده‌های کش مثل نرخ ارز حفظ می‌شود.\n" +
+        "این عملیات قابل بازگشت نیست.",
+      reply_markup: {
+        inline_keyboard: [
+          [cb("✍️ ادامه با تایید نوشتاری", "admin_reset_all_begin", "danger")],
+          [backButton("admin_tools")]
+        ]
+      }
+    });
+    return;
+  }
+  if (data === "admin_reset_all_begin") {
+    await setState(userId, "admin_reset_all_data");
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        "برای تایید نهایی، عبارت زیر را دقیقاً ارسال کنید:\n\n" +
+        "RESET ALL DATA\n\n" +
+        "بعد از ارسال این عبارت، همه داده‌های عملیاتی حذف می‌شوند و فقط کش حفظ خواهد شد."
+    });
+    return;
+  }
   if (data === "admin_direct_migrate_wizard_cancel") {
     await clearState(userId);
     await tg("sendMessage", { chat_id: chatId, text: "انتقال مستقیم لغو شد." });
@@ -13157,6 +13218,21 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "admin_referral_reward_config") {
     await setSetting("referral_reward_type", "config");
     await tg("sendMessage", { chat_id: chatId, text: "نوع جایزه دعوت روی کانفیگ تنظیم شد ✅" });
+    return;
+  }
+  if (data === "admin_referral_delivery_panel") {
+    await setSetting("referral_config_delivery_mode", "panel");
+    await tg("sendMessage", { chat_id: chatId, text: "روش تحویل جایزه کانفیگ روی پنل تنظیم شد ✅" });
+    return;
+  }
+  if (data === "admin_referral_delivery_storage") {
+    await setSetting("referral_config_delivery_mode", "storage");
+    await tg("sendMessage", { chat_id: chatId, text: "روش تحویل جایزه کانفیگ روی موجودی دستی تنظیم شد ✅" });
+    return;
+  }
+  if (data === "admin_referral_delivery_admin") {
+    await setSetting("referral_config_delivery_mode", "admin");
+    await tg("sendMessage", { chat_id: chatId, text: "روش تحویل جایزه کانفیگ روی تحویل دستی ادمین تنظیم شد ✅" });
     return;
   }
   if (data === "admin_referral_pick_product") {
