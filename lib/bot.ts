@@ -818,7 +818,14 @@ async function maybeGrantReferralRewardsV2(inviterId: number) {
           `شناسه سفارش: ${granted.purchaseId}` +
           (granted.status === "awaiting_admin" ? `\nوضعیت: در انتظار آماده‌سازی توسط ادمین` : "")
       }).catch(() => {});
-      if (granted.status === "granted") {
+      if (granted.status === "awaiting_admin") {
+        await notifyAdmins(
+          `🛠 جایزه دعوت نیازمند اقدام ادمین است\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || productId}\nروش: ${settings.configDeliveryMode}\nسفارش: ${granted.purchaseId}`,
+          {
+            inline_keyboard: [[{ text: "ارسال کانفیگ جایزه", callback_data: `admin_provide_config_${granted.orderId}` }]]
+          }
+        );
+      } else if (granted.status === "granted") {
         await notifyAdmins(
           `🎁 جایزه دعوت کانفیگ ثبت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || productId}\nروش: ${settings.configDeliveryMode}\nسفارش: ${granted.purchaseId}`
         );
@@ -849,30 +856,32 @@ async function maybeQualifyReferralUser(userId: number) {
   const inviterId = Number(qualified[0].referred_by_telegram_id || 0);
   if (!Number.isFinite(inviterId) || inviterId <= 0) return;
   const settings = await getReferralSettingsSnapshot();
-  if (settings.enabled) {
-    const qualifiedCount = await countUserQualifiedReferrals(inviterId);
+  const qualifiedCount = await countUserQualifiedReferrals(inviterId);
+  const referredRows = await sql`
+    SELECT username, first_name, last_name
+    FROM users
+    WHERE telegram_id = ${userId}
+    LIMIT 1;
+  `;
+  const referred = referredRows[0];
+  const referredName =
+    [String(referred?.first_name || "").trim(), String(referred?.last_name || "").trim()].filter(Boolean).join(" ").trim() ||
+    (referred?.username ? `@${String(referred.username).replace(/^@/, "").trim()}` : "یک کاربر");
+  const trailingLines: string[] = [];
+  if (settings.enabled && settings.threshold > 0) {
     const remaining = getReferralRemainingCount(qualifiedCount, settings.threshold);
-    const referredRows = await sql`
-      SELECT username, first_name, last_name
-      FROM users
-      WHERE telegram_id = ${userId}
-      LIMIT 1;
-    `;
-    const referred = referredRows[0];
-    const referredName =
-      [String(referred?.first_name || "").trim(), String(referred?.last_name || "").trim()].filter(Boolean).join(" ").trim() ||
-      (referred?.username ? `@${String(referred.username).replace(/^@/, "").trim()}` : "یک کاربر");
-    const remainingLine =
-      remaining > 0 ? `فقط ${remaining} نفر تا پاداش بعدی باقی مانده است.` : "✅ آستانه پاداش تکمیل شد. پاداش شما در حال ثبت است.";
-    await tg("sendMessage", {
-      chat_id: inviterId,
-      text:
-        `👥 دعوت شما تایید شد!\n` +
-        `کاربر: ${referredName}\n` +
-        `دعوت‌های تاییدشده: ${qualifiedCount}\n` +
-        remainingLine
-    }).catch(() => {});
+    trailingLines.push(
+      remaining > 0 ? `فقط ${remaining} نفر تا پاداش بعدی باقی مانده است.` : "✅ آستانه پاداش تکمیل شد. پاداش شما در حال ثبت است."
+    );
   }
+  await tg("sendMessage", {
+    chat_id: inviterId,
+    text:
+      `👥 دعوت شما تایید شد!\n` +
+      `کاربر: ${referredName}\n` +
+      `دعوت‌های تاییدشده: ${qualifiedCount}` +
+      (trailingLines.length ? `\n${trailingLines.join("\n")}` : "")
+  }).catch(() => {});
   await maybeGrantReferralRewardsV2(inviterId);
 }
 
@@ -13838,6 +13847,10 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   }
   if (data.startsWith("admin_provide_config_")) {
     const orderId = Number(data.replace("admin_provide_config_", ""));
+    if (!Number.isFinite(orderId) || orderId <= 0) {
+      await tg("sendMessage", { chat_id: chatId, text: "شناسه سفارش نامعتبر است." });
+      return;
+    }
     await setState(userId, "admin_provide_config", { orderId });
     await tg("sendMessage", { chat_id: chatId, text: "کانفیگ آماده را ارسال کنید تا برای کاربر تحویل شود." });
     return;
