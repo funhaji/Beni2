@@ -482,6 +482,16 @@ export function ensureSchema() {
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
       `;
+      await sql`
+        CREATE TABLE IF NOT EXISTS runtime_logs (
+          id BIGSERIAL PRIMARY KEY,
+          level TEXT NOT NULL,
+          event TEXT NOT NULL,
+          payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `;
+      await sql`CREATE INDEX IF NOT EXISTS runtime_logs_created_idx ON runtime_logs(created_at DESC);`;
       
       await sql`
         DELETE FROM products p

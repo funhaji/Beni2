@@ -658,13 +658,36 @@ async function createReferralRewardOrderV2(
 
 async function maybeGrantReferralRewardsV2(inviterId: number) {
   const settings = await getReferralSettingsSnapshot();
-  if (!settings.enabled || settings.threshold <= 0) return;
-  if (settings.rewardType === "wallet" && settings.walletAmount <= 0) return;
-  if (settings.rewardType === "config" && !settings.productId) return;
+  if (!settings.enabled) {
+    logInfo("referral_reward_skipped_disabled", { inviterId });
+    return;
+  }
+  if (settings.threshold <= 0) {
+    logInfo("referral_reward_skipped_invalid_threshold", { inviterId, threshold: settings.threshold });
+    return;
+  }
+  if (settings.rewardType === "wallet" && settings.walletAmount <= 0) {
+    logInfo("referral_reward_skipped_wallet_amount_missing", { inviterId, walletAmount: settings.walletAmount });
+    return;
+  }
+  if (settings.rewardType === "config" && !settings.productId) {
+    logError("referral_reward_config_missing_product", new Error("referral_reward_product_id_missing"), { inviterId });
+    await notifyAdmins(`⚠️ جایزه دعوت تنظیم نشده است\nکاربر: ${inviterId}\nعلت: referral_reward_product_id خالی است.`);
+    await tg("sendMessage", {
+      chat_id: inviterId,
+      text:
+        "⚠️ سیستم دعوت فعال است اما محصول جایزه هنوز توسط ادمین تنظیم نشده.\n" +
+        "بعد از تنظیم محصول، جایزه شما ثبت می‌شود."
+    }).catch(() => {});
+    return;
+  }
 
   const qualifiedCount = await countUserQualifiedReferrals(inviterId);
   const totalBatches = Math.floor(qualifiedCount / settings.threshold);
-  if (totalBatches <= 0) return;
+  if (totalBatches <= 0) {
+    logInfo("referral_reward_skipped_no_batch", { inviterId, qualifiedCount, threshold: settings.threshold });
+    return;
+  }
 
   for (let batch = 1; batch <= totalBatches; batch += 1) {
     let rewardRows = await sql`
@@ -926,7 +949,7 @@ async function maybeQualifyReferralUser(userId: number) {
   if (settings.enabled && settings.threshold > 0) {
     const remaining = getReferralRemainingCount(qualifiedCount, settings.threshold);
     trailingLines.push(
-      remaining > 0 ? `فقط ${remaining} نفر تا پاداش بعدی باقی مانده است.` : "✅ آستانه پاداش تکمیل شد. پاداش شما در حال ثبت است."
+      remaining > 0 ? `فقط ${remaining} نفر تا پاداش بعدی باقی مانده است.` : "✅ آستانه پاداش تکمیل شد. وضعیت ثبت جایزه تا لحظاتی دیگر اعلام می‌شود."
     );
   }
   await tg("sendMessage", {
