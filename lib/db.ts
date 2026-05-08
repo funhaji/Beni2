@@ -5,6 +5,68 @@ export const sql = neon(databaseUrl);
 
 let schemaReady: Promise<void> | null = null;
 
+export async function seedReferenceData() {
+  await sql`
+    INSERT INTO crypto_wallets (currency, network, active)
+    VALUES
+      ('TRX', 'TRON', FALSE),
+      ('TON', 'TON', FALSE),
+      ('USDT', 'TRC20', FALSE)
+    ON CONFLICT (currency, network) DO NOTHING;
+  `;
+  await sql`
+    INSERT INTO payment_methods (code, title, active)
+    VALUES
+      ('card2card', 'کارت‌به‌کارت', TRUE),
+      ('tronado', 'ترونادو (TRX)', TRUE),
+      ('plisio', 'Plisio', TRUE),
+      ('tetrapay', 'تتراپی', TRUE),
+      ('crypto', 'کریپتو', TRUE),
+      ('swapwallet', 'SwapWallet', TRUE)
+    ON CONFLICT (code) DO NOTHING;
+  `;
+  await sql`
+    UPDATE payment_methods
+    SET title = CASE code
+      WHEN 'card2card' THEN 'کارت‌به‌کارت'
+      WHEN 'tronado' THEN 'ترونادو (TRX)'
+      WHEN 'plisio' THEN 'Plisio'
+      WHEN 'tetrapay' THEN 'تتراپی'
+      WHEN 'crypto' THEN 'کریپتو'
+      WHEN 'swapwallet' THEN 'SwapWallet'
+      ELSE title
+    END;
+  `;
+}
+
+export async function resetBusinessDataPreserveCaches() {
+  await ensureSchema();
+  await sql`
+    TRUNCATE TABLE
+      referral_rewards,
+      wallet_topups,
+      wallet_transactions,
+      topup_requests,
+      panel_migrations,
+      config_forensics,
+      banned_users,
+      user_states,
+      processed_updates,
+      orders,
+      inventory,
+      discounts,
+      cards,
+      products,
+      panels,
+      payment_methods,
+      crypto_wallets,
+      settings,
+      users
+    RESTART IDENTITY CASCADE;
+  `;
+  await seedReferenceData();
+}
+
 export function ensureSchema() {
   if (!schemaReady) {
     schemaReady = (async () => {
@@ -372,13 +434,21 @@ export function ensureSchema() {
           referred_count_snapshot INT NOT NULL DEFAULT 0,
           threshold_snapshot INT NOT NULL DEFAULT 0,
           reward_type TEXT NOT NULL,
+          reward_delivery_mode TEXT,
+          status TEXT NOT NULL DEFAULT 'granted',
           wallet_amount INT NOT NULL DEFAULT 0,
           product_id INT REFERENCES products(id),
           order_id BIGINT REFERENCES orders(id),
           description TEXT,
+          failure_reason TEXT,
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
       `;
+      await sql`ALTER TABLE referral_rewards ADD COLUMN IF NOT EXISTS reward_delivery_mode TEXT;`;
+      await sql`ALTER TABLE referral_rewards ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'granted';`;
+      await sql`ALTER TABLE referral_rewards ADD COLUMN IF NOT EXISTS failure_reason TEXT;`;
+      await sql`ALTER TABLE referral_rewards ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();`;
       await sql`CREATE UNIQUE INDEX IF NOT EXISTS referral_rewards_inviter_batch_idx ON referral_rewards(inviter_telegram_id, reward_batch);`;
       await sql`CREATE INDEX IF NOT EXISTS referral_rewards_inviter_created_idx ON referral_rewards(inviter_telegram_id, created_at DESC);`;
 

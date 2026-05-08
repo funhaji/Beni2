@@ -1,4 +1,4 @@
-import { ensureSchema, sql } from "./db.js";
+import { ensureSchema, resetBusinessDataPreserveCaches, sql } from "./db.js";
 import { adminIds, env } from "./env.js";
 import { logError, logInfo } from "./log.js";
 import { getOrderToken, getStatusByPaymentId, getTronPriceToman } from "./tronado.js";
@@ -90,6 +90,8 @@ type ConfigLookupMode = "config" | "uuid";
 type StartMediaKind = "none" | "text" | "sticker" | "animation" | "photo";
 type CustomOrderMode = "data" | "days";
 type ReferralRewardType = "wallet" | "config";
+type ReferralConfigDeliveryMode = "panel" | "storage" | "admin";
+type ReferralRewardStatus = "pending" | "granted" | "awaiting_admin" | "blocked";
 
 type ReferralSettingsSnapshot = {
   enabled: boolean;
@@ -97,6 +99,7 @@ type ReferralSettingsSnapshot = {
   rewardType: ReferralRewardType;
   walletAmount: number;
   productId: number | null;
+  configDeliveryMode: ReferralConfigDeliveryMode;
 };
 
 let botUsernameCache: string | null | undefined;
@@ -212,6 +215,25 @@ function normalizeReferralRewardType(raw: unknown): ReferralRewardType {
   return String(raw || "").trim().toLowerCase() === "config" ? "config" : "wallet";
 }
 
+function normalizeReferralConfigDeliveryMode(raw: unknown): ReferralConfigDeliveryMode {
+  const value = String(raw || "").trim().toLowerCase();
+  if (value === "panel" || value === "storage" || value === "admin") return value;
+  return "admin";
+}
+
+function referralConfigDeliveryModeLabel(mode: ReferralConfigDeliveryMode) {
+  if (mode === "panel") return "تحویل از پنل";
+  if (mode === "storage") return "تحویل از موجودی";
+  return "تحویل دستی ادمین";
+}
+
+function referralRewardStatusLabel(status: ReferralRewardStatus) {
+  if (status === "granted") return "تحویل شد";
+  if (status === "awaiting_admin") return "در انتظار تحویل ادمین";
+  if (status === "blocked") return "متوقف به دلیل کمبود/تنظیمات";
+  return "در حال پردازش";
+}
+
 function getReferralRemainingCount(qualifiedCount: number, threshold: number) {
   if (threshold <= 0) return 0;
   const safeQualified = Math.max(0, Math.floor(qualifiedCount));
@@ -221,7 +243,8 @@ function getReferralRemainingCount(qualifiedCount: number, threshold: number) {
 
 function describeReferralReward(settings: ReferralSettingsSnapshot, productName?: string | null) {
   if (settings.rewardType === "config") {
-    return productName ? `یک کانفیگ از محصول «${productName}»` : "یک کانفیگ رایگان";
+    const sourceLabel = referralConfigDeliveryModeLabel(settings.configDeliveryMode);
+    return productName ? `یک کانفیگ از محصول «${productName}» (${sourceLabel})` : `یک کانفیگ رایگان (${sourceLabel})`;
   }
   return `${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول`;
 }
@@ -251,6 +274,7 @@ function buildReferralShareUrl(inviteLink: string) {
 
 async function getReferralSettingsSnapshot(): Promise<ReferralSettingsSnapshot> {
   const rewardType = normalizeReferralRewardType(await getSetting("referral_reward_type"));
+  const configDeliveryMode = normalizeReferralConfigDeliveryMode(await getSetting("referral_config_delivery_mode"));
   const thresholdRaw = await getNumberSetting("referral_invite_threshold");
   const walletAmountRaw = await getNumberSetting("referral_wallet_amount_toman");
   const productIdRaw = await getNumberSetting("referral_reward_product_id");
@@ -262,7 +286,8 @@ async function getReferralSettingsSnapshot(): Promise<ReferralSettingsSnapshot> 
     threshold,
     rewardType,
     walletAmount,
-    productId
+    productId,
+    configDeliveryMode
   };
 }
 
@@ -282,8 +307,29 @@ async function countUserQualifiedReferrals(userId: number) {
 }
 
 async function countUserReferralRewards(userId: number) {
-  const rows = await sql`SELECT COUNT(*)::int AS count FROM referral_rewards WHERE inviter_telegram_id = ${userId};`;
+  const rows = await sql`
+    SELECT COUNT(*)::int AS count
+    FROM referral_rewards
+    WHERE inviter_telegram_id = ${userId}
+      AND COALESCE(status, 'granted') IN ('granted', 'awaiting_admin');
+  `;
   return Number(rows[0]?.count || 0);
+}
+
+async function getUserReferralRewardStatusSummary(userId: number) {
+  const rows = await sql`
+    SELECT
+      COUNT(*) FILTER (WHERE COALESCE(status, 'granted') = 'granted')::int AS granted_count,
+      COUNT(*) FILTER (WHERE COALESCE(status, 'granted') = 'awaiting_admin')::int AS awaiting_admin_count,
+      COUNT(*) FILTER (WHERE COALESCE(status, 'granted') = 'blocked')::int AS blocked_count
+    FROM referral_rewards
+    WHERE inviter_telegram_id = ${userId};
+  `;
+  return {
+    granted: Number(rows[0]?.granted_count || 0),
+    awaitingAdmin: Number(rows[0]?.awaiting_admin_count || 0),
+    blocked: Number(rows[0]?.blocked_count || 0)
+  };
 }
 
 async function captureReferralAttribution(userId: number, payload: string | null, canAssign: boolean) {
@@ -490,6 +536,306 @@ async function maybeGrantReferralRewards(inviterId: number) {
   }
 }
 
+async function createReferralRewardOrderV2(
+  inviterId: number,
+  productId: number,
+  batch: number,
+  deliveryMode: ReferralConfigDeliveryMode
+) {
+  const rows = await sql`
+    SELECT
+      p.id,
+      p.name,
+      p.is_infinite,
+      p.sell_mode,
+      p.panel_id,
+      p.panel_sell_limit,
+      p.panel_delivery_mode,
+      p.panel_config,
+      pnl.active AS panel_active,
+      pnl.allow_new_sales AS panel_allow_new_sales,
+      (
+        SELECT COUNT(*)::int
+        FROM inventory i
+        WHERE i.product_id = p.id AND i.status = 'available'
+      ) AS stock,
+      (
+        SELECT COUNT(*)::int
+        FROM orders o
+        WHERE o.product_id = p.id
+          AND o.sell_mode = 'panel'
+          AND o.status NOT IN ('denied')
+      ) AS panel_sales_count
+    FROM products p
+    LEFT JOIN panels pnl ON pnl.id = p.panel_id
+    WHERE p.id = ${productId}
+    LIMIT 1;
+  `;
+  if (!rows.length) {
+    return { ok: false as const, reason: "product_not_found", status: "blocked" as ReferralRewardStatus };
+  }
+  const product = rows[0];
+  const purchaseId = `R${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
+  const basePanelConfig = sanitizePanelConfig(product.panel_config);
+  const panelRemaining =
+    Number(product.panel_sell_limit || 0) > 0 ? Math.max(0, Number(product.panel_sell_limit) - Number(product.panel_sales_count || 0)) : Infinity;
+  let sellMode: SellMode = "manual";
+  let sourcePanelId: number | null = null;
+  let panelConfigSnapshot = basePanelConfig;
+
+  if (deliveryMode === "panel") {
+    if (!product.panel_id) {
+      return { ok: false as const, reason: "panel_not_configured", status: "blocked" as ReferralRewardStatus };
+    }
+    if (!product.panel_active || !product.panel_allow_new_sales || panelRemaining <= 0) {
+      return { ok: false as const, reason: "panel_unavailable", status: "blocked" as ReferralRewardStatus };
+    }
+    sellMode = "panel";
+    sourcePanelId = Number(product.panel_id);
+  } else if (deliveryMode === "storage") {
+    if (Number(product.stock || 0) <= 0) {
+      return { ok: false as const, reason: "stock_empty", status: "blocked" as ReferralRewardStatus };
+    }
+    sellMode = "manual";
+    sourcePanelId = null;
+    panelConfigSnapshot = { ...basePanelConfig, force_require_inventory: true, force_awaiting_config: false };
+  } else {
+    sellMode = "manual";
+    sourcePanelId = null;
+    panelConfigSnapshot = { ...basePanelConfig, force_awaiting_config: true };
+  }
+
+  const orderId = await insertOrderRecord({
+    purchaseId,
+    telegramId: inviterId,
+    productId: Number(product.id),
+    productNameSnapshot: `${String(product.name || "").trim()} | جایزه دعوت (${batch})`,
+    sellMode,
+    sourcePanelId,
+    panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
+    panelConfigSnapshot,
+    paymentMethod: "referral_reward",
+    discountCode: null,
+    discountAmount: 0,
+    finalPrice: 0,
+    tronAmount: 0,
+    status: "pending",
+    walletUsed: 0,
+    walletTransactionDescription: `جایزه دعوت دوستان (${purchaseId})`
+  });
+
+  const result = await finalizeOrder(orderId, null);
+  if (result.ok) {
+    return {
+      ok: true as const,
+      orderId,
+      purchaseId,
+      reason: result.reason,
+      status: (result.reason === "awaiting_config" ? "awaiting_admin" : "granted") as ReferralRewardStatus
+    };
+  }
+
+  const statusRows = await sql`SELECT status FROM orders WHERE id = ${orderId} LIMIT 1;`;
+  const finalStatus = String(statusRows[0]?.status || "").toLowerCase();
+  if (finalStatus === "awaiting_config") {
+    return {
+      ok: true as const,
+      orderId,
+      purchaseId,
+      reason: result.reason,
+      status: "awaiting_admin" as ReferralRewardStatus
+    };
+  }
+
+  await sql`
+    DELETE FROM orders
+    WHERE id = ${orderId}
+      AND payment_method = 'referral_reward'
+      AND status IN ('pending', 'receipt_submitted', 'awaiting_receipt', 'fulfilling', 'cancelled');
+  `;
+  return { ok: false as const, reason: result.reason, status: "blocked" as ReferralRewardStatus };
+}
+
+async function maybeGrantReferralRewardsV2(inviterId: number) {
+  const settings = await getReferralSettingsSnapshot();
+  if (!settings.enabled || settings.threshold <= 0) return;
+  if (settings.rewardType === "wallet" && settings.walletAmount <= 0) return;
+  if (settings.rewardType === "config" && !settings.productId) return;
+
+  const qualifiedCount = await countUserQualifiedReferrals(inviterId);
+  const totalBatches = Math.floor(qualifiedCount / settings.threshold);
+  if (totalBatches <= 0) return;
+
+  for (let batch = 1; batch <= totalBatches; batch += 1) {
+    let rewardRows = await sql`
+      SELECT id, status, failure_reason
+      FROM referral_rewards
+      WHERE inviter_telegram_id = ${inviterId}
+        AND reward_batch = ${batch}
+      LIMIT 1;
+    `;
+
+    if (!rewardRows.length) {
+      rewardRows = await sql`
+        INSERT INTO referral_rewards (
+          inviter_telegram_id,
+          reward_batch,
+          referred_count_snapshot,
+          threshold_snapshot,
+          reward_type,
+          reward_delivery_mode,
+          status,
+          wallet_amount,
+          product_id,
+          description,
+          updated_at
+        )
+        VALUES (
+          ${inviterId},
+          ${batch},
+          ${qualifiedCount},
+          ${settings.threshold},
+          ${settings.rewardType},
+          ${settings.rewardType === "config" ? settings.configDeliveryMode : null},
+          'pending',
+          ${settings.rewardType === "wallet" ? settings.walletAmount : 0},
+          ${settings.rewardType === "config" ? settings.productId : null},
+          ${`Reward batch ${batch}`},
+          NOW()
+        )
+        RETURNING id, status, failure_reason;
+      `;
+    }
+
+    const rewardId = Number(rewardRows[0].id);
+    const previousStatus = String(rewardRows[0].status || "granted").toLowerCase() as ReferralRewardStatus;
+    const previousFailureReason = String(rewardRows[0].failure_reason || "");
+    if (previousStatus === "granted" || previousStatus === "awaiting_admin") continue;
+
+    await sql`
+      UPDATE referral_rewards
+      SET referred_count_snapshot = ${qualifiedCount},
+          threshold_snapshot = ${settings.threshold},
+          reward_type = ${settings.rewardType},
+          reward_delivery_mode = ${settings.rewardType === "config" ? settings.configDeliveryMode : null},
+          wallet_amount = ${settings.rewardType === "wallet" ? settings.walletAmount : 0},
+          product_id = ${settings.rewardType === "config" ? settings.productId : null},
+          status = 'pending',
+          updated_at = NOW()
+      WHERE id = ${rewardId};
+    `;
+
+    try {
+      if (settings.rewardType === "wallet") {
+        await sql`
+          UPDATE users
+          SET wallet_balance = wallet_balance + ${settings.walletAmount}
+          WHERE telegram_id = ${inviterId};
+        `;
+        await sql`
+          INSERT INTO wallet_transactions (telegram_id, amount, type, description)
+          VALUES (
+            ${inviterId},
+            ${settings.walletAmount},
+            'referral_reward',
+            ${`جایزه دعوت دوستان - مرحله ${batch}`}
+          );
+        `;
+        await sql`
+          UPDATE referral_rewards
+          SET status = 'granted',
+              failure_reason = NULL,
+              description = ${`جایزه دعوت دوستان - ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول`},
+              updated_at = NOW()
+          WHERE id = ${rewardId};
+        `;
+        await tg("sendMessage", {
+          chat_id: inviterId,
+          text:
+            `🎁 جایزه دعوت شما آماده شد!\n` +
+            `مرحله: ${batch}\n` +
+            `پاداش: ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول\n` +
+            `دعوت‌های تاییدشده: ${qualifiedCount}`
+        }).catch(() => {});
+        await notifyAdmins(
+          `🎁 جایزه دعوت پرداخت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nپاداش: ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول\nدعوت‌های تاییدشده: ${qualifiedCount}`
+        );
+        continue;
+      }
+
+      const productId = Number(settings.productId || 0);
+      if (!Number.isFinite(productId) || productId <= 0) {
+        await sql`
+          UPDATE referral_rewards
+          SET status = 'blocked',
+              failure_reason = 'product_not_configured',
+              description = 'جایزه دعوت - محصول تنظیم نشده',
+              updated_at = NOW()
+          WHERE id = ${rewardId};
+        `;
+        if (previousStatus !== "blocked" || previousFailureReason !== "product_not_configured") {
+          await notifyAdmins(`⚠️ جایزه دعوت مسدود شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nعلت: product_not_configured`);
+        }
+        continue;
+      }
+
+      const productRows = await sql`SELECT name FROM products WHERE id = ${productId} LIMIT 1;`;
+      const productName = productRows.length ? String(productRows[0].name || "") : "";
+      const granted = await createReferralRewardOrderV2(inviterId, productId, batch, settings.configDeliveryMode);
+      if (!granted.ok) {
+        await sql`
+          UPDATE referral_rewards
+          SET status = 'blocked',
+              failure_reason = ${granted.reason},
+              description = ${`جایزه دعوت - ${productName || productId} - ${granted.reason}`},
+              updated_at = NOW()
+          WHERE id = ${rewardId};
+        `;
+        if (previousStatus !== "blocked" || previousFailureReason !== granted.reason) {
+          await notifyAdmins(
+            `⚠️ جایزه دعوت کانفیگ پرداخت نشد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || productId}\nروش: ${settings.configDeliveryMode}\nعلت: ${granted.reason}`
+          );
+        }
+        continue;
+      }
+
+      await sql`
+        UPDATE referral_rewards
+        SET order_id = ${granted.orderId},
+            status = ${granted.status},
+            failure_reason = NULL,
+            description = ${`جایزه دعوت دوستان - ${productName || "کانفیگ رایگان"} (${referralConfigDeliveryModeLabel(settings.configDeliveryMode)})`},
+            updated_at = NOW()
+        WHERE id = ${rewardId};
+      `;
+      await tg("sendMessage", {
+        chat_id: inviterId,
+        text:
+          `🎁 جایزه دعوت شما ثبت شد!\n` +
+          `مرحله: ${batch}\n` +
+          `پاداش: ${productName ? `کانفیگ ${productName}` : "کانفیگ رایگان"}\n` +
+          `روش تحویل: ${referralConfigDeliveryModeLabel(settings.configDeliveryMode)}\n` +
+          `شناسه سفارش: ${granted.purchaseId}` +
+          (granted.status === "awaiting_admin" ? `\nوضعیت: در انتظار آماده‌سازی توسط ادمین` : "")
+      }).catch(() => {});
+      if (granted.status === "granted") {
+        await notifyAdmins(
+          `🎁 جایزه دعوت کانفیگ ثبت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || productId}\nروش: ${settings.configDeliveryMode}\nسفارش: ${granted.purchaseId}`
+        );
+      }
+    } catch (error) {
+      await sql`
+        UPDATE referral_rewards
+        SET status = 'blocked',
+            failure_reason = 'unexpected_error',
+            updated_at = NOW()
+        WHERE id = ${rewardId};
+      `;
+      logError("grant_referral_reward_v2_failed", error, { inviterId, batch });
+    }
+  }
+}
+
 async function maybeQualifyReferralUser(userId: number) {
   const qualified = await sql`
     UPDATE users
@@ -516,7 +862,7 @@ async function maybeQualifyReferralUser(userId: number) {
       }).catch(() => {});
     }
   }
-  await maybeGrantReferralRewards(inviterId);
+  await maybeGrantReferralRewardsV2(inviterId);
 }
 
 function normalizePricePerGb(raw: number | string | null | undefined, fallback = 500000) {
@@ -2194,7 +2540,16 @@ async function showReferralInvitees(chatId: number, userId: number) {
 
 async function showReferralRewardHistory(chatId: number, userId: number) {
   const rows = await sql`
-    SELECT rr.reward_batch, rr.reward_type, rr.wallet_amount, rr.created_at, rr.order_id, p.name AS product_name
+    SELECT
+      rr.reward_batch,
+      rr.reward_type,
+      rr.reward_delivery_mode,
+      rr.status,
+      rr.failure_reason,
+      rr.wallet_amount,
+      rr.created_at,
+      rr.order_id,
+      p.name AS product_name
     FROM referral_rewards rr
     LEFT JOIN products p ON p.id = rr.product_id
     WHERE rr.inviter_telegram_id = ${userId}
@@ -2211,6 +2566,8 @@ async function showReferralRewardHistory(chatId: number, userId: number) {
   }
   const lines = rows.map((row: any, idx) => {
     const rewardType = normalizeReferralRewardType(row.reward_type);
+    const status = String(row.status || "granted").toLowerCase() as ReferralRewardStatus;
+    const deliveryMode = normalizeReferralConfigDeliveryMode(row.reward_delivery_mode);
     const rewardText =
       rewardType === "config"
         ? row.product_name
@@ -2219,7 +2576,12 @@ async function showReferralRewardHistory(chatId: number, userId: number) {
             ? `کانفیگ رایگان (#${row.order_id})`
             : "کانفیگ رایگان"
         : `${formatPriceToman(Number(row.wallet_amount || 0))} تومان اعتبار`;
-    return `${idx + 1}. مرحله ${Number(row.reward_batch || 0)}\nپاداش: ${rewardText}\nزمان: ${String(row.created_at)}`;
+    const extra =
+      rewardType === "config"
+        ? `\nروش تحویل: ${referralConfigDeliveryModeLabel(deliveryMode)}`
+        : "";
+    const failureReason = row.failure_reason ? `\nعلت توقف: ${String(row.failure_reason)}` : "";
+    return `${idx + 1}. مرحله ${Number(row.reward_batch || 0)}\nپاداش: ${rewardText}${extra}\nوضعیت: ${referralRewardStatusLabel(status)}${failureReason}\nزمان: ${String(row.created_at)}`;
   });
   await tg("sendMessage", {
     chat_id: chatId,
@@ -2229,7 +2591,7 @@ async function showReferralRewardHistory(chatId: number, userId: number) {
 }
 
 async function sendReferralMenu(chatId: number, userId: number) {
-  await maybeGrantReferralRewards(userId);
+  await maybeGrantReferralRewardsV2(userId);
   const settings = await getReferralSettingsSnapshot();
   const productName =
     settings.rewardType === "config" && settings.productId
@@ -2250,6 +2612,7 @@ async function sendReferralMenu(chatId: number, userId: number) {
   const totalInvites = await countUserReferralLeads(userId);
   const qualifiedInvites = await countUserQualifiedReferrals(userId);
   const rewardCount = await countUserReferralRewards(userId);
+  const rewardStatusSummary = await getUserReferralRewardStatusSummary(userId);
   const pendingInvites = Math.max(0, totalInvites - qualifiedInvites);
   const remaining = getReferralRemainingCount(qualifiedInvites, settings.threshold);
   const rewardSummary = describeReferralReward(settings, productName || null);
@@ -2264,6 +2627,9 @@ async function sendReferralMenu(chatId: number, userId: number) {
     `تا پاداش بعدی: ${remaining === 0 ? "آستانه تکمیل شده" : `${remaining} نفر`}`,
     ""
   ];
+  lines.splice(3, 0, `این پاداش برای هر مضرب کامل از ${settings.threshold} دعوت، دوباره تکرار می‌شود.`);
+  lines.splice(8, 0, `جوایز در انتظار ادمین: ${rewardStatusSummary.awaitingAdmin}`);
+  lines.splice(9, 0, `جوایز مسدودشده: ${rewardStatusSummary.blocked}`);
   if (inviteLink) {
     lines.push("لینک اختصاصی شما:");
     lines.push(`<code>${escapeHtml(inviteLink)}</code>`);
