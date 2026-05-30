@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bot Backup & Restore</title>
+<link rel="stylesheet" href="/download.css">
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.0/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+<style>
+  .tabs { display:flex; gap:4px; margin-bottom:16px; }
+  .tab-btn {
+    flex:1; padding:10px; border:1px solid rgba(148,163,184,0.22);
+    border-radius:10px; background:transparent; color:#94a3b8;
+    cursor:pointer; font-family:inherit; font-size:13px; transition:all 120ms;
+  }
+  .tab-btn.active {
+    background:rgba(56,189,248,0.12); border-color:rgba(56,189,248,0.4);
+    color:#e2e8f0; font-weight:600;
+  }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+  .progress-wrap {
+    display:none; flex-direction:column; gap:8px; margin-top:8px;
+  }
+  .progress-wrap.visible { display:flex; }
+  .progress-bar-outer {
+    background:rgba(148,163,184,0.15); border-radius:99px; height:8px; overflow:hidden;
+  }
+  .progress-bar-inner {
+    height:100%; background:linear-gradient(90deg,#38bdf8,#818cf8);
+    border-radius:99px; transition:width 200ms ease; width:0%;
+  }
+  .progress-label { font-size:11px; color:rgba(229,231,235,0.55); }
+  .status-msg {
+    font-size:13px; padding:10px 14px; border-radius:10px; display:none;
+  }
+  .status-msg.err {
+    display:block; background:rgba(239,68,68,0.12);
+    border:1px solid rgba(239,68,68,0.3); color:#fca5a5;
+  }
+  .status-msg.ok {
+    display:block; background:rgba(34,197,94,0.1);
+    border:1px solid rgba(34,197,94,0.25); color:#86efac;
+  }
+  .summary-box {
+    background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.18);
+    border-radius:12px; padding:14px 16px; display:none; margin-top:4px;
+  }
+  .summary-box.visible { display:block; }
+  .summary-box table { width:100%; border-collapse:collapse; font-size:12px; }
+  .summary-box td { padding:2px 6px; color:rgba(229,231,235,0.75); }
+  .summary-box td:last-child { text-align:left; color:#e2e8f0; font-weight:600; }
+  .warn-box {
+    background:rgba(251,146,60,0.1); border:1px solid rgba(251,146,60,0.3);
+    border-radius:10px; padding:10px 14px; font-size:12px; color:#fdba74;
+    margin-bottom:8px;
+  }
+  .divider { border:none; border-top:1px solid rgba(148,163,184,0.12); margin:14px 0; }
+  .step-label {
+    font-size:11px; font-weight:700; letter-spacing:0.06em;
+    text-transform:uppercase; color:rgba(56,189,248,0.8); margin-bottom:6px;
+  }
+  .spinner {
+    display:inline-block; width:14px; height:14px;
+    border:2px solid rgba(56,189,248,0.3); border-top-color:#38bdf8;
+    border-radius:50%; animation:spin 0.7s linear infinite;
+    vertical-align:middle; margin-left:6px;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="header">
+  <div class="mark" aria-hidden="true"></div>
+  <div>
+    <h1>Bot Backup &amp; Restore</h1>
+    <p>Export all bot data as a JSON file, or restore from a previous backup.</p>
+  </div>
+</header>
+
+<section class="card">
+  <div class="field">
+    <div class="step-label">Admin Token</div>
+    <input id="tokenInput" type="password" dir="ltr" placeholder="Admin token (auto-filled from bot link)" autocomplete="off">
+    <div class="hint">From the bot admin panel → Web Token, or the link from the bot.</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="backup">📤 Backup</button>
+    <button class="tab-btn" data-tab="restore">📥 Restore</button>
+  </div>
+
+  <!-- BACKUP TAB -->
+  <div class="tab-panel active" id="tab-backup">
+    <p style="font-size:13px;color:rgba(229,231,235,0.65);margin:0 0 12px">
+      Downloads all bot tables (settings, users, panels, products, orders, inventory, etc.) as a single JSON file.
+      Each table is fetched individually to avoid timeouts — safe on Vercel Hobby or Pro.
+    </p>
+    <div class="actions">
+      <button class="btn primary" id="btnBackup">📥 Download Backup</button>
+    </div>
+    <div class="progress-wrap" id="backupProgress">
+      <div class="progress-bar-outer"><div class="progress-bar-inner" id="backupBar"></div></div>
+      <div class="progress-label" id="backupProgressLabel">Preparing…</div>
+    </div>
+    <div class="status-msg" id="backupStatus"></div>
+  </div>
+
+  <!-- RESTORE TAB -->
+  <div class="tab-panel" id="tab-restore">
+    <div class="warn-box">
+      ⚠️ Restoring will <strong>wipe all current data</strong> and replace it with the backup contents. This cannot be undone.
+    </div>
+
+    <div class="field">
+      <div class="step-label">Backup File</div>
+      <input id="restoreFile" type="file" accept=".json,application/json" style="color:#e2e8f0">
+    </div>
+
+    <div class="summary-box" id="restoreSummary">
+      <div class="step-label" style="margin-bottom:8px">File Summary</div>
+      <table id="summaryTable"></table>
+      <div style="font-size:12px;color:rgba(229,231,235,0.5);margin-top:8px" id="summaryMeta"></div>
+    </div>
+
+    <div class="actions" id="restoreActions" style="display:none">
+      <button class="btn danger" id="btnRestore">🔄 Restore Now</button>
+    </div>
+    <div class="status-msg" id="restoreStatus"></div>
+  </div>
+</section>
+
+<footer class="footer">
+  <a href="/" class="footerLink">Home</a>
+</footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  const TABLES = [
+    "settings","users","panels","products","inventory","discounts",
+    "cards","payment_methods","crypto_wallets","banned_users","orders",
+    "wallet_transactions","wallet_topups","referral_rewards","topup_requests",
+    "panel_migrations","config_forensics"
+  ];
+
+  // Pre-fill token from URL
+  const params = new URLSearchParams(location.search);
+  const urlToken = params.get("token");
+  const tokenInput = document.getElementById("tokenInput");
+  tokenInput.value = urlToken || localStorage.getItem("adminToken") || "";
+  tokenInput.addEventListener("change", () => localStorage.setItem("adminToken", tokenInput.value.trim()));
+
+  function getToken() {
+    const t = tokenInput.value.trim();
+    localStorage.setItem("adminToken", t);
+    return t;
+  }
+
+  function setStatus(el, msg, type) {
+    el.textContent = msg;
+    el.className = "status-msg " + (type || "");
+  }
+
+  // Tab switching
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("tab-" + tab).classList.add("active");
+    });
+  });
+
+  // ── BACKUP ────────────────────────────────────────────────────────────────
+  document.getElementById("btnBackup").addEventListener("click", async () => {
+    const token = getToken();
+    const statusEl = document.getElementById("backupStatus");
+    if (!token) { setStatus(statusEl, "⚠️ Enter your admin token first.", "err"); return; }
+
+    const btn = document.getElementById("btnBackup");
+    btn.disabled = true;
+    btn.innerHTML = "Fetching tables…<span class='spinner'></span>";
+    setStatus(statusEl, "", "");
+
+    const progressWrap = document.getElementById("backupProgress");
+    const bar = document.getElementById("backupBar");
+    const label = document.getElementById("backupProgressLabel");
+    progressWrap.classList.add("visible");
+
+    const tables = {};
+    let failed = [];
+
+    for (let i = 0; i < TABLES.length; i++) {
+      const tbl = TABLES[i];
+      const pct = Math.round((i / TABLES.length) * 100);
+      bar.style.width = pct + "%";
+      label.textContent = "Fetching: " + tbl + " (" + (i+1) + " / " + TABLES.length + ")";
+
+      try {
+        const r = await fetch("/api/backup?token=" + encodeURIComponent(token) + "&table=" + encodeURIComponent(tbl));
+        if (r.status === 401) {
+          progressWrap.classList.remove("visible");
+          setStatus(statusEl, "❌ Invalid or expired token.", "err");
+          btn.disabled = false; btn.textContent = "📥 Download Backup";
+          return;
+        }
+        const d = await r.json();
+        if (d.ok) {
+          tables[tbl] = d.rows;
+        } else {
+          failed.push(tbl);
+          tables[tbl] = [];
+        }
+      } catch (e) {
+        failed.push(tbl);
+        tables[tbl] = [];
+      }
+    }
+
+    bar.style.width = "100%";
+    label.textContent = "Assembling file…";
+
+    const backup = {
+      version: "1.0",
+      exported_at: new Date().toISOString(),
+      tables
+    };
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const filename = "backup_" + new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19) + ".json";
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    const totalRows = Object.values(tables).reduce((s, arr) => s + arr.length, 0);
+    progressWrap.classList.remove("visible");
+    btn.disabled = false; btn.textContent = "📥 Download Backup";
+
+    if (failed.length) {
+      setStatus(statusEl, `⚠️ Downloaded with ${failed.length} failed table(s): ${failed.join(", ")}. Total rows: ${totalRows}`, "ok");
+    } else {
+      setStatus(statusEl, `✅ Backup downloaded — ${TABLES.length} tables, ${totalRows} rows.`, "ok");
+    }
+  });
+
+  // ── RESTORE ───────────────────────────────────────────────────────────────
+  let parsedBackup = null;
+
+  document.getElementById("restoreFile").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+    const statusEl = document.getElementById("restoreStatus");
+    setStatus(statusEl, "", "");
+    document.getElementById("restoreSummary").classList.remove("visible");
+    document.getElementById("restoreActions").style.display = "none";
+    parsedBackup = null;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      let data;
+      try {
+        data = JSON.parse(e.target.result);
+      } catch {
+        setStatus(statusEl, "❌ Invalid JSON file.", "err");
+        return;
+      }
+      if (data.version !== "1.0" || typeof data.tables !== "object") {
+        setStatus(statusEl, "❌ Invalid backup format. Expected version 1.0 with tables object.", "err");
+        return;
+      }
+      parsedBackup = data;
+
+      const table = document.getElementById("summaryTable");
+      table.innerHTML = "";
+      let totalRows = 0;
+      for (const [tbl, rows] of Object.entries(data.tables)) {
+        const count = Array.isArray(rows) ? rows.length : 0;
+        totalRows += count;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${tbl}</td><td>${count} rows</td>`;
+        table.appendChild(tr);
+      }
+      document.getElementById("summaryMeta").textContent =
+        `Exported: ${data.exported_at || "unknown"} | Total rows: ${totalRows}`;
+      document.getElementById("restoreSummary").classList.add("visible");
+      document.getElementById("restoreActions").style.display = "block";
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("btnRestore").addEventListener("click", async () => {
+    const token = getToken();
+    const statusEl = document.getElementById("restoreStatus");
+    if (!token) { setStatus(statusEl, "⚠️ Enter your admin token first.", "err"); return; }
+    if (!parsedBackup) { setStatus(statusEl, "⚠️ Load a backup file first.", "err"); return; }
+    if (!confirm("⚠️ This will wipe all current data and restore from the backup. Are you sure?")) return;
+
+    const btn = document.getElementById("btnRestore");
+    btn.disabled = true;
+    btn.innerHTML = "Restoring…<span class='spinner'></span>";
+    setStatus(statusEl, "", "");
+
+    try {
+      const r = await fetch("/api/restore?token=" + encodeURIComponent(token), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsedBackup)
+      });
+      const d = await r.json();
+      if (!d.ok) {
+        setStatus(statusEl, "❌ " + (d.error || "Restore failed."), "err");
+      } else {
+        const totalRows = Object.values(d.restored || {}).reduce((s, n) => s + n, 0);
+        setStatus(statusEl, `✅ Restore complete — ${totalRows} rows restored.`, "ok");
+        parsedBackup = null;
+        document.getElementById("restoreFile").value = "";
+        document.getElementById("restoreSummary").classList.remove("visible");
+        document.getElementById("restoreActions").style.display = "none";
+      }
+    } catch (e) {
+      setStatus(statusEl, "❌ Network error: " + e.message, "err");
+    }
+    btn.disabled = false; btn.textContent = "🔄 Restore Now";
+  });
+})();
+</script>
+</body>
+</html>

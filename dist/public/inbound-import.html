@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanaei / 3x-ui Inbound Import</title>
+<link rel="stylesheet" href="/download.css">
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.0/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+<style>
+  select {
+    width:100%; box-sizing:border-box; border-radius:12px;
+    border:1px solid rgba(148,163,184,0.22); background:rgba(15,23,42,0.75);
+    padding:12px; color:#e5e7eb; outline:none;
+    transition:border-color 120ms ease,box-shadow 120ms ease;
+    appearance:none; font-size:14px; font-family:inherit;
+  }
+  select:focus { border-color:rgba(56,189,248,0.65); box-shadow:0 0 0 4px rgba(56,189,248,0.14); }
+  select option { background:#1e293b; }
+  .status-msg {
+    font-size:13px; padding:10px 14px; border-radius:10px; display:none;
+  }
+  .status-msg.err {
+    display:block; background:rgba(239,68,68,0.12);
+    border:1px solid rgba(239,68,68,0.3); color:#fca5a5;
+  }
+  .status-msg.ok {
+    display:block; background:rgba(34,197,94,0.1);
+    border:1px solid rgba(34,197,94,0.25); color:#86efac;
+  }
+  .info-box {
+    background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.18);
+    border-radius:12px; padding:14px 16px; display:none; font-size:13px;
+    line-height:1.9; color:rgba(229,231,235,0.8);
+  }
+  .info-box.visible { display:block; }
+  .info-box strong { color:#e2e8f0; }
+  .warn-box {
+    background:rgba(251,146,60,0.1); border:1px solid rgba(251,146,60,0.3);
+    border-radius:10px; padding:10px 14px; font-size:12px; color:#fdba74;
+    margin-bottom:4px;
+  }
+  .step-label {
+    font-size:11px; font-weight:700; letter-spacing:0.06em;
+    text-transform:uppercase; color:rgba(56,189,248,0.8); margin-bottom:6px;
+  }
+  .divider { border:none; border-top:1px solid rgba(148,163,184,0.12); margin:14px 0; }
+  .spinner {
+    display:inline-block; width:14px; height:14px;
+    border:2px solid rgba(56,189,248,0.3); border-top-color:#38bdf8;
+    border-radius:50%; animation:spin 0.7s linear infinite;
+    vertical-align:middle; margin-left:6px;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="header">
+  <div class="mark" aria-hidden="true"></div>
+  <div>
+    <h1>Sanaei / 3x-ui Inbound Import</h1>
+    <p>Upload an inbounds backup JSON from your 3x-ui panel and store it as the fallback for a Sanaei panel in the bot.</p>
+  </div>
+</header>
+
+<section class="card">
+
+  <div class="field">
+    <div class="step-label">Admin Token</div>
+    <input id="tokenInput" type="password" dir="ltr" placeholder="Admin token (auto-filled from bot link)" autocomplete="off">
+    <div class="hint">From bot admin panel → Web Token, or the link sent by the bot.</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" id="btnLoadPanels">🔄 Load Panels</button>
+  </div>
+  <div class="status-msg" id="panelStatus"></div>
+
+  <hr class="divider">
+
+  <div class="field" id="panelField" style="display:none">
+    <div class="step-label">Target Sanaei Panel</div>
+    <select id="panelSelect">
+      <option value="">— select a panel —</option>
+    </select>
+    <div class="hint">Only Sanaei / 3x-ui panels are shown.</div>
+  </div>
+
+  <div class="field" id="fileField" style="display:none">
+    <div class="step-label">Inbounds Backup File</div>
+    <input id="inboundFile" type="file" accept=".json,application/json" style="color:#e2e8f0">
+    <div class="hint">The JSON exported from your 3x-ui panel (Inbounds → Export, or <code>/panel/api/inbounds/list</code>). Can be an array of inbounds or <code>{"obj":[…]}</code>.</div>
+  </div>
+
+  <div class="info-box" id="fileInfo"></div>
+
+  <div class="actions" id="importActions" style="display:none">
+    <button class="btn primary" id="btnImport">📥 Import Inbound Backup</button>
+  </div>
+  <div class="status-msg" id="importStatus"></div>
+
+  <hr class="divider">
+
+  <div class="warn-box">
+    <strong>What this does:</strong> Stores the inbound list in the bot's database as a fallback.
+    When your Sanaei panel is unreachable, the bot will use this backup to find and serve configs.
+    It does <strong>not</strong> push anything to your panel.
+  </div>
+
+</section>
+
+<footer class="footer">
+  <a href="/" class="footerLink">Home</a>
+</footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  const params = new URLSearchParams(location.search);
+  const urlToken = params.get("token");
+  const urlPanelId = params.get("panelId");
+
+  const tokenInput = document.getElementById("tokenInput");
+  tokenInput.value = urlToken || localStorage.getItem("adminToken") || "";
+  tokenInput.addEventListener("change", () => localStorage.setItem("adminToken", tokenInput.value.trim()));
+
+  function getToken() {
+    const t = tokenInput.value.trim();
+    localStorage.setItem("adminToken", t);
+    return t;
+  }
+
+  function setStatus(el, msg, type) {
+    el.textContent = msg;
+    el.className = "status-msg " + (type || "");
+  }
+
+  let parsedInbounds = null;
+
+  // ── Load Panels ───────────────────────────────────────────────────────────
+  async function loadPanels(token) {
+    const statusEl = document.getElementById("panelStatus");
+    if (!token) { setStatus(statusEl, "⚠️ Enter your admin token first.", "err"); return; }
+
+    try {
+      const r = await fetch("/api/migrate?token=" + encodeURIComponent(token));
+      const d = await r.json();
+      if (!d.ok) {
+        setStatus(statusEl, "❌ " + (d.error || "Failed to load panels."), "err");
+        return;
+      }
+
+      const sanaeiPanels = (d.panels || []).filter(p => p.panel_type === "sanaei");
+      if (!sanaeiPanels.length) {
+        setStatus(statusEl, "⚠️ No active Sanaei / 3x-ui panels found.", "err");
+        return;
+      }
+
+      const sel = document.getElementById("panelSelect");
+      sel.innerHTML = '<option value="">— select a panel —</option>';
+      sanaeiPanels.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name + " (Sanaei)";
+        sel.appendChild(opt);
+      });
+
+      if (urlPanelId) {
+        sel.value = urlPanelId;
+      }
+
+      document.getElementById("panelField").style.display = "block";
+      document.getElementById("fileField").style.display = "block";
+      setStatus(statusEl, "", "");
+    } catch (e) {
+      setStatus(statusEl, "❌ Network error: " + e.message, "err");
+    }
+  }
+
+  document.getElementById("btnLoadPanels").addEventListener("click", () => loadPanels(getToken()));
+
+  // Auto-load if token in URL
+  if (tokenInput.value) {
+    loadPanels(tokenInput.value);
+  }
+
+  // ── File Loading ──────────────────────────────────────────────────────────
+  document.getElementById("inboundFile").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+    const infoEl = document.getElementById("fileInfo");
+    document.getElementById("importActions").style.display = "none";
+    parsedInbounds = null;
+    infoEl.classList.remove("visible");
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      let parsed;
+      try { parsed = JSON.parse(e.target.result); } catch {
+        infoEl.innerHTML = "❌ Invalid JSON file.";
+        infoEl.classList.add("visible");
+        return;
+      }
+
+      let inboundList = [];
+      if (Array.isArray(parsed)) {
+        inboundList = parsed;
+      } else if (parsed && typeof parsed === "object") {
+        if (Array.isArray(parsed.obj)) inboundList = parsed.obj;
+        else if (Array.isArray(parsed.data)) inboundList = parsed.data;
+        else inboundList = [parsed];
+      }
+
+      if (!inboundList.length) {
+        infoEl.innerHTML = "❌ No inbounds found in this file.";
+        infoEl.classList.add("visible");
+        return;
+      }
+
+      // Count clients
+      let clientCount = 0;
+      const protocols = new Set();
+      for (const ib of inboundList) {
+        try {
+          const settings = typeof ib.settings === "string" ? JSON.parse(ib.settings) : (ib.settings || {});
+          clientCount += Array.isArray(settings.clients) ? settings.clients.length : 0;
+        } catch {}
+        if (ib.protocol) protocols.add(ib.protocol);
+      }
+
+      parsedInbounds = inboundList;
+
+      infoEl.innerHTML =
+        `<strong>${inboundList.length}</strong> inbound(s) found<br>` +
+        `<strong>${clientCount}</strong> clients total<br>` +
+        (protocols.size ? `Protocols: <strong>${[...protocols].join(", ")}</strong><br>` : "") +
+        `File size: <strong>${(file.size / 1024).toFixed(1)} KB</strong>`;
+      infoEl.classList.add("visible");
+      document.getElementById("importActions").style.display = "block";
+    };
+    reader.readAsText(file);
+  });
+
+  // ── Import ────────────────────────────────────────────────────────────────
+  document.getElementById("btnImport").addEventListener("click", async () => {
+    const token = getToken();
+    const panelId = document.getElementById("panelSelect").value;
+    const statusEl = document.getElementById("importStatus");
+
+    if (!token) { setStatus(statusEl, "⚠️ Enter your admin token first.", "err"); return; }
+    if (!panelId) { setStatus(statusEl, "⚠️ Select a panel.", "err"); return; }
+    if (!parsedInbounds) { setStatus(statusEl, "⚠️ Load a backup file first.", "err"); return; }
+
+    const btn = document.getElementById("btnImport");
+    btn.disabled = true;
+    btn.innerHTML = "Importing…<span class='spinner'></span>";
+    setStatus(statusEl, "", "");
+
+    try {
+      const r = await fetch("/api/panel-action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          action: "import_inbound_backup",
+          panelId: Number(panelId),
+          inbounds: parsedInbounds
+        })
+      });
+      const d = await r.json();
+      if (!d.ok) {
+        setStatus(statusEl, "❌ " + (d.error || "Import failed."), "err");
+      } else {
+        setStatus(statusEl,
+          `✅ Imported successfully — ${d.inboundCount} inbound(s), ${d.clientCount} client(s) stored as fallback.`,
+          "ok"
+        );
+      }
+    } catch (e) {
+      setStatus(statusEl, "❌ Network error: " + e.message, "err");
+    }
+    btn.disabled = false; btn.textContent = "📥 Import Inbound Backup";
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,8 +1,37 @@
 import { ensureSchema, sql } from "./db.js";
-export async function getSetting(key) {
+const CACHE_TTL_MS = 30_000;
+let cacheData = null;
+let cacheFetchedAt = 0;
+let cacheLoadPromise = null;
+async function loadAllSettings() {
     await ensureSchema();
-    const rows = await sql `SELECT value FROM settings WHERE key = ${key} LIMIT 1;`;
-    return rows.length ? String(rows[0].value) : null;
+    const rows = await sql `SELECT key, value FROM settings;`;
+    const map = new Map();
+    for (const row of rows) {
+        map.set(String(row.key), row.value != null ? String(row.value) : null);
+    }
+    cacheData = map;
+    cacheFetchedAt = Date.now();
+    cacheLoadPromise = null;
+    return map;
+}
+async function getCache() {
+    if (cacheData && Date.now() - cacheFetchedAt < CACHE_TTL_MS) {
+        return cacheData;
+    }
+    if (!cacheLoadPromise) {
+        cacheLoadPromise = loadAllSettings();
+    }
+    return cacheLoadPromise;
+}
+export function invalidateSettingsCache() {
+    cacheData = null;
+    cacheFetchedAt = 0;
+    cacheLoadPromise = null;
+}
+export async function getSetting(key) {
+    const cache = await getCache();
+    return cache.has(key) ? (cache.get(key) ?? null) : null;
 }
 export async function setSetting(key, value) {
     await ensureSchema();
@@ -11,6 +40,22 @@ export async function setSetting(key, value) {
     VALUES (${key}, ${value})
     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
   `;
+    // Write-through: keep cache consistent without waiting for TTL expiry
+    if (cacheData) {
+        cacheData.set(key, value);
+    }
+}
+export async function getAdminIds() {
+    const envIds = String(process.env.ADMIN_IDS || "")
+        .split(",")
+        .map((x) => Number(x.trim()))
+        .filter((x) => Number.isFinite(x));
+    const adminSetting = (await getSetting("admin_ids")) || "";
+    const settingIds = String(adminSetting)
+        .split(/[,\s]+/)
+        .map((x) => Number(x.trim()))
+        .filter((x) => Number.isFinite(x));
+    return Array.from(new Set([...envIds, ...settingIds]));
 }
 export async function getBoolSetting(key, fallback = false) {
     const value = await getSetting(key);

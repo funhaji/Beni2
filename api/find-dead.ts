@@ -143,7 +143,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ ok: false, error: "اتصال به پنل ناموفق بود" });
       }
 
-      const inbounds = await getSanaeiInbounds(panel.base_url, login.cookie);
+      const inbounds = await getSanaeiInbounds(String(panel.base_url ?? ""), String(login.cookie));
       if (!inbounds.res.ok || !jsonSuccess(inbounds.data)) {
         throw new Error("Failed to fetch Sanaei inbounds");
       }

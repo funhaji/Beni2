@@ -1,3 +1,49 @@
 {
-  "cleanUrls": true
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/api/plisio-callback",     "destination": "/api/payment-callback?provider=plisio"     },
+    { "source": "/api/tronado-callback",    "destination": "/api/payment-callback?provider=tronado"    },
+    { "source": "/api/swapwallet-callback", "destination": "/api/payment-callback?provider=swapwallet" },
+    { "source": "/api/tetrapay-callback",   "destination": "/api/payment-callback?provider=tetrapay"   }
+  ],
+  "functions": {
+    "api/telegram.ts": {
+      "maxDuration": 30
+    },
+    "api/payment-callback.ts": {
+      "maxDuration": 30
+    },
+    "api/marzban-install.ts": {
+      "maxDuration": 300
+    },
+    "api/panel-action.ts": {
+      "maxDuration": 60
+    },
+    "api/reachability.ts": {
+      "maxDuration": 60
+    },
+    "api/find-dead.ts": {
+      "maxDuration": 60
+    },
+    "api/backup.ts": {
+      "maxDuration": 60
+    },
+    "api/restore.ts": {
+      "maxDuration": 60
+    },
+    "api/logs.ts": {
+      "maxDuration": 10
+    },
+    "api/health.ts": {
+      "maxDuration": 10
+    },
+    "api/test-approve.ts": {
+      "maxDuration": 30
+    },
+    "api/migrate.ts": {
+      "maxDuration": 60
+    }
+  }
 }

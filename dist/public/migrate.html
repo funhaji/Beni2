@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Config Migration Tool</title>
+<link rel="stylesheet" href="/download.css">
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.0/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+<style>
+  select {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    background: rgba(15, 23, 42, 0.75);
+    padding: 12px;
+    color: #e5e7eb;
+    outline: none;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+    appearance: none;
+    font-size: 14px;
+  }
+  select:focus {
+    border-color: rgba(56, 189, 248, 0.65);
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.14);
+  }
+  select option { background: #1e293b; }
+  .info-box {
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.22);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: none;
+    gap: 10px;
+    flex-direction: column;
+  }
+  .info-box.visible { display: flex; }
+  .info-row {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    font-size: 13px;
+  }
+  .info-label { color: rgba(229,231,235,0.55); min-width: 120px; }
+  .info-val { color: #e2e8f0; font-weight: 600; word-break: break-all; }
+  .result-box {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .result-box.visible { display: flex; }
+  .result-title { font-size: 13px; color: rgba(229,231,235,0.6); margin-bottom: 2px; }
+  .result-link {
+    background: rgba(15,23,42,0.8);
+    border: 1px solid rgba(148,163,184,0.18);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    color: #a5f3fc;
+    word-break: break-all;
+    line-height: 1.6;
+  }
+  .copy-btn {
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+  .status-msg {
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    display: none;
+  }
+  .status-msg.err {
+    display: block;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+  }
+  .status-msg.ok {
+    display: block;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.25);
+    color: #86efac;
+  }
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(56,189,248,0.3);
+    border-top-color: #38bdf8;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .divider { border: none; border-top: 1px solid rgba(148,163,184,0.12); margin: 6px 0; }
+  .step-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(56,189,248,0.8);
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="header">
+  <div class="mark" aria-hidden="true"></div>
+  <div>
+    <h1>Config Migration Tool</h1>
+    <p>Look up a config from any panel and provision it on a new panel with the remaining data &amp; days preserved.</p>
+  </div>
+</header>
+
+<section class="card">
+  <form class="form" id="mainForm" autocomplete="off">
+
+    <div class="field">
+      <div class="step-label">Admin Token</div>
+      <input id="tokenInput" type="password" dir="ltr" placeholder="Paste your admin token here" autocomplete="off">
+      <div class="hint">Get this from the Telegram bot admin panel → Web Token.</div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="field">
+      <div class="step-label">Step 1 — Source Config</div>
+      <input id="subLinkInput" type="text" dir="ltr" placeholder="Sub URL, config link, username, email, or UUID" autocomplete="off">
+      <div class="hint">Any identifier that belongs to the old config — the tool searches all panels.</div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn primary" id="btnLookup">🔍 Lookup Config</button>
+    </div>
+
+    <div class="status-msg" id="lookupStatus"></div>
+
+    <div class="info-box" id="infoBox">
+      <div class="info-row"><span class="info-label">Source panel</span><span class="info-val" id="iSourcePanel">—</span></div>
+      <div class="info-row"><span class="info-label">Panel type</span><span class="info-val" id="iSourceType">—</span></div>
+      <div class="info-row"><span class="info-label">User key</span><span class="info-val" id="iSourceKey">—</span></div>
+      <div class="info-row"><span class="info-label">Remaining data</span><span class="info-val" id="iRemaining">—</span></div>
+      <div class="info-row"><span class="info-label">Remaining time</span><span class="info-val" id="iExpiry">—</span></div>
+    </div>
+
+    <hr class="divider" id="step2Divider" style="display:none">
+
+    <div class="field" id="step2" style="display:none">
+      <div class="step-label">Step 2 — Target Panel</div>
+      <select id="targetPanel">
+        <option value="">Loading panels…</option>
+      </select>
+      <div class="hint">Only Marzban / PasarGuard targets are supported.</div>
+    </div>
+
+    <div class="actions" id="migrateActions" style="display:none">
+      <button type="button" class="btn primary" id="btnMigrate">🚀 Migrate Config</button>
+    </div>
+
+    <div class="status-msg" id="migrateStatus"></div>
+
+    <div class="result-box" id="resultBox">
+      <div>
+        <div class="result-title">New Username</div>
+        <div class="result-link" id="rUsername"></div>
+      </div>
+      <div id="rSubSection">
+        <div class="result-title">Subscription URL</div>
+        <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
+          <div class="result-link" id="rSubUrl" style="flex:1"></div>
+          <button type="button" class="btn copy-btn" data-copy="rSubUrl">Copy</button>
+        </div>
+      </div>
+      <div id="rLinksSection">
+        <div class="result-title">Config Links</div>
+        <div id="rLinksList"></div>
+      </div>
+    </div>
+
+  </form>
+</section>
+
+<footer class="footer">
+  <a href="/" class="footerLink">Home</a>
+</footer>
+</main>
+<script src="/migrate.js"></script>
+</body>
+</html>

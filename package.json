@@ -4,12 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit",
-    "lint": "npm run typecheck"
+    "build": "./node_modules/.bin/tsc -p tsconfig.json && cp public/*.html public/*.js public/*.css dist/ 2>/dev/null; true",
+    "typecheck": "./node_modules/.bin/tsc --noEmit",
+    "lint": "npm run typecheck",
+    "start": "node dist/server.js",
+    "dev": "node --watch dist/server.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
+    "postgres": "^3.4.5",
     "@vercel/node": "^3.2.17",
     "ssh2": "^1.16.0",
     "zod": "^3.23.8"

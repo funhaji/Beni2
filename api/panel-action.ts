@@ -23,6 +23,93 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const { action, inventoryId, value } = req.body;
+
+    // ── import_inbound_backup: does not need inventoryId — handles separately ──
+    if (action === "import_inbound_backup") {
+      const panelId = Number(req.body?.panelId || 0);
+      if (!panelId) return res.status(400).json({ ok: false, error: "panelId required" });
+
+      const panelRows = await sql`SELECT id, panel_type FROM panels WHERE id = ${panelId} LIMIT 1`;
+      if (!panelRows.length) return res.status(404).json({ ok: false, error: "Panel not found" });
+      if (String(panelRows[0].panel_type) !== "sanaei") {
+        return res.status(400).json({ ok: false, error: "Only Sanaei / 3x-ui panels are supported" });
+      }
+
+      const inbounds = req.body?.inbounds;
+      if (!Array.isArray(inbounds) || !inbounds.length) {
+        return res.status(400).json({ ok: false, error: "inbounds array is required and must not be empty" });
+      }
+
+      // Normalize to a unified internal format:
+      // [{ id, protocol, settings: {clients:[...]}, clientStats: [{email, up, down}] }]
+      function normalizeToInternalFormat(raw: unknown[]): Array<Record<string, unknown>> {
+        const result: Array<Record<string, unknown>> = [];
+        for (const item of raw) {
+          const ib = item as Record<string, unknown>;
+          // New format: element may itself be { inbound: { clients, id, protocol, ... } }
+          const innerInbound = (ib.inbound && typeof ib.inbound === "object" && Array.isArray((ib.inbound as any).clients))
+            ? ib.inbound as Record<string, unknown>
+            : null;
+          // Also handle if the item IS the new inbound format directly (has .clients array)
+          const directNewFormat = !innerInbound && Array.isArray(ib.clients);
+
+          if (innerInbound || directNewFormat) {
+            const src = innerInbound || ib;
+            const clients = (src.clients as Array<Record<string, unknown>>) || [];
+            result.push({
+              id: src.id,
+              protocol: src.protocol,
+              settings: JSON.stringify({
+                clients: clients.map((c) => ({
+                  id: c.id,
+                  email: c.email,
+                  subId: c.subId,
+                  totalGB: c.totalGB,
+                  expiryTime: c.expiryTime,
+                  enable: c.enable,
+                  flow: c.flow,
+                  limitIp: c.limitIp,
+                  tgId: c.tgId
+                }))
+              }),
+              clientStats: clients.map((c) => ({
+                email: c.email,
+                up: Number(c.traffic_up_bytes || 0),
+                down: Number(c.traffic_down_bytes || 0)
+              }))
+            });
+          } else {
+            // Old format: already has settings string + optional clientStats
+            result.push(ib);
+          }
+        }
+        return result;
+      }
+
+      const normalizedInbounds = normalizeToInternalFormat(inbounds as Record<string, unknown>[]);
+
+      // Count clients across all normalized inbounds
+      let clientCount = 0;
+      for (const ib of normalizedInbounds) {
+        try {
+          const settings = typeof ib.settings === "string"
+            ? JSON.parse(String(ib.settings))
+            : (ib.settings || {});
+          if (Array.isArray((settings as any)?.clients)) {
+            clientCount += (settings as any).clients.length;
+          }
+        } catch { /* ignore parse errors */ }
+      }
+
+      const key = `sanaei_inbound_backup_${panelId}`;
+      const value = JSON.stringify(normalizedInbounds);
+      // Always replace the previous backup entirely
+      await sql`DELETE FROM settings WHERE key = ${key}`;
+      await sql`INSERT INTO settings (key, value) VALUES (${key}, ${value})`;
+
+      return res.status(200).json({ ok: true, inboundCount: normalizedInbounds.length, clientCount });
+    }
+
     if (!action || !inventoryId) {
       return res.status(400).json({ ok: false, error: "Missing required fields" });
     }
@@ -48,7 +135,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const panelRows = await sql`
-      SELECT id, panel_type, base_url, username, password
+      SELECT id, panel_type, base_url, username, password, subscription_public_port, subscription_public_host, subscription_link_protocol, config_public_host
       FROM panels
       WHERE id = ${panelId}
       LIMIT 1;
@@ -158,20 +245,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           result = { ok: true, message: "لینک‌ها با موفقیت تغییر یافتند" };
         }
       } else if (panelType === "sanaei") {
-        const { regenerateSanaeiClientLink, buildSanaeiConfigLinks, buildSanaeiSubscriptionUrl, parseJsonObject } = await import("../lib/bot.js");
+        const { regenerateSanaeiClientLink, buildSanaeiConfigLinks, buildSanaeiSubscriptionUrl, mergeSanaeiPanelRowIntoClientConfig, parseJsonObject } = await import("../lib/bot.js");
         const regenRes = await regenerateSanaeiClientLink(panel, clientKey);
         if (!regenRes.ok) {
           result = { ok: false, message: regenRes.message };
         } else {
           const panelConfig = (typeof row.panel_config === "string" ? parseJsonObject(row.panel_config) : (row.panel_config as Record<string, unknown>)) || {};
-          const newConfigLinks = buildSanaeiConfigLinks(String(panel.base_url), regenRes.inbound as Record<string, unknown>, regenRes.client as Record<string, unknown>, panelConfig);
+          const mergedCfg = mergeSanaeiPanelRowIntoClientConfig(panelConfig, panel as Record<string, unknown>);
+          const newConfigLinks = buildSanaeiConfigLinks(String(panel.base_url), regenRes.inbound as Record<string, unknown>, regenRes.client as Record<string, unknown>, mergedCfg);
           const subId = String((regenRes.client as any).subId || "");
-          const newSubscriptionUrl = subId ? buildSanaeiSubscriptionUrl(String(panel.base_url), panelConfig, subId) : undefined;
+          const newSubscriptionUrl = subId ? buildSanaeiSubscriptionUrl(String(panel.base_url), panelConfig, subId, panel) : undefined;
           
           const newDelivery = { ...delivery };
           newDelivery.subscriptionUrl = newSubscriptionUrl;
           newDelivery.configLinks = newConfigLinks;
           newDelivery.primaryText = newSubscriptionUrl || newConfigLinks[0] || clientKey;
+          if (subId && newDelivery.metadata) newDelivery.metadata.subId = subId;
           
           await sql`
             UPDATE inventory 
