@@ -1,12 +1,133 @@
 <!doctype html>
-<html lang="fa">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Telegram Seller Bot</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.0/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: Vazirmatn, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(1200px 500px at 10% 0%, rgba(55,48,163,0.12), transparent 60%),
+          radial-gradient(900px 420px at 100% 20%, rgba(2,132,199,0.12), transparent 55%), #0b0f19;
+        color: #e5e7eb;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 32px 16px;
+        box-sizing: border-box;
+      }
+      .wrap { width: min(640px, 100%); }
+      .header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+      .mark {
+        width: 20px; height: 20px; border-radius: 7px; flex-shrink: 0;
+        background: linear-gradient(135deg, #38bdf8, #818cf8);
+        box-shadow: 0 8px 24px rgba(56,189,248,0.18);
+      }
+      h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.2px; }
+      .subtitle { margin: 4px 0 0; font-size: 13px; color: rgba(229,231,235,0.55); }
+      .section-label {
+        font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+        text-transform: uppercase; color: rgba(56,189,248,0.7);
+        margin: 0 0 8px;
+      }
+      .grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+      .tool-card {
+        display: flex; align-items: center; gap: 14px;
+        background: rgba(17,24,39,0.65); border: 1px solid rgba(148,163,184,0.14);
+        border-radius: 14px; padding: 14px 16px;
+        text-decoration: none; color: inherit;
+        transition: border-color 120ms ease, background 120ms ease;
+      }
+      .tool-card:hover {
+        border-color: rgba(56,189,248,0.35);
+        background: rgba(56,189,248,0.05);
+      }
+      .tool-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+      .tool-name { font-size: 14px; font-weight: 600; color: #e2e8f0; }
+      .tool-desc { font-size: 12px; color: rgba(229,231,235,0.5); margin-top: 2px; }
+      .badge {
+        margin-left: auto; font-size: 10px; padding: 2px 8px; border-radius: 99px;
+        background: rgba(56,189,248,0.12); color: rgba(56,189,248,0.85);
+        border: 1px solid rgba(56,189,248,0.2); flex-shrink: 0;
+      }
+      .status { font-size: 12px; color: rgba(34,197,94,0.8); margin-top: 16px; text-align: center; }
+    </style>
   </head>
   <body>
-    <h1>Telegram Seller Bot API is running.</h1>
-    <p><a href="/reachability.html">Reachability Checker</a></p>
+    <div class="wrap">
+      <div class="header">
+        <div class="mark"></div>
+        <div>
+          <h1>Telegram Seller Bot</h1>
+          <p class="subtitle">Admin web tools — use the links sent by the bot for pre-filled tokens.</p>
+        </div>
+      </div>
+
+      <p class="section-label">Data Management</p>
+      <div class="grid">
+        <a class="tool-card" href="/backup.html">
+          <span class="tool-icon">💾</span>
+          <div>
+            <div class="tool-name">Backup &amp; Restore</div>
+            <div class="tool-desc">Download a full JSON backup of all bot data, or restore from a backup file.</div>
+          </div>
+          <span class="badge">Timeout-safe</span>
+        </a>
+        <a class="tool-card" href="/inbound-import.html">
+          <span class="tool-icon">📥</span>
+          <div>
+            <div class="tool-name">Sanaei / 3x-ui Inbound Import</div>
+            <div class="tool-desc">Upload an inbounds backup JSON from your 3x-ui panel as a bot fallback.</div>
+          </div>
+        </a>
+      </div>
+
+      <p class="section-label">Panel Tools</p>
+      <div class="grid">
+        <a class="tool-card" href="/cleanup.html">
+          <span class="tool-icon">🧹</span>
+          <div>
+            <div class="tool-name">Dead Config Cleanup</div>
+            <div class="tool-desc">Find and clean up expired or traffic-limited configs across all panels.</div>
+          </div>
+        </a>
+        <a class="tool-card" href="/migrate.html">
+          <span class="tool-icon">🚀</span>
+          <div>
+            <div class="tool-name">Config Migration</div>
+            <div class="tool-desc">Look up a config from any panel and move it to a new panel with data preserved.</div>
+          </div>
+        </a>
+        <a class="tool-card" href="/marzban-install.html">
+          <span class="tool-icon">⚙️</span>
+          <div>
+            <div class="tool-name">Marzban Installer</div>
+            <div class="tool-desc">Remotely install a Marzban / PasarGuard panel on a new server via SSH.</div>
+          </div>
+        </a>
+      </div>
+
+      <p class="section-label">Diagnostics</p>
+      <div class="grid">
+        <a class="tool-card" href="/reachability.html">
+          <span class="tool-icon">🔍</span>
+          <div>
+            <div class="tool-name">Reachability Checker</div>
+            <div class="tool-desc">Test whether a server or URL is reachable from the bot's network.</div>
+          </div>
+        </a>
+        <a class="tool-card" href="/api/health">
+          <span class="tool-icon">🟢</span>
+          <div>
+            <div class="tool-name">Health Check</div>
+            <div class="tool-desc">Verify the bot server and database connection are operational.</div>
+          </div>
+        </a>
+      </div>
+
+      <p class="status">✅ API is running</p>
+    </div>
   </body>
 </html>
