@@ -64,17 +64,50 @@ type Handler = (req: VercelRequest, res: VercelResponse) => Promise<unknown>;
 
 const ROUTES: Record<string, () => Promise<Handler>> = {
   "/api/telegram":             () => import("./api/telegram.js").then((m) => m.default),
-  "/api/health":               () => import("./api/health.js").then((m) => m.default),
-  "/api/logs":                 () => import("./api/logs.js").then((m) => m.default),
-  "/api/backup":               () => import("./api/backup.js").then((m) => m.default),
-  "/api/restore":              () => import("./api/restore.js").then((m) => m.default),
-  "/api/reachability":         () => import("./api/reachability.js").then((m) => m.default),
-  "/api/find-dead":            () => import("./api/find-dead.js").then((m) => m.default),
-  "/api/panel-action":         () => import("./api/panel-action.js").then((m) => m.default),
-  "/api/migrate":              () => import("./api/migrate.js").then((m) => m.default),
-  "/api/marzban-install":      () => import("./api/marzban-install.js").then((m) => m.default),
-  "/api/test-approve":         () => import("./api/test-approve.js").then((m) => m.default),
   "/api/payment-callback":     () => import("./api/payment-callback.js").then((m) => m.default),
+  "/api/admin":                () => import("./api/admin.js").then((m) => m.default),
+
+  // Legacy paths mapped to admin
+  "/api/health":               () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "health" }; return h(req, res); };
+  }),
+  "/api/logs":                 () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "logs" }; return h(req, res); };
+  }),
+  "/api/backup":               () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "backup" }; return h(req, res); };
+  }),
+  "/api/restore":              () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "restore" }; return h(req, res); };
+  }),
+  "/api/reachability":         () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "reachability" }; return h(req, res); };
+  }),
+  "/api/find-dead":            () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "find-dead" }; return h(req, res); };
+  }),
+  "/api/panel-action":         () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "panel-action" }; return h(req, res); };
+  }),
+  "/api/migrate":              () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "migrate" }; return h(req, res); };
+  }),
+  "/api/marzban-install":      () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "marzban-install" }; return h(req, res); };
+  }),
+  "/api/test-approve":         () => import("./api/admin.js").then((m) => {
+    const h = m.default;
+    return (req: any, res: any) => { req.query = { ...req.query, action: "test-approve" }; return h(req, res); };
+  }),
   // Legacy paths — rewrite query param so the unified handler can route them
   "/api/plisio-callback":      () => import("./api/payment-callback.js").then((m) => {
     const h = m.default;

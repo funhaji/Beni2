@@ -6,43 +6,26 @@
     { "source": "/api/plisio-callback",     "destination": "/api/payment-callback?provider=plisio"     },
     { "source": "/api/tronado-callback",    "destination": "/api/payment-callback?provider=tronado"    },
     { "source": "/api/swapwallet-callback", "destination": "/api/payment-callback?provider=swapwallet" },
-    { "source": "/api/tetrapay-callback",   "destination": "/api/payment-callback?provider=tetrapay"   }
+    { "source": "/api/tetrapay-callback",   "destination": "/api/payment-callback?provider=tetrapay"   },
+    { "source": "/api/backup",              "destination": "/api/admin?action=backup" },
+    { "source": "/api/restore",             "destination": "/api/admin?action=restore" },
+    { "source": "/api/health",              "destination": "/api/admin?action=health" },
+    { "source": "/api/logs",                "destination": "/api/admin?action=logs" },
+    { "source": "/api/reachability",        "destination": "/api/admin?action=reachability" },
+    { "source": "/api/find-dead",           "destination": "/api/admin?action=find-dead" },
+    { "source": "/api/panel-action",        "destination": "/api/admin?action=panel-action" },
+    { "source": "/api/migrate",             "destination": "/api/admin?action=migrate" },
+    { "source": "/api/marzban-install",     "destination": "/api/admin?action=marzban-install" },
+    { "source": "/api/test-approve",        "destination": "/api/admin?action=test-approve" }
   ],
   "functions": {
     "api/telegram.ts": {
-      "maxDuration": 30
+      "maxDuration": 60
     },
     "api/payment-callback.ts": {
-      "maxDuration": 30
-    },
-    "api/marzban-install.ts": {
-      "maxDuration": 300
-    },
-    "api/panel-action.ts": {
       "maxDuration": 60
     },
-    "api/reachability.ts": {
-      "maxDuration": 60
-    },
-    "api/find-dead.ts": {
-      "maxDuration": 60
-    },
-    "api/backup.ts": {
-      "maxDuration": 60
-    },
-    "api/restore.ts": {
-      "maxDuration": 60
-    },
-    "api/logs.ts": {
-      "maxDuration": 10
-    },
-    "api/health.ts": {
-      "maxDuration": 10
-    },
-    "api/test-approve.ts": {
-      "maxDuration": 30
-    },
-    "api/migrate.ts": {
+    "api/admin.ts": {
       "maxDuration": 60
     }
   }
