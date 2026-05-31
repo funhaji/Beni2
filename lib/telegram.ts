@@ -1,3 +1,7 @@
+import dns from "node:dns";
+// Attempt to set ipv4first globally to catch any fetch calls made here
+try { dns.setDefaultResultOrder("ipv4first"); } catch (e) {}
+
 import { env } from "./env.js";
 
 function getApiBase() {

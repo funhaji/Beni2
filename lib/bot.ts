@@ -1,3 +1,6 @@
+import dns from "node:dns";
+try { dns.setDefaultResultOrder("ipv4first"); } catch (e) {}
+
 import { ensureSchema, resetBusinessDataPreserveCaches, sql } from "./db.js";
 import { env } from "./env.js";
 import { logError, logInfo } from "./log.js";
@@ -5588,8 +5591,10 @@ async function startCustomV2rayWizard(chatId: number, userId: number, productId:
     await tg("sendMessage", { chat_id: chatId, text: "این محصول سفارشی نیست." });
     return null;
   }
-  const baseMb = 1024;
-  const baseDays = 30;
+  const minGb = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_gb")) || 1));
+  const minDays = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_days")) || 30));
+  const baseMb = minGb * 1024;
+  const baseDays = minDays;
   const pricePerGb = normalizePricePerGb(
     await getSetting("product_price_per_gb_toman"),
     normalizePricePerGb(await getSetting("topup_price_per_gb_toman"))
@@ -5616,10 +5621,14 @@ async function renderCustomV2rayWizard(chatId: number, userId: number, messageId
   if (!state || state.state !== "custom_v2ray_wizard") return null;
   const p: any = state.payload || {};
   const productId = Number(p.productId);
-  const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
-  const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
+  if (!Number.isFinite(productId) || isNaN(productId)) {
+    // Fallback if somehow state is corrupt
+    return null;
+  }
+  const baseMb = Math.max(1, Math.round(Number(p.baseMb || 1024)));
+  const baseDays = Math.max(1, Math.round(Number(p.baseDays || 30)));
   const dataMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
-  const days = Math.max(30, Math.round(Number(p.days || baseDays)));
+  const days = Math.max(baseDays, Math.round(Number(p.days || baseDays)));
   const pricePerGb = Math.max(1, Math.round(Number(p.pricePerGb || 500000)));
   const dayPrice = Math.max(0, Math.round(Number(p.dayPrice || 0)));
   const quantity = Math.max(1, Math.round(Number(p.quantity || 1)));
@@ -5676,10 +5685,10 @@ async function computeCustomV2rayCheckout(userId: number) {
   const state = await getState(userId);
   if (!state || state.state !== "custom_v2ray_wizard") return null;
   const p: any = state.payload || {};
-  const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
-  const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
+  const baseMb = Math.max(1, Math.round(Number(p.baseMb || 1024)));
+  const baseDays = Math.max(1, Math.round(Number(p.baseDays || 30)));
   const dataMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
-  const days = Math.max(30, Math.round(Number(p.days || baseDays)));
+  const days = Math.max(baseDays, Math.round(Number(p.days || baseDays)));
   const pricePerGb = Math.max(1, Math.round(Number(p.pricePerGb || 500000)));
   const dayPrice = Math.max(0, Math.round(Number(p.dayPrice || 0)));
   const quantity = Math.max(1, Math.round(Number(p.quantity || 1)));
@@ -7624,11 +7633,61 @@ async function parseAndApplyState(
         await getSetting("product_price_per_gb_toman"),
         normalizePricePerGb(await getSetting("topup_price_per_gb_toman"))
       );
-      const minPrice = Math.max(1, pricePerGb + 30 * Math.max(0, n));
+      const minGb = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_gb")) || 1));
+      const minDays = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_days")) || 30));
+      const minPrice = Math.max(1, (pricePerGb * minGb) + (minDays * Math.max(0, n)));
       await sql`UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
     }
     await clearState(userId);
     await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nقیمت هر روز: ${formatPriceToman(n)} تومان` });
+    return true;
+  }
+  if (state.state === "admin_set_custom_v2ray_min_gb") {
+    const raw = text.trim();
+    const n = Math.round(Number(raw));
+    if (!Number.isFinite(n) || n < 1) {
+      await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. حداقل ۱ گیگابایت" });
+      return true;
+    }
+    await setSetting("custom_v2ray_min_gb", String(n));
+    const enabled = await getBoolSetting("custom_v2ray_enabled", false);
+    const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+    if (enabled && Number.isFinite(productId) && productId > 0) {
+      const pricePerGb = normalizePricePerGb(
+        await getSetting("product_price_per_gb_toman"),
+        normalizePricePerGb(await getSetting("topup_price_per_gb_toman"))
+      );
+      const minDays = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_days")) || 30));
+      const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+      const minPrice = Math.max(1, (pricePerGb * n) + (minDays * dayPrice));
+      await sql`UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
+    }
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nحداقل حجم کانفیگ دلخواه: ${n}GB` });
+    return true;
+  }
+  if (state.state === "admin_set_custom_v2ray_min_days") {
+    const raw = text.trim();
+    const n = Math.round(Number(raw));
+    if (!Number.isFinite(n) || n < 1) {
+      await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. حداقل ۱ روز" });
+      return true;
+    }
+    await setSetting("custom_v2ray_min_days", String(n));
+    const enabled = await getBoolSetting("custom_v2ray_enabled", false);
+    const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+    if (enabled && Number.isFinite(productId) && productId > 0) {
+      const pricePerGb = normalizePricePerGb(
+        await getSetting("product_price_per_gb_toman"),
+        normalizePricePerGb(await getSetting("topup_price_per_gb_toman"))
+      );
+      const minGb = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_gb")) || 1));
+      const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+      const minPrice = Math.max(1, (pricePerGb * minGb) + (n * dayPrice));
+      await sql`UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
+    }
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nحداقل زمان کانفیگ دلخواه: ${n} روز` });
     return true;
   }
   if (state.state === "admin_set_purchase_bonus_min") {
@@ -12724,8 +12783,8 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       const state = await getState(userId);
       if (!state || state.state !== "custom_v2ray_wizard") return null;
       const p: any = state.payload || {};
-      const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
-      const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
+      const baseMb = Math.max(1, Math.round(Number(p.baseMb || 1024)));
+      const baseDays = Math.max(1, Math.round(Number(p.baseDays || 30)));
       const stepMb = 1024;
       const stepDays = 7;
       const curMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
@@ -16139,11 +16198,13 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "admin_custom_v2ray_menu") {
     const enabled = await getBoolSetting("custom_v2ray_enabled", false);
     const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+    const minGb = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_gb")) || 1));
+    const minDays = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_days")) || 30));
     const pricePerGb = normalizePricePerGb(
       await getSetting("product_price_per_gb_toman"),
       normalizePricePerGb(await getSetting("topup_price_per_gb_toman"))
     );
-    const minPrice = Math.max(1, pricePerGb + 30 * dayPrice);
+    const minPrice = Math.max(1, (pricePerGb * minGb) + (minDays * dayPrice));
     let productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
     if (enabled && (!Number.isFinite(productId) || productId <= 0)) {
       const ensured = await ensureCustomV2rayProduct();
@@ -16156,6 +16217,10 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const keyboard: any[] = [];
     keyboard.push([cb(enabled ? "🚫 خاموش‌کردن سفارشی" : "✅ روشن‌کردن سفارشی", "admin_custom_v2ray_toggle", enabled ? "danger" : "success")]);
     keyboard.push([cb("📅 قیمت هر روز (سفارشی)", "admin_set_custom_v2ray_extra_day", "primary")]);
+    keyboard.push([
+      cb("حداقل حجم", "admin_set_custom_v2ray_min_gb", "primary"),
+      cb("حداقل زمان", "admin_set_custom_v2ray_min_days", "primary")
+    ]);
     if (productId) {
       keyboard.push([cb("✏️ ویرایش محصول سفارشی", `admin_edit_product_${productId}`, "primary")]);
       keyboard.push([cb(sellMode === "panel" ? "⚙️ حالت فروش: پنل" : "⚙️ حالت فروش: دستی", `admin_toggle_product_sell_mode_${productId}`, "primary")]);
@@ -16168,7 +16233,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         `🎛 محصول سفارشی\n\n` +
         `وضعیت: ${enabled ? "روشن ✅" : "خاموش 🚫"}\n` +
         `محصول: ${productId ? `${productName} (#${productId})${!isActive ? " (مخفی)" : ""}` : "ساخته نشده"}\n` +
-        `شروع خرید: 1GB / 30 روز\n` +
+        `شروع خرید: حداقل ${minGb}GB / حداقل ${minDays} روز\n` +
         `قیمت هر 1GB: ${formatPriceToman(pricePerGb)} تومان\n` +
         `قیمت هر روز: ${formatPriceToman(dayPrice)} تومان\n` +
         `حداقل مبلغ شروع: ${formatPriceToman(minPrice)} تومان\n\n` +
@@ -16515,6 +16580,16 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "admin_set_custom_v2ray_extra_day") {
     await setState(userId, "admin_set_custom_v2ray_extra_day");
     await tg("sendMessage", { chat_id: chatId, text: "قیمت هر روز برای محصول سفارشی را به تومان ارسال کنید. مثال: 10000\nبرای خاموش: 0" });
+    return null;
+  }
+  if (data === "admin_set_custom_v2ray_min_gb") {
+    await setState(userId, "admin_set_custom_v2ray_min_gb");
+    await tg("sendMessage", { chat_id: chatId, text: "حداقل حجم برای خرید کانفیگ دلخواه را وارد کنید (به گیگابایت). مثال: 1" });
+    return null;
+  }
+  if (data === "admin_set_custom_v2ray_min_days") {
+    await setState(userId, "admin_set_custom_v2ray_min_days");
+    await tg("sendMessage", { chat_id: chatId, text: "حداقل زمان برای خرید کانفیگ دلخواه را وارد کنید (به روز). مثال: 30" });
     return null;
   }
   if (data === "admin_toggle_global_infinite") {
