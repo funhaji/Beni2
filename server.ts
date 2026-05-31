@@ -307,10 +307,28 @@ async function setupWebhook(): Promise<void> {
   const webhookUrl = `${baseUrl}/api/telegram`;
 
   try {
+    let body: any;
+    let headers: Record<string, string> = {};
+
+    const certPath = path.join(__dirname, "..", "certs", "cert.pem");
+    if (fs.existsSync(certPath)) {
+      console.log("[server] Self-signed certificate found, uploading to Telegram...");
+      const formData = new FormData();
+      formData.append("url", webhookUrl);
+      formData.append("drop_pending_updates", "false");
+      
+      const certBuffer = fs.readFileSync(certPath);
+      formData.append("certificate", new Blob([certBuffer]), "cert.pem");
+      body = formData;
+    } else {
+      headers = { "Content-Type": "application/json" };
+      body = JSON.stringify({ url: webhookUrl, drop_pending_updates: false });
+    }
+
     const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: webhookUrl, drop_pending_updates: false }),
+      headers,
+      body,
     });
     const data = (await res.json()) as { ok: boolean; description?: string };
     if (data.ok) {

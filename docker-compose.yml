@@ -12,9 +12,23 @@ services:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
       - ADMIN_IDS=${ADMIN_IDS}
+    volumes:
+      - ./certs:/app/certs
     depends_on:
       db:
         condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./certs:/etc/nginx/certs
+    depends_on:
+      - bot
 
   db:
     image: postgres:15-alpine
