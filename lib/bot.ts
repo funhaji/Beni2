@@ -2955,7 +2955,18 @@ async function clearState(telegramId: number) {
 async function getState(telegramId: number): Promise<UserState | null> {
   const rows = await sql`SELECT state, payload FROM user_states WHERE telegram_id = ${telegramId} LIMIT 1;`;
   if (!rows.length) return null;
-  return { state: String(rows[0].state), payload: (rows[0].payload as Record<string, unknown>) || {} };
+  let payload = rows[0].payload;
+  if (typeof payload === "string") {
+    try {
+      payload = JSON.parse(payload);
+    } catch {
+      payload = {};
+    }
+  }
+  return {
+    state: String(rows[0].state),
+    payload: (payload as Record<string, unknown>) || {}
+  };
 }
 
 async function isBanned(userId: number) {
