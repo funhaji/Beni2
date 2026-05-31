@@ -1,5 +1,12 @@
 import fetch from "node-fetch";
+import https from "node:https";
 import { env } from "./env.js";
+
+const httpsAgent = new https.Agent({
+  family: 4,
+  keepAlive: true,
+  keepAliveMsecs: 30000
+});
 
 type TokenResponse = {
   IsSuccessful?: boolean;
@@ -42,7 +49,8 @@ export async function getOrderToken(input: {
     headers: {
       "x-api-key": (input.apiKey || "").trim() || getApiKey()
     },
-    body: form
+    body: form,
+    agent: httpsAgent
   });
   const data = (await res.json()) as TokenResponse;
   if (!res.ok || !data?.Data?.Token || !data?.Data?.FullPaymentUrl) {
@@ -64,7 +72,8 @@ export async function getStatusByPaymentId(paymentId: string, apiKey?: string) {
     headers: {
       "x-api-key": (apiKey || "").trim() || getApiKey()
     },
-    body: form
+    body: form,
+    agent: httpsAgent
   });
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
@@ -80,7 +89,8 @@ export async function getTronPriceToman(apiKey?: string) {
   for (const url of candidates) {
     try {
       const res = await fetch(url, {
-        headers: { "x-api-key": (apiKey || "").trim() || getApiKey() }
+        headers: { "x-api-key": (apiKey || "").trim() || getApiKey() },
+        agent: httpsAgent
       });
       if (!res.ok) {
         continue;

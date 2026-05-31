@@ -3,7 +3,15 @@ import dns from "node:dns";
 try { dns.setDefaultResultOrder("ipv4first"); } catch (e) {}
 
 import fetch from "node-fetch";
+import https from "node:https";
 import { env } from "./env.js";
+
+// Force IPv4 to prevent ETIMEDOUT on VPS providers with broken IPv6 routing
+const httpsAgent = new https.Agent({
+  family: 4,
+  keepAlive: true,
+  keepAliveMsecs: 30000
+});
 
 function getApiBase() {
   if (!env.TELEGRAM_BOT_TOKEN) {
@@ -17,7 +25,8 @@ export async function tg<T>(method: string, body?: Record<string, unknown>): Pro
   const res = await fetch(`${getApiBase()}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body || {})
+    body: JSON.stringify(body || {}),
+    agent: httpsAgent
   });
   const data = (await res.json()) as { ok: boolean; result?: T; description?: string };
   if (!data.ok) {
@@ -57,7 +66,8 @@ export async function tgSendDocument(opts: {
   }
   const res = await fetch(`${getApiBase()}/sendDocument`, {
     method: "POST",
-    body: formData
+    body: formData,
+    agent: httpsAgent
   });
   const data = (await res.json()) as { ok: boolean; description?: string };
   if (!data.ok) {
@@ -76,7 +86,8 @@ export async function tgDownloadFile(fileId: string): Promise<string> {
   const infoRes = await fetch(`${getApiBase()}/getFile`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ file_id: fileId })
+    body: JSON.stringify({ file_id: fileId }),
+    agent: httpsAgent
   });
   const info = (await infoRes.json()) as { ok: boolean; result?: { file_path?: string }; description?: string };
   if (!info.ok || !info.result?.file_path) {
@@ -84,7 +95,8 @@ export async function tgDownloadFile(fileId: string): Promise<string> {
   }
   const baseUrl = env.TELEGRAM_API_BASE || "https://api.telegram.org";
   const fileRes = await fetch(
-    `${baseUrl}/file/bot${token}/${info.result.file_path}`
+    `${baseUrl}/file/bot${token}/${info.result.file_path}`,
+    { agent: httpsAgent }
   );
   if (!fileRes.ok) {
     throw new Error(`Failed to download file: ${fileRes.status} ${fileRes.statusText}`);
