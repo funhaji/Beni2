@@ -10767,6 +10767,7 @@ async function createOrder(
           );
         }
       }
+      return purchaseId;
     } catch (error) {
       const code = getOrderInsertErrorCode(error);
       if (code === "discount_unavailable") {
@@ -10886,6 +10887,7 @@ async function createOrder(
           inline_keyboard: [[homeButton()]]
         }
       });
+      return purchaseId;
     } catch (error) {
       const code = getOrderInsertErrorCode(error);
       if (code === "discount_unavailable") {
@@ -11050,7 +11052,7 @@ async function createOrder(
         ]
       }
     });
-    return null;
+    return purchaseId;
   }
   if (false && paymentMethod === "crypto") {
     if (!cryptoWalletId) {
@@ -11212,6 +11214,7 @@ async function createOrder(
           ]
         }
       });
+      return purchaseId;
     } catch (error) {
       const code = getOrderInsertErrorCode(error);
       if (code === "discount_unavailable") {
@@ -11227,9 +11230,8 @@ async function createOrder(
         inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
       });
       await tg("sendMessage", { chat_id: chatId, text: "ساخت لینک پرداخت با خطا مواجه شد. لطفاً کمی بعد دوباره تلاش کنید یا به پشتیبانی پیام دهید." });
+      return null;
     }
-    return purchaseId;
-    return null;
   }
   if (paymentMethod === "tetrapay") {
     const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
