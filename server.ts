@@ -19,6 +19,11 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import dns from "node:dns";
+
+// Fix for Node 18+ fetch failing on IPv6-only or broken IPv6 environments
+dns.setDefaultResultOrder("ipv4first");
+
 import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
@@ -325,7 +330,8 @@ async function setupWebhook(): Promise<void> {
       body = JSON.stringify({ url: webhookUrl, drop_pending_updates: false });
     }
 
-    const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+    const telegramApiBase = process.env.TELEGRAM_API_BASE || "https://api.telegram.org";
+    const res = await fetch(`${telegramApiBase}/bot${token}/setWebhook`, {
       method: "POST",
       headers,
       body,

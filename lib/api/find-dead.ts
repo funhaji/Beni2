@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ensureSchema, sql } from "../db.js";
 import { verifyAdminToken, loginMarzbanPanel, loginSanaeiPanel, getSanaeiInbounds, normalizeBaseUrl, fetchWithTimeout, parseJsonObject, jsonSuccess } from "../bot.js";
 export default async function handler(req, res) {

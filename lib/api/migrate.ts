@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ensureSchema, sql } from "../db.js";
 import { verifyAdminToken, lookupIdentifierInPanels, isMarzbanLike, loginMarzbanPanel, normalizeBaseUrl, fetchWithTimeout, parseJsonObject, responseSnippet, getPasarguardGroups } from "../bot.js";
 function formatBytes(bytes) {

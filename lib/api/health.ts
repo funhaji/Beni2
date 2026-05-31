@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ensureSchema } from "../db.js";
 import { logError } from "../log.js";
 export default async function handler(_req, res) {

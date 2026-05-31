@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const schema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_API_BASE: z.string().url().optional(),
   DATABASE_URL: z.string().optional(),
   POSTGRES_URL: z.string().optional(),
   ADMIN_IDS: z.string().default(""),

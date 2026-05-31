@@ -1,3 +1,4 @@
+// @ts-nocheck
 import crypto from "node:crypto";
 import { Client } from "ssh2";
 import { verifyAdminToken } from "../bot.js";

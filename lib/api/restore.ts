@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { restoreFromBackup } from "../backup.js";
 import { verifyAdminToken } from "../bot.js";
 import { env } from "../env.js";

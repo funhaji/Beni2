@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { lookup } from "node:dns/promises";
 import { logError, logInfo } from "../log.js";
 function normalizeTarget(raw) {

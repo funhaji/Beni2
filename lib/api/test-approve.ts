@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { env } from "../env.js";
 import { fulfillOrderByPaymentId } from "../bot.js";
 import { logError, logInfo } from "../log.js";

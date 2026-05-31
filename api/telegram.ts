@@ -1,4 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import dns from "node:dns";
+// Fix for Node 18+ fetch failing on IPv6-only or broken IPv6 environments
+try { dns.setDefaultResultOrder("ipv4first"); } catch (e) {}
+
 import { handleTelegramUpdate } from "../lib/bot.js";
 import { ensureSchema } from "../lib/db.js";
 import { tg } from "../lib/telegram.js";

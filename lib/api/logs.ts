@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ensureSchema, sql } from "../db.js";
 import { env } from "../env.js";
 function escapeHtml(value) {

@@ -4,7 +4,8 @@ function getApiBase() {
   if (!env.TELEGRAM_BOT_TOKEN) {
     throw new Error("TELEGRAM_BOT_TOKEN is not configured");
   }
-  return `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}`;
+  const baseUrl = env.TELEGRAM_API_BASE || "https://api.telegram.org";
+  return `${baseUrl}/bot${env.TELEGRAM_BOT_TOKEN}`;
 }
 
 export async function tg<T>(method: string, body: Record<string, unknown>): Promise<T> {
@@ -76,8 +77,9 @@ export async function tgDownloadFile(fileId: string): Promise<string> {
   if (!info.ok || !info.result?.file_path) {
     throw new Error(info.description || "getFile failed");
   }
+  const baseUrl = env.TELEGRAM_API_BASE || "https://api.telegram.org";
   const fileRes = await fetch(
-    `https://api.telegram.org/file/bot${token}/${info.result.file_path}`
+    `${baseUrl}/file/bot${token}/${info.result.file_path}`
   );
   if (!fileRes.ok) {
     throw new Error(`Failed to download file: ${fileRes.status} ${fileRes.statusText}`);
