@@ -199,6 +199,7 @@ function wrapResponse(res: ServerResponse): VercelResponse {
   };
 
   (w as any).json = function (body: unknown) {
+    if (res.writableEnded) return;
     if (!res.headersSent) {
       res.setHeader("Content-Type", "application/json; charset=utf-8");
     }
@@ -207,6 +208,7 @@ function wrapResponse(res: ServerResponse): VercelResponse {
   };
 
   (w as any).send = function (body: unknown) {
+    if (res.writableEnded) return;
     res.statusCode = w._statusCode;
     if (typeof body === "string" || Buffer.isBuffer(body)) {
       res.end(body);

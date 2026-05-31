@@ -13,10 +13,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(405).json({ ok: false, error: "Method not allowed" });
     return;
   }
+
+  // On a VPS (long-running process), we should acknowledge the Telegram webhook immediately.
+  // This prevents Telegram from thinking the bot is slow and throttling updates.
+  // On Vercel, we cannot do this because the serverless function freezes as soon as we respond.
+  if (!process.env.VERCEL) {
+    res.status(200).json({ ok: true });
+  }
+
   try {
     await ensureSchema();
     await handleTelegramUpdate(req.body);
-    res.status(200).json({ ok: true });
+    
+    if (process.env.VERCEL) {
+      res.status(200).json({ ok: true });
+    }
   } catch (error) {
     logError("telegram_webhook_failed", error, {
       method: req.method,
@@ -37,6 +48,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Ignore errors here (e.g. if user blocked bot)
     }
 
-    res.status(200).json({ ok: false, error: String((error as Error).message || error) });
+    if (process.env.VERCEL) {
+      res.status(200).json({ ok: false, error: String((error as Error).message || error) });
+    }
   }
 }
