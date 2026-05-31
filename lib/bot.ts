@@ -6592,17 +6592,19 @@ async function parseAndApplyState(
         await tg("sendMessage", { chat_id: chatId, text: "نام محصول نمی‌تواند خالی باشد." });
         return true;
       }
-      const payload = { ...state.payload, name, step: "product_kind" as ProductWizardStep };
-      await setState(userId, "admin_product_wizard", payload);
-      await promptProductWizardStep(chatId, payload);
+      state.payload.name = name;
+      state.payload.step = "product_kind";
+      await setState(userId, "admin_product_wizard", state.payload);
+      await promptProductWizardStep(chatId, state.payload);
       return true;
-    }
-    if (step === "size_mb") {
+    } else if (step === "size_mb") {
       const productKind = parseProductKind(state.payload.productKind);
       if (productKind === "account") {
-        const payload = { ...state.payload, sizeMb: 0, priceMode: "manual", step: "price_mode" as ProductWizardStep };
-        await setState(userId, "admin_product_wizard", payload);
-        await promptProductWizardStep(chatId, payload);
+        state.payload.sizeMb = 0;
+        state.payload.priceMode = "manual";
+        state.payload.step = "price_mode";
+        await setState(userId, "admin_product_wizard", state.payload);
+        await promptProductWizardStep(chatId, state.payload);
         return true;
       }
       const sizeMbRaw = mode === "edit" && raw === "-" ? Number(state.payload.sizeMb || 0) : parseDataAmountToMb(raw);
@@ -6611,23 +6613,23 @@ async function parseAndApplyState(
         await tg("sendMessage", { chat_id: chatId, text: "حجم معتبر بفرستید. مثال: 2048 یا 2GB یا 800MB" });
         return true;
       }
-      const payload = { ...state.payload, sizeMb: Math.round(sizeMb), step: "price_mode" as ProductWizardStep };
-      await setState(userId, "admin_product_wizard", payload);
-      await promptProductWizardStep(chatId, payload);
+      state.payload.sizeMb = Math.round(sizeMb);
+      state.payload.step = "price_mode";
+      await setState(userId, "admin_product_wizard", state.payload);
+      await promptProductWizardStep(chatId, state.payload);
       return true;
-    }
-    if (step === "price_toman") {
+    } else if (step === "price_toman") {
       const priceToman = mode === "edit" && raw === "-" ? Number(state.payload.priceToman || 0) : Number(raw);
       if (!Number.isFinite(priceToman) || priceToman <= 0) {
         await tg("sendMessage", { chat_id: chatId, text: "قیمت معتبر بفرستید. مثال: 450000" });
         return true;
       }
-      const payload = { ...state.payload, priceToman: Math.round(priceToman), step: "sell_mode" as ProductWizardStep };
-      await setState(userId, "admin_product_wizard", payload);
-      await promptProductWizardStep(chatId, payload);
+      state.payload.priceToman = Math.round(priceToman);
+      state.payload.step = "sell_mode";
+      await setState(userId, "admin_product_wizard", state.payload);
+      await promptProductWizardStep(chatId, state.payload);
       return true;
-    }
-    if (step === "panel_sell_limit") {
+    } else if (step === "panel_sell_limit") {
       let panelSellLimit = state.payload.panelSellLimit === null || state.payload.panelSellLimit === undefined ? null : Number(state.payload.panelSellLimit);
       if (!(mode === "edit" && raw === "-")) {
         if (!raw || raw === "0") {
@@ -6641,12 +6643,12 @@ async function parseAndApplyState(
           panelSellLimit = Math.round(n);
         }
       }
-      const payload = { ...state.payload, panelSellLimit, step: "panel_delivery_mode" as ProductWizardStep };
-      await setState(userId, "admin_product_wizard", payload);
-      await promptProductWizardStep(chatId, payload);
+      state.payload.panelSellLimit = panelSellLimit;
+      state.payload.step = "panel_delivery_mode";
+      await setState(userId, "admin_product_wizard", state.payload);
+      await promptProductWizardStep(chatId, state.payload);
       return true;
-    }
-    if (step === "inbound_id" || step === "protocol" || step === "expire_days" || step === "data_limit_mb") {
+    } else if (step === "inbound_id" || step === "protocol" || step === "expire_days" || step === "data_limit_mb") {
       const payload = { ...state.payload };
       const result = await saveProductWizard(payload);
       await clearState(userId);
@@ -6667,30 +6669,30 @@ async function parseAndApplyState(
         await tg("sendMessage", { chat_id: chatId, text: "عنوان کارت نمی‌تواند خالی باشد." });
         return true;
       }
-      const payload = { ...state.payload, label, step: "card_number" as CardWizardStep };
-      await setState(userId, "admin_card_wizard", payload);
-      await promptCardWizardStep(chatId, payload);
+      state.payload.label = label;
+      state.payload.step = "card_number";
+      await setState(userId, "admin_card_wizard", state.payload);
+      await promptCardWizardStep(chatId, state.payload);
       return true;
-    }
-    if (step === "card_number") {
+    } else if (step === "card_number") {
       const cardNumber = mode === "edit" && raw === "-" ? String(state.payload.cardNumber || "") : raw;
       if (!cardNumber) {
         await tg("sendMessage", { chat_id: chatId, text: "شماره کارت نمی‌تواند خالی باشد." });
         return true;
       }
-      const payload = { ...state.payload, cardNumber, step: "holder_name" as CardWizardStep };
-      await setState(userId, "admin_card_wizard", payload);
-      await promptCardWizardStep(chatId, payload);
+      state.payload.cardNumber = cardNumber;
+      state.payload.step = "holder_name";
+      await setState(userId, "admin_card_wizard", state.payload);
+      await promptCardWizardStep(chatId, state.payload);
       return true;
-    }
-    if (step === "holder_name") {
+    } else if (step === "holder_name") {
       const holderName = raw === "-" ? "" : mode === "edit" && raw === "-" ? String(state.payload.holderName || "") : raw;
-      const payload = { ...state.payload, holderName, step: "bank_name" as CardWizardStep };
-      await setState(userId, "admin_card_wizard", payload);
-      await promptCardWizardStep(chatId, payload);
+      state.payload.holderName = holderName;
+      state.payload.step = "bank_name";
+      await setState(userId, "admin_card_wizard", state.payload);
+      await promptCardWizardStep(chatId, state.payload);
       return true;
-    }
-    if (step === "bank_name") {
+    } else if (step === "bank_name") {
       const bankName = raw === "-" ? "" : mode === "edit" && raw === "-" ? String(state.payload.bankName || "") : raw;
       if (mode === "add") {
         await sql`
