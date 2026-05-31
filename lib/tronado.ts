@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 import { env } from "./env.js";
 
 type TokenResponse = {

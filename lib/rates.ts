@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 import { getBoolSetting, getNumberSetting } from "./settings.js";
 
 type CacheEntry = { value: number; updatedAt: number };

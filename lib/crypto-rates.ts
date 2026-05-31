@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 import { sql } from "./db.js";
 
 const coingeckoIdCache = new Map<string, string>();
@@ -5,7 +6,7 @@ const coingeckoIdCache = new Map<string, string>();
 function fetchWithTimeout(url: string, timeoutMs = 6000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+  return fetch(url, { signal: controller.signal as any }).finally(() => clearTimeout(timer));
 }
 
 function snippet(raw: string, limit = 180) {

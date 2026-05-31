@@ -27,6 +27,7 @@ dns.setDefaultResultOrder("ipv4first");
 import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import fetch from "node-fetch";
 import { sql } from "./lib/db.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

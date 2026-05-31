@@ -2,6 +2,7 @@ import dns from "node:dns";
 // Attempt to set ipv4first globally to catch any fetch calls made here
 try { dns.setDefaultResultOrder("ipv4first"); } catch (e) {}
 
+import fetch from "node-fetch";
 import { env } from "./env.js";
 
 function getApiBase() {
@@ -12,11 +13,11 @@ function getApiBase() {
   return `${baseUrl}/bot${env.TELEGRAM_BOT_TOKEN}`;
 }
 
-export async function tg<T>(method: string, body: Record<string, unknown>): Promise<T> {
+export async function tg<T>(method: string, body?: Record<string, unknown>): Promise<T> {
   const res = await fetch(`${getApiBase()}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body || {})
   });
   const data = (await res.json()) as { ok: boolean; result?: T; description?: string };
   if (!data.ok) {

@@ -1,6 +1,7 @@
 import dns from "node:dns";
 try { dns.setDefaultResultOrder("ipv4first"); } catch (e) {}
 
+import fetch from "node-fetch";
 import { ensureSchema, resetBusinessDataPreserveCaches, sql } from "./db.js";
 import { env } from "./env.js";
 import { logError, logInfo } from "./log.js";
@@ -1488,7 +1489,7 @@ export async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, { ...init, signal: controller.signal });
+    return await fetch(url, { ...(init as any), signal: controller.signal as any });
   } finally {
     clearTimeout(timer);
   }

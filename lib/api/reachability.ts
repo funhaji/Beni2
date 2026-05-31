@@ -1,4 +1,5 @@
 // @ts-nocheck
+import fetch from "node-fetch";
 import { lookup } from "node:dns/promises";
 import { logError, logInfo } from "../log.js";
 function normalizeTarget(raw) {
