@@ -28,14 +28,8 @@ import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import fetch from "node-fetch";
-import https from "node:https";
 import { sql } from "./lib/db.js";
-
-const httpsAgent = new https.Agent({
-  family: 4,
-  keepAlive: true,
-  keepAliveMsecs: 30000
-});
+import { fetchWithProxyFallback, getTelegramApiBases } from "./lib/proxy.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, "..", "public");
@@ -340,19 +334,22 @@ async function setupWebhook(): Promise<void> {
       body = JSON.stringify({ url: webhookUrl, drop_pending_updates: false });
     }
 
-    const telegramApiBase = process.env.TELEGRAM_API_BASE || "https://api.telegram.org";
-    const res = await fetch(`${telegramApiBase}/bot${token}/setWebhook`, {
-      method: "POST",
-      headers,
-      body,
-      agent: httpsAgent
-    });
-    const data = (await res.json()) as { ok: boolean; description?: string };
-    if (data.ok) {
-      console.log(`[server] Telegram webhook → ${webhookUrl}`);
-    } else {
-      console.error(`[server] Webhook setup error: ${data.description}`);
+    const bases = getTelegramApiBases();
+    let lastDesc = "";
+    for (const apiBase of bases) {
+      const res = await fetchWithProxyFallback(`${apiBase}/bot${token}/setWebhook`, {
+        method: "POST",
+        headers,
+        body
+      });
+      const data = (await res.json()) as { ok: boolean; description?: string };
+      if (data.ok) {
+        console.log(`[server] Telegram webhook → ${webhookUrl} (API: ${apiBase})`);
+        return;
+      }
+      lastDesc = data.description || "unknown_error";
     }
+    console.error(`[server] Webhook setup error: ${lastDesc}`);
   } catch (err) {
     console.error("[server] Could not reach Telegram API:", err);
   }

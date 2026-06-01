@@ -2,7 +2,19 @@ import { z } from "zod";
 
 const schema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().optional(),
-  TELEGRAM_API_BASE: z.string().url().optional(),
+  TELEGRAM_API_BASE: z
+    .string()
+    .optional()
+    .transform((v) => (v?.trim() ? v.trim().replace(/\/$/, "") : undefined)),
+  TELEGRAM_API_FALLBACKS: z.string().optional(),
+  PROXY_ENABLED: z.preprocess(
+    (v) => v === true || v === "true" || v === "1" || v === "yes",
+    z.boolean().default(false)
+  ),
+  PROXY_SOCKS_URL: z.string().optional(),
+  PROXY_HTTP_URL: z.string().optional(),
+  PROXY_EXTRA_HOSTS: z.string().optional(),
+  PROXY_DIRECT_HOSTS: z.string().optional(),
   DATABASE_URL: z.string().optional(),
   POSTGRES_URL: z.string().optional(),
   ADMIN_IDS: z.string().default(""),

@@ -16,6 +16,7 @@
     "https-proxy-agent": "^7.0.4",
     "node-fetch": "^3.3.2",
     "postgres": "^3.4.5",
+    "socks-proxy-agent": "^8.0.5",
     "ssh2": "^1.16.0",
     "zod": "^3.23.8"
   },

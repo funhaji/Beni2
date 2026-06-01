@@ -1,0 +1,14 @@
+# Merged when PROXY_MODE=v2ray: docker compose -f docker-compose.yml -f docker-compose.proxy.yml up -d
+services:
+  xray:
+    image: teddysun/xray:latest
+    restart: always
+    volumes:
+      - ./proxy/xray-config.json:/etc/xray/config.json:ro
+    command: ["xray", "run", "-config", "/etc/xray/config.json"]
+  bot:
+    environment:
+      - PROXY_ENABLED=true
+      - PROXY_SOCKS_URL=socks5://xray:10808
+    depends_on:
+      - xray

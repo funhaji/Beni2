@@ -9,7 +9,8 @@ import { getOrderToken, getStatusByPaymentId, getTronPriceToman } from "./tronad
 import { getAdminIds, getBoolSetting, getNumberSetting, getPublicBaseUrl, getSetting, setSetting, invalidateSettingsCache } from "./settings.js";
 import { getUsdtRateTomanCached } from "./rates.js";
 import { getCryptoTomanPerUnitCached } from "./crypto-rates.js";
-import { escapeHtml, tg, tgSendDocument, tgDownloadFile } from "./telegram.js";
+import { escapeHtml, tg, tgSendDocument, tgDownloadFile, tgSendConfigQr } from "./telegram.js";
+import { getAgentForUrl } from "./proxy.js";
 import { exportAllTables, restoreFromBackup, type BackupData } from "./backup.js";
 import { randomUUID } from "node:crypto";
 import * as crypto from "node:crypto";
@@ -120,9 +121,6 @@ function randomCode(length = 8) {
   return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
 }
 
-function qrCodeUrl(value: string) {
-  return `https://quickchart.io/qr?size=320&text=${encodeURIComponent(value)}`;
-}
 
 function startMediaTitle(kind: StartMediaKind, value: string) {
   const v = String(value || "").trim();
@@ -1488,8 +1486,13 @@ async function getPlisioTomanPerUsdt() {
 export async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const agent = getAgentForUrl(url);
   try {
-    return await fetch(url, { ...(init as any), signal: controller.signal as any });
+    return await fetch(url, {
+      ...(init as any),
+      signal: controller.signal as any,
+      ...(agent ? { agent } : {})
+    });
   } finally {
     clearTimeout(timer);
   }
@@ -9805,9 +9808,9 @@ async function sendConfigWithQr(
     `شناسه خرید: ${purchaseId}`,
     `کانفیگ:\n${configValue}`
   ].filter(Boolean);
-  await tg("sendPhoto", {
+  await tgSendConfigQr({
     chat_id: chatId,
-    photo: qrCodeUrl(configValue),
+    qrText: configValue,
     parse_mode: "HTML",
     caption: escapeHtml(truncateText(captionLines.join("\n\n"), 900)),
     reply_markup: { inline_keyboard: keyboard }
@@ -9850,9 +9853,9 @@ async function sendDeliveryPackage(
     });
     return null;
   }
-  await tg("sendPhoto", {
+  await tgSendConfigQr({
     chat_id: chatId,
-    photo: qrCodeUrl(qrText),
+    qrText,
     parse_mode: "HTML",
     caption: escapeHtml(truncateText(captionLines.join("\n\n"), 900)),
     reply_markup: { inline_keyboard: finalKeyboard }

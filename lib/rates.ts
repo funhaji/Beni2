@@ -1,21 +1,13 @@
 import fetch from "node-fetch";
-import https from "node:https";
 import { getBoolSetting, getNumberSetting } from "./settings.js";
-
-const httpsAgent = new https.Agent({
-  family: 4,
-  keepAlive: true,
-  keepAliveMsecs: 30000
-});
+import { fetchWithProxyFallback } from "./proxy.js";
 
 type CacheEntry = { value: number; updatedAt: number };
 
 let usdtTomanCache: CacheEntry | null = null;
 
 function fetchWithTimeout(url: string, timeoutMs = 6000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { signal: controller.signal, agent: httpsAgent }).finally(() => clearTimeout(timer));
+  return fetchWithProxyFallback(url, { method: "GET" }, { timeoutMs });
 }
 
 function snippet(raw: string, limit = 180) {
