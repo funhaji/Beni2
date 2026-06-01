@@ -1179,7 +1179,21 @@ function applyTemplate(value: unknown, context: Record<string, string>): unknown
 }
 
 function sanitizePanelConfig(raw: unknown) {
+  if (typeof raw === "string") {
+    const parsed = parseJsonValue(raw.trim());
+    return toJsonObject(parsed) || {};
+  }
   return toJsonObject(raw) || {};
+}
+
+function getOrderBulkQuantity(
+  order: { panel_config_snapshot?: unknown; quantity?: unknown },
+  panelConfig?: Record<string, unknown>
+) {
+  const cfg = panelConfig ?? sanitizePanelConfig(order.panel_config_snapshot);
+  const fromSnapshot = Math.round(Number(cfg.bulk_quantity || 0));
+  const fromColumn = Math.round(Number(order.quantity || 0));
+  return Math.max(1, fromSnapshot, fromColumn);
 }
 
 function serializeDeliveryPayload(payload: DeliveryPayload) {
@@ -5451,13 +5465,19 @@ async function showWalletUsagePrompt(chatId: number, userId: number, productId: 
 async function showPaymentMethods(chatId: number, userId: number, productId: number, walletUsed: number = 0) {
   const userRows = await sql`SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
   const walletBalance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
-  
+  const state = await getState(userId);
+  const bulkQty =
+    state?.state === "bulk_purchase_pending"
+      ? Math.max(1, Math.round(Number((state.payload as { quantity?: number })?.quantity || 1)))
+      : 1;
+
   const productRows = await sql`SELECT price_toman FROM products WHERE id = ${productId} LIMIT 1;`;
   if (!productRows.length) {
     await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
     return null;
   }
-  const productPrice = Number(productRows[0].price_toman || 0);
+  const unitPrice = Number(productRows[0].price_toman || 0);
+  const productPrice = unitPrice * bulkQty;
   const finalPayable = Math.max(0, productPrice - walletUsed);
 
   const rows = await sql`SELECT code, title FROM payment_methods WHERE active = TRUE ORDER BY code ASC;`;
@@ -6246,8 +6266,17 @@ async function parseAndApplyState(
     
     await clearState(userId);
     
-    if (quantity && quantity > 1 && configName) {
-      await createBulkOrders(chatId, userId, productId, paymentMethod, discountCode, walletUsed, quantity, configName);
+    if (quantity > 1) {
+      await createBulkOrders(
+        chatId,
+        userId,
+        productId,
+        paymentMethod,
+        discountCode,
+        walletUsed,
+        quantity,
+        String(configName || "config").trim() || "config"
+      );
     } else {
       await createOrder(chatId, userId, productId, paymentMethod, discountCode, walletUsed);
     }
@@ -9437,6 +9466,7 @@ type OrderInsertInput = {
   swapwalletPaymentUrl?: string | null;
   swapwalletStatus?: string | null;
   walletTransactionDescription?: string | null;
+  quantity?: number;
 };
 
 async function claimDiscountUsage(code: string) {
@@ -9483,6 +9513,16 @@ async function withClaimedDiscount<T>(discountCode: string | null, action: () =>
 
 async function insertOrderRecord(input: OrderInsertInput) {
   const panelConfigJson = JSON.stringify(input.panelConfigSnapshot || {});
+  const quantity = Math.max(
+    1,
+    Math.round(
+      Number(
+        input.quantity ??
+          sanitizePanelConfig(input.panelConfigSnapshot).bulk_quantity ??
+          1
+      )
+    )
+  );
   const walletUsed = Math.max(0, Math.round(Number(input.walletUsed || 0)));
   const discountAmount = Math.max(0, Math.round(Number(input.discountAmount || 0)));
   const finalPrice = Math.max(0, Math.round(Number(input.finalPrice || 0)));
@@ -9504,7 +9544,7 @@ async function insertOrderRecord(input: OrderInsertInput) {
         INSERT INTO orders
         (
           purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
-          payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used, config_name,
+          payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used, config_name, quantity,
           tronado_token, tronado_payment_url,
           plisio_txn_id, plisio_invoice_url, plisio_status,
           crypto_wallet_id, crypto_currency, crypto_network, crypto_address, crypto_amount, crypto_expires_at,
@@ -9513,7 +9553,7 @@ async function insertOrderRecord(input: OrderInsertInput) {
         SELECT
           ${input.purchaseId}, telegram_id, ${input.productId}, ${input.productNameSnapshot}, ${input.sellMode}, ${input.sourcePanelId}, ${input.panelDeliveryMode},
           ${panelConfigJson}::jsonb,
-          ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed}, ${input.configName ?? null},
+          ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed}, ${input.configName ?? null}, ${quantity},
           ${input.tronadoToken ?? null}, ${input.tronadoPaymentUrl ?? null},
           ${input.plisioTxnId ?? null}, ${input.plisioInvoiceUrl ?? null}, ${input.plisioStatus ?? null},
           ${input.cryptoWalletId ?? null}, ${input.cryptoCurrency ?? null}, ${input.cryptoNetwork ?? null}, ${input.cryptoAddress ?? null}, ${input.cryptoAmount ?? null}, ${input.cryptoExpiresAt ?? null},
@@ -9540,7 +9580,7 @@ async function insertOrderRecord(input: OrderInsertInput) {
     INSERT INTO orders
     (
       purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
-      payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used, config_name,
+      payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used, config_name, quantity,
       tronado_token, tronado_payment_url,
       plisio_txn_id, plisio_invoice_url, plisio_status,
       crypto_wallet_id, crypto_currency, crypto_network, crypto_address, crypto_amount, crypto_expires_at,
@@ -9550,7 +9590,7 @@ async function insertOrderRecord(input: OrderInsertInput) {
     (
       ${input.purchaseId}, ${input.telegramId}, ${input.productId}, ${input.productNameSnapshot}, ${input.sellMode}, ${input.sourcePanelId}, ${input.panelDeliveryMode},
       ${panelConfigJson}::jsonb,
-      ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed}, ${input.configName ?? null},
+      ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed}, ${input.configName ?? null}, ${quantity},
       ${input.tronadoToken ?? null}, ${input.tronadoPaymentUrl ?? null},
       ${input.plisioTxnId ?? null}, ${input.plisioInvoiceUrl ?? null}, ${input.plisioStatus ?? null},
       ${input.cryptoWalletId ?? null}, ${input.cryptoCurrency ?? null}, ${input.cryptoNetwork ?? null}, ${input.cryptoAddress ?? null}, ${input.cryptoAmount ?? null}, ${input.cryptoExpiresAt ?? null},
@@ -10666,15 +10706,25 @@ async function createOrder(
     return null;
   }
   const allowNoStock = sanitizePanelConfig(overrides?.panelConfigPatch).force_awaiting_config === true;
-  if (sellMode !== "panel" && !globalInfinite && !product.is_infinite && Number(product.stock) <= 0 && !allowNoStock) {
-    await tg("sendMessage", { chat_id: chatId, text: "موجودی این محصول تمام شده است." });
-    return null;
-  }
   const surcharge = await getPurchaseSurcharge();
   const basePriceToman = Math.max(1, Math.round(Number(overrides?.basePriceToman ?? product.price_toman)) + surcharge);
   const configName = overrides?.configName ? String(overrides.configName).trim() : null;
   const basePanelConfig = sanitizePanelConfig(product.panel_config);
   const panelConfigSnapshot = overrides?.panelConfigPatch ? { ...basePanelConfig, ...sanitizePanelConfig(overrides.panelConfigPatch) } : basePanelConfig;
+  const orderQuantity = getOrderBulkQuantity(
+    { panel_config_snapshot: panelConfigSnapshot },
+    panelConfigSnapshot
+  );
+  if (sellMode !== "panel" && !globalInfinite && !product.is_infinite && Number(product.stock) < orderQuantity && !allowNoStock) {
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        Number(product.stock) <= 0
+          ? "موجودی این محصول تمام شده است."
+          : `موجودی کافی نیست. موجودی: ${Number(product.stock)} عدد، درخواست شما: ${orderQuantity} عدد.`
+    });
+    return null;
+  }
   const productNameSnapshot = `${String(product.name || "")}${overrides?.productNameSuffix ? ` ${overrides.productNameSuffix}` : ""}`.trim();
   const { discountAmount, discountCode } = await resolveDiscount(discountInput, basePriceToman);
   
@@ -12086,6 +12136,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
       o.final_price,
       o.payment_method,
       o.config_name,
+      o.quantity,
       COALESCE(o.product_name_snapshot, p.name) AS product_name,
       p.size_mb,
       p.is_infinite
@@ -12113,7 +12164,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
     const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
     
     // Check if this is a bulk order
-    const bulkQuantity = Math.max(1, Math.round(Number(panelConfig.bulk_quantity || 1)));
+    const bulkQuantity = getOrderBulkQuantity(order, panelConfig);
     const bulkConfigNames = Array.isArray(panelConfig.bulk_config_names) ? panelConfig.bulk_config_names : [];
     
     // For bulk orders, create multiple configs
@@ -12326,7 +12377,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
   }
   const globalInfinite = await getBoolSetting("global_infinite_mode", false);
   const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
-  const bulkQty = Math.max(1, Math.round(Number(panelConfig.bulk_quantity || 1)));
+  const bulkQty = getOrderBulkQuantity(order, panelConfig);
 
   // Allocate N inventory items for bulk orders
   const allocatedItems: Array<{ id: number; config_value: string }> = [];
@@ -12344,7 +12395,17 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
       RETURNING id, config_value;
     `;
     if (allocated.length) {
-      allocatedItems.push({ id: Number(allocated[0].id), config_value: String(allocated[0].config_value) });
+      const configValue = String(allocated[0].config_value);
+      const itemPayload = serializeDeliveryPayload({
+        configLinks: [configValue],
+        primaryText: configValue
+      });
+      await sql`
+        UPDATE inventory
+        SET delivery_payload = ${itemPayload}::jsonb
+        WHERE id = ${Number(allocated[0].id)};
+      `;
+      allocatedItems.push({ id: Number(allocated[0].id), config_value: configValue });
     } else {
       break;
     }
@@ -12366,7 +12427,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
       const extraLines: string[] = [];
       if (typeof panelConfig.data_limit_mb === "number") extraLines.push(`حجم: ${Math.max(1, Math.round(Number(panelConfig.data_limit_mb) / 1024))} گیگابایت`);
       if (typeof panelConfig.expire_days === "number") extraLines.push(`زمان: ${Math.max(1, Math.round(Number(panelConfig.expire_days)))} روز`);
-      const bulkQtyNotif = Math.max(1, Math.round(Number(panelConfig.bulk_quantity || 1)));
+      const bulkQtyNotif = getOrderBulkQuantity(order, panelConfig);
       if (bulkQtyNotif > 1) extraLines.push(`تعداد کانفیگ: ${bulkQtyNotif} عدد`);
       const bulkNamesNotif: string[] = Array.isArray(panelConfig.bulk_config_names) ? panelConfig.bulk_config_names : [];
       if (bulkNamesNotif.length > 0) extraLines.push(`نام‌ها: ${bulkNamesNotif.join(", ")}`);
@@ -12404,19 +12465,39 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
   const allConfigLinks = allocatedItems.map((item) => item.config_value);
   const inventoryDelivery: DeliveryPayload = {
     configLinks: allConfigLinks,
-    primaryText: allConfigLinks[0] || ""
+    primaryText: allConfigLinks[0] || "",
+    metadata: { bulkCount: allocatedItems.length }
   };
 
-  await sendDeliveryPackage(
-    Number(order.telegram_id),
-    String(order.purchase_id),
-    allConfigLinks[0] || "",
-    inventoryDelivery,
-    [
-      [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
-      [homeButton()]
-    ]
-  ).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
+  if (allConfigLinks.length > 1) {
+    for (let i = 0; i < allConfigLinks.length; i++) {
+      const configValue = allConfigLinks[i];
+      const isLast = i === allConfigLinks.length - 1;
+      await sendDeliveryPackage(
+        Number(order.telegram_id),
+        String(order.purchase_id),
+        configValue,
+        { configLinks: [configValue], primaryText: configValue },
+        isLast
+          ? [
+              [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
+              [homeButton()]
+            ]
+          : []
+      ).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
+    }
+  } else {
+    await sendDeliveryPackage(
+      Number(order.telegram_id),
+      String(order.purchase_id),
+      allConfigLinks[0] || "",
+      inventoryDelivery,
+      [
+        [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
+        [homeButton()]
+      ]
+    ).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
+  }
   await notifyAdmins(
     buildAdminDeliverySummary({
       purchaseId: String(order.purchase_id),
@@ -13198,7 +13279,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     // Fetch ALL inventory items for this purchase so bulk orders show every config + sub URL
     // Include 'migrated' so migrated bulk configs still show up with a note
     const rows = await sql`
-      SELECT i.id, i.delivery_payload, i.status, i.migrated_to_inventory_id, p.name
+      SELECT i.id, i.config_value, i.delivery_payload, i.status, i.migrated_to_inventory_id, p.name
       FROM inventory i
       INNER JOIN products p ON p.id = i.product_id
       LEFT JOIN orders o ON o.id = i.sold_order_id
@@ -13219,7 +13300,9 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     for (const inv of rows) {
       const pd = parseDeliveryPayload(inv.delivery_payload);
       const subUrl = pd.subscriptionUrl || null;
-      const links = pd.configLinks || [];
+      const configValue = String(inv.config_value || "").trim();
+      const links =
+        (pd.configLinks?.length ? pd.configLinks : configValue ? [configValue] : []);
       if (links.length > 0) {
         // Each config link becomes its own entry (paired with the sub URL if any)
         for (const link of links) {
