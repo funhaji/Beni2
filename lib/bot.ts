@@ -3173,13 +3173,13 @@ export async function getPasarguardGroups(
     if (!res.ok) return [];
     const data = parseJsonObject(raw) as { groups?: Array<{ id: unknown; name: unknown; inbound_tags?: unknown[]; is_disabled?: unknown }> } | null;
     if (!data?.groups || !Array.isArray(data.groups)) return [];
-    return data.groups
-      .filter((g) => !g.is_disabled)
-      .map((g) => ({
-        id: Number(g.id),
-        name: String(g.name || ""),
-        inbound_tags: Array.isArray(g.inbound_tags) ? g.inbound_tags.map(String) : []
-      }));
+    // Return ALL groups (including disabled ones) - filtering should happen at usage site if needed
+    // This fixes the issue where panels have groups but they're disabled, causing "no groups found" error
+    return data.groups.map((g) => ({
+      id: Number(g.id),
+      name: String(g.name || ""),
+      inbound_tags: Array.isArray(g.inbound_tags) ? g.inbound_tags.map(String) : []
+    }));
   } catch {
     return [];
   }
@@ -6874,6 +6874,91 @@ async function parseAndApplyState(
       logError("admin_message_user_failed", error, { fromAdminId: userId, targetId });
       await tg("sendMessage", { chat_id: chatId, text: "ارسال پیام انجام نشد. کاربر ممکن است ربات را بلاک کرده باشد." });
     }
+    return true;
+  }
+  if (state.state === "admin_broadcast_message_wizard") {
+    const step = String(state.payload.step || "method");
+    
+    if (step === "compose") {
+      const messageText = text.trim();
+      if (!messageText) {
+        await tg("sendMessage", { chat_id: chatId, text: "متن پیام نمی‌تواند خالی باشد." });
+        return true;
+      }
+      
+      // Get all users
+      const users = await sql`SELECT telegram_id FROM users WHERE telegram_id IS NOT NULL;`;
+      const totalUsers = users.length;
+      
+      await tg("sendMessage", { 
+        chat_id: chatId, 
+        text: `در حال ارسال پیام به ${totalUsers} کاربر...` 
+      });
+      
+      let successCount = 0;
+      let failCount = 0;
+      
+      for (const user of users) {
+        const targetId = Number(user.telegram_id);
+        try {
+          await tg("sendMessage", { chat_id: targetId, text: messageText });
+          successCount++;
+        } catch (error) {
+          failCount++;
+          logError("broadcast_send_failed", error, { targetId });
+        }
+      }
+      
+      await clearState(userId);
+      await tg("sendMessage", { 
+        chat_id: chatId, 
+        text: `✅ پیام همگانی ارسال شد\n\n✅ موفق: ${successCount}\n❌ ناموفق: ${failCount}\n📊 کل: ${totalUsers}` 
+      });
+      return true;
+    }
+    
+    if (step === "forward") {
+      // Check if message has a message_id (forwarded message)
+      if (!message?.message_id) {
+        await tg("sendMessage", { chat_id: chatId, text: "لطفاً یک پیام برای فوروارد ارسال کنید." });
+        return true;
+      }
+      
+      // Get all users
+      const users = await sql`SELECT telegram_id FROM users WHERE telegram_id IS NOT NULL;`;
+      const totalUsers = users.length;
+      
+      await tg("sendMessage", { 
+        chat_id: chatId, 
+        text: `در حال فوروارد پیام به ${totalUsers} کاربر...` 
+      });
+      
+      let successCount = 0;
+      let failCount = 0;
+      
+      for (const user of users) {
+        const targetId = Number(user.telegram_id);
+        try {
+          await tg("forwardMessage", { 
+            chat_id: targetId, 
+            from_chat_id: chatId, 
+            message_id: message.message_id 
+          });
+          successCount++;
+        } catch (error) {
+          failCount++;
+          logError("broadcast_forward_failed", error, { targetId });
+        }
+      }
+      
+      await clearState(userId);
+      await tg("sendMessage", { 
+        chat_id: chatId, 
+        text: `✅ پیام همگانی فوروارد شد\n\n✅ موفق: ${successCount}\n❌ ناموفق: ${failCount}\n📊 کل: ${totalUsers}` 
+      });
+      return true;
+    }
+    
     return true;
   }
   if (state.state === "admin_direct_migrate_wizard") {
@@ -15812,6 +15897,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   inline_keyboard: [
   [cb("👑 افزودن ادمین", "admin_tool_add_admin", "success"), cb("🚫 حذف ادمین", "admin_tool_remove_admin", "danger")],
   [cb("⛔ بن با یوزرنیم", "admin_tool_ban_username", "danger")],
+  [cb("📢 پیام همگانی", "admin_broadcast_message", "primary")],
   [cb("✉️ ارسال پیام به کاربر", "admin_tool_message_user", "primary")],
   [cb("🔎 جستجوی شماره سفارش", "admin_tool_lookup_purchase", "primary")],
   [cb("🧾 جستجوی کانفیگ/UUID", "admin_tool_lookup_config", "primary")],
@@ -15887,6 +15973,44 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   }
   if (data === "admin_tool_message_user") {
     await startMessageUserWizard(chatId, userId);
+    return null;
+  }
+  if (data === "admin_broadcast_message") {
+    await setState(userId, "admin_broadcast_message_wizard", { step: "method" });
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "پیام همگانی - انتخاب روش ارسال\n\nروش ارسال پیام را انتخاب کنید:",
+      reply_markup: {
+        inline_keyboard: [
+          [cb("✍️ نوشتن پیام جدید", "admin_broadcast_compose", "primary")],
+          [cb("↪️ فوروارد پیام", "admin_broadcast_forward", "primary")],
+          [backButton("admin_tools")]
+        ]
+      }
+    });
+    return null;
+  }
+  if (data === "admin_broadcast_compose") {
+    await setState(userId, "admin_broadcast_message_wizard", { step: "compose" });
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "پیام همگانی - نوشتن پیام\n\nمتن پیامی که می‌خواهید به همه کاربران ارسال شود را بنویسید:",
+      reply_markup: { inline_keyboard: [[cancelButton("admin_broadcast_cancel")]] }
+    });
+    return null;
+  }
+  if (data === "admin_broadcast_forward") {
+    await setState(userId, "admin_broadcast_message_wizard", { step: "forward" });
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "پیام همگانی - فوروارد\n\nپیامی که می‌خواهید به همه کاربران فوروارد کنید را ارسال کنید:",
+      reply_markup: { inline_keyboard: [[cancelButton("admin_broadcast_cancel")]] }
+    });
+    return null;
+  }
+  if (data === "admin_broadcast_cancel") {
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: "ارسال پیام همگانی لغو شد." });
     return null;
   }
   if (data === "admin_message_user_wizard_cancel") {
