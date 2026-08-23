@@ -2614,12 +2614,30 @@ async function showPanelDetails(chatId: number, panelId: number, notice?: string
 }
 
 async function mainMenuMarkup(userId: number) {
-  const [testEnabled, adminCheck] = await Promise.all([
+  const [testEnabled, adminCheck, kindsRow] = await Promise.all([
     getBoolSetting("test_config_enabled", false),
-    isAdmin(userId)
+    isAdmin(userId),
+    sql`
+      SELECT
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'v2ray') AS v2ray_count,
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count
+      FROM products
+      WHERE is_active = TRUE
+    `
   ]);
+
+  const v2rayCount = Number(kindsRow[0].v2ray_count);
+  const accountCount = Number(kindsRow[0].account_count);
+
+  let buyBtnText = "🛍 خرید کانفیگ";
+  if (v2rayCount > 0 && accountCount > 0) {
+    buyBtnText = "🛍 خرید";
+  } else if (accountCount > 0 && v2rayCount === 0) {
+    buyBtnText = "🛍 خرید اکانت";
+  }
+
   const rows = [
-    [cb("🛍 خرید کانفیگ", "buy_menu", "primary"), cb("📦 سفارش‌ها و کانفیگ‌ها", "my_configs", "primary")],
+    [cb(buyBtnText, "buy_menu", "primary"), cb("📦 سفارش‌ها و کانفیگ‌ها", "my_configs", "primary")],
     [cb("👛 کیف پول", "wallet_menu", "success"), cb("🎁 دعوت دوستان", "referral_menu", "success")],
     [cb("🆘 پشتیبانی", "support", "primary")]
   ];
@@ -5345,10 +5363,37 @@ async function completeMigration(migrationId: number, decidedBy: number, targetC
   return { ok: true, reason: "done" };
 }
 
-async function showProducts(chatId: number, forBuy: boolean) {
+async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = "") {
   const globalInfinite = await getBoolSetting("global_infinite_mode", false);
   const customEnabled = forBuy ? await getBoolSetting("custom_v2ray_enabled", false) : false;
   const customProductId = customEnabled ? Number((await getSetting("custom_v2ray_product_id")) || 0) : 0;
+  
+  if (forBuy && !kind) {
+    const kindsRow = await sql`
+      SELECT
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'v2ray') AS v2ray_count,
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count
+      FROM products
+      WHERE is_active = TRUE
+    `;
+    const v2rayCount = Number(kindsRow[0].v2ray_count);
+    const accountCount = Number(kindsRow[0].account_count);
+
+    if (v2rayCount > 0 && accountCount > 0) {
+      const keyboard = [
+        [cb("🌐 کانفیگ (V2Ray)", "buy_cat_v2ray_0", "primary")],
+        [cb("👤 اکانت", "buy_cat_account_0", "primary")],
+        [homeButton()]
+      ];
+      await tg("sendMessage", { chat_id: chatId, text: "دسته‌بندی مورد نظر را انتخاب کنید:", reply_markup: { inline_keyboard: keyboard } });
+      return null;
+    } else if (accountCount > 0 && v2rayCount === 0) {
+      kind = "account";
+    } else {
+      kind = "v2ray";
+    }
+  }
+
   const rows = await sql`
     SELECT
       p.id,
@@ -5363,6 +5408,7 @@ async function showProducts(chatId: number, forBuy: boolean) {
       pnl.name AS panel_name,
       pnl.active AS panel_active,
       pnl.allow_new_sales AS panel_allow_new_sales,
+      COALESCE(p.panel_config->>'product_kind', 'v2ray') AS kind,
       (SELECT COUNT(*)::int FROM inventory i WHERE i.product_id = p.id AND i.status = 'available') AS stock,
       (
         SELECT COUNT(*)::int
@@ -5386,10 +5432,22 @@ async function showProducts(chatId: number, forBuy: boolean) {
     : 0;
   const minCustomPrice = customEnabled ? Math.max(1, pricePerGb + 30 * dayPrice) : 0;
 
-  const standardRows = customEnabled && customProductId > 0 ? rows.filter((p: any) => Number(p.id) !== customProductId) : rows;
-  const customRow = customEnabled && customProductId > 0 ? rows.find((p: any) => Number(p.id) === customProductId) : null;
+  const filteredRows = kind ? rows.filter((p: any) => p.kind === kind) : rows;
+  if (!filteredRows.length) {
+    await tg("sendMessage", { chat_id: chatId, text: "محصولی یافت نشد." });
+    return null;
+  }
 
-  const keyboard = standardRows.map((p: any) => [
+  const standardRows = customEnabled && customProductId > 0 ? filteredRows.filter((p: any) => Number(p.id) !== customProductId) : filteredRows;
+  const customRow = customEnabled && customProductId > 0 ? filteredRows.find((p: any) => Number(p.id) === customProductId) : null;
+
+  const pageSize = 15;
+  const totalPages = Math.ceil(standardRows.length / pageSize) || 1;
+  const safePage = Math.max(0, Math.min(page, totalPages - 1));
+  const start = safePage * pageSize;
+  const slice = standardRows.slice(start, start + pageSize);
+
+  const keyboard = slice.map((p: any) => [
     cb(
       `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
       forBuy ? `buy_product_${p.id}` : `admin_inventory_product_${p.id}`,
@@ -5405,6 +5463,16 @@ async function showProducts(chatId: number, forBuy: boolean) {
       )
     ]);
   }
+  
+  if (totalPages > 1) {
+    const navRow: { text: string; callback_data: string }[] = [];
+    const pfx = forBuy ? (kind ? `buy_cat_${kind}_` : `buy_cat__`) : `admin_inv_`;
+    if (safePage > 0) navRow.push({ text: "◀️ قبلی", callback_data: `${pfx}${safePage - 1}` });
+    navRow.push({ text: `صفحه ${safePage + 1} از ${totalPages}`, callback_data: "noop" });
+    if (safePage < totalPages - 1) navRow.push({ text: "بعدی ▶️", callback_data: `${pfx}${safePage + 1}` });
+    keyboard.push(navRow);
+  }
+
   keyboard.push([homeButton()]);
   await tg("sendMessage", {
     chat_id: chatId,
@@ -5413,7 +5481,7 @@ async function showProducts(chatId: number, forBuy: boolean) {
   });
 }
 
-async function listProductsForAdmin(chatId: number, userId: number) {
+async function listProductsForAdmin(chatId: number, userId: number, page = 0) {
   const showArchived = await getBoolSetting(`admin_products_show_archived_${userId}`, false);
   const rows = await sql`
     SELECT
@@ -5433,7 +5501,14 @@ async function listProductsForAdmin(chatId: number, userId: number) {
     WHERE (${showArchived} = TRUE OR p.is_active = TRUE)
     ORDER BY p.id ASC;
   `;
-  const keyboard = rows.flatMap((p: any) => [
+  
+  const pageSize = 15;
+  const totalPages = Math.ceil(rows.length / pageSize) || 1;
+  const safePage = Math.max(0, Math.min(page, totalPages - 1));
+  const start = safePage * pageSize;
+  const slice = rows.slice(start, start + pageSize);
+
+  const keyboard = slice.flatMap((p: any) => [
     [
       {
         text: `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
@@ -5455,6 +5530,15 @@ async function listProductsForAdmin(chatId: number, userId: number) {
       cb("🗑 حذف", `admin_remove_product_${p.id}`, "danger")
     ]
   ]);
+  
+  if (totalPages > 1) {
+    const navRow: { text: string; callback_data: string }[] = [];
+    if (safePage > 0) navRow.push({ text: "◀️ قبلی", callback_data: `admin_products_page_${safePage - 1}` });
+    navRow.push({ text: `صفحه ${safePage + 1} از ${totalPages}`, callback_data: "noop" });
+    if (safePage < totalPages - 1) navRow.push({ text: "بعدی ▶️", callback_data: `admin_products_page_${safePage + 1}` });
+    keyboard.push(navRow);
+  }
+
   keyboard.push([cb(showArchived ? "📦 مخفی کردن آرشیو" : "📦 نمایش آرشیو", showArchived ? "admin_products_hide_archived" : "admin_products_show_archived", "primary")]);
   keyboard.push([cb("➕ افزودن محصول", "admin_add_product", "success")]);
   keyboard.push([backButton("admin_panel")]);
@@ -12876,8 +12960,15 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await createCryptoWalletTopup(chatId, userId, amount, w);
     return null;
   }
-  if (data === "buy_menu") {
-    await showProducts(chatId, true);
+  if (data === "buy_menu" || data.startsWith("buy_cat_")) {
+    let page = 0;
+    let kind = "";
+    if (data.startsWith("buy_cat_")) {
+      const parts = data.replace("buy_cat_", "").split("_");
+      kind = parts[0];
+      page = Math.max(0, parseInt(parts[1], 10) || 0);
+    }
+    await showProducts(chatId, true, page, kind);
     return null;
   }
   if (data.startsWith("buy_custom_v2ray_")) {
@@ -14844,8 +14935,12 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", { chat_id: chatId, text: "درخواست رد شد ✅" });
     return null;
   }
-  if (data === "admin_products") {
-    await listProductsForAdmin(chatId, userId);
+  if (data === "admin_products" || data.startsWith("admin_products_page_")) {
+    let page = 0;
+    if (data.startsWith("admin_products_page_")) {
+      page = Math.max(0, parseInt(data.replace("admin_products_page_", ""), 10) || 0);
+    }
+    await listProductsForAdmin(chatId, userId, page);
     return null;
   }
   if (data === "admin_products_show_archived") {
@@ -15156,8 +15251,12 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", { chat_id: chatId, text: "وضعیت محصول تغییر کرد ✅" });
     return null;
   }
-  if (data === "admin_inventory") {
-    await showProducts(chatId, false);
+  if (data === "admin_inventory" || data.startsWith("admin_inv_")) {
+    let page = 0;
+    if (data.startsWith("admin_inv_")) {
+      page = Math.max(0, parseInt(data.replace("admin_inv_", ""), 10) || 0);
+    }
+    await showProducts(chatId, false, page, "");
     return null;
   }
   if (data.startsWith("admin_inventory_product_")) {
