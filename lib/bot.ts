@@ -5502,7 +5502,7 @@ async function listProductsForAdmin(chatId: number, userId: number, page = 0) {
     ORDER BY p.id ASC;
   `;
   
-  const pageSize = 15;
+  const pageSize = 8;
   const totalPages = Math.ceil(rows.length / pageSize) || 1;
   const safePage = Math.max(0, Math.min(page, totalPages - 1));
   const start = safePage * pageSize;
