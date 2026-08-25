@@ -966,7 +966,6 @@ async function maybeQualifyReferralUser(userId: number) {
 function normalizePricePerGb(raw: number | string | null | undefined, fallback = 500000) {
   const n = Number(raw);
   if (!Number.isFinite(n) || n <= 0) return fallback;
-  if (n < 10000) return Math.round(n * 1000);
   return Math.round(n);
 }
 
@@ -10197,10 +10196,18 @@ async function applyTopupOnMarzban(panel: Record<string, unknown>, username: str
     return { ok: false, message: "Marzban user has no finite data limit." };
   }
   const targetLimit = Math.max(0, Math.round(currentLimit + addBytes));
-  const payload = {
+  
+  const currentExpire = Number(getData.expire || 0);
+  const thirtyDaysSeconds = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
+
+  const payload: any = {
     ...getData,
     data_limit: targetLimit
   };
+
+  if (currentExpire !== 0 && currentExpire < thirtyDaysSeconds) {
+    payload.expire = thirtyDaysSeconds;
+  }
   const putRes = await fetchWithTimeout(`${baseUrl}/api/user/${encodeURIComponent(username)}`, {
     method: "PUT",
     headers: {
@@ -10244,10 +10251,18 @@ async function applyTopupOnSanaei(panel: Record<string, unknown>, inboundId: num
     return { ok: false, message: "Sanaei client has no finite totalGB." };
   }
   const targetTotalGb = Math.max(0, Math.round(currentTotalGb + addBytes));
-  const updatedClient = {
+  
+  const currentExpiryTime = Number(client.expiryTime || 0);
+  const thirtyDaysMs = Date.now() + (30 * 24 * 60 * 60 * 1000);
+
+  const updatedClient: any = {
     ...client,
     totalGB: targetTotalGb
   };
+
+  if (currentExpiryTime !== 0 && currentExpiryTime < thirtyDaysMs) {
+    updatedClient.expiryTime = thirtyDaysMs;
+  }
   const candidateIds = Array.from(new Set([String(client.id || ""), String(client.password || ""), String(client.email || "")].filter(Boolean)));
   let lastFail = "update endpoint failed";
   for (const candidateId of candidateIds) {
