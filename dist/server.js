@@ -18,8 +18,12 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import dns from "node:dns";
+// Fix for Node 18+ fetch failing on IPv6-only or broken IPv6 environments
+dns.setDefaultResultOrder("ipv4first");
 import { fileURLToPath } from "node:url";
 import { sql } from "./lib/db.js";
+import { fetchWithProxyFallback, getTelegramApiBases } from "./lib/proxy.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, "..", "public");
 const MIME = {
@@ -52,17 +56,49 @@ function serveStatic(pathname, res) {
 }
 const ROUTES = {
     "/api/telegram": () => import("./api/telegram.js").then((m) => m.default),
-    "/api/health": () => import("./api/health.js").then((m) => m.default),
-    "/api/logs": () => import("./api/logs.js").then((m) => m.default),
-    "/api/backup": () => import("./api/backup.js").then((m) => m.default),
-    "/api/restore": () => import("./api/restore.js").then((m) => m.default),
-    "/api/reachability": () => import("./api/reachability.js").then((m) => m.default),
-    "/api/find-dead": () => import("./api/find-dead.js").then((m) => m.default),
-    "/api/panel-action": () => import("./api/panel-action.js").then((m) => m.default),
-    "/api/migrate": () => import("./api/migrate.js").then((m) => m.default),
-    "/api/marzban-install": () => import("./api/marzban-install.js").then((m) => m.default),
-    "/api/test-approve": () => import("./api/test-approve.js").then((m) => m.default),
     "/api/payment-callback": () => import("./api/payment-callback.js").then((m) => m.default),
+    "/api/admin": () => import("./api/admin.js").then((m) => m.default),
+    // Legacy paths mapped to admin
+    "/api/health": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "health" }; return h(req, res); };
+    }),
+    "/api/logs": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "logs" }; return h(req, res); };
+    }),
+    "/api/backup": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "backup" }; return h(req, res); };
+    }),
+    "/api/restore": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "restore" }; return h(req, res); };
+    }),
+    "/api/reachability": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "reachability" }; return h(req, res); };
+    }),
+    "/api/find-dead": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "find-dead" }; return h(req, res); };
+    }),
+    "/api/panel-action": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "panel-action" }; return h(req, res); };
+    }),
+    "/api/migrate": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "migrate" }; return h(req, res); };
+    }),
+    "/api/marzban-install": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "marzban-install" }; return h(req, res); };
+    }),
+    "/api/test-approve": () => import("./api/admin.js").then((m) => {
+        const h = m.default;
+        return (req, res) => { req.query = { ...req.query, action: "test-approve" }; return h(req, res); };
+    }),
     // Legacy paths — rewrite query param so the unified handler can route them
     "/api/plisio-callback": () => import("./api/payment-callback.js").then((m) => {
         const h = m.default;
@@ -148,6 +184,8 @@ function wrapResponse(res) {
         return w;
     };
     w.json = function (body) {
+        if (res.writableEnded)
+            return;
         if (!res.headersSent) {
             res.setHeader("Content-Type", "application/json; charset=utf-8");
         }
@@ -155,6 +193,8 @@ function wrapResponse(res) {
         res.end(JSON.stringify(body));
     };
     w.send = function (body) {
+        if (res.writableEnded)
+            return;
         res.statusCode = w._statusCode;
         if (typeof body === "string" || Buffer.isBuffer(body)) {
             res.end(body);
@@ -247,18 +287,38 @@ async function setupWebhook() {
     }
     const webhookUrl = `${baseUrl}/api/telegram`;
     try {
-        const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: webhookUrl, drop_pending_updates: false }),
-        });
-        const data = (await res.json());
-        if (data.ok) {
-            console.log(`[server] Telegram webhook → ${webhookUrl}`);
+        let body;
+        let headers = {};
+        const certPath = path.join(__dirname, "..", "certs", "cert.pem");
+        if (fs.existsSync(certPath)) {
+            console.log("[server] Self-signed certificate found, uploading to Telegram...");
+            const formData = new FormData();
+            formData.append("url", webhookUrl);
+            formData.append("drop_pending_updates", "false");
+            const certBuffer = fs.readFileSync(certPath);
+            formData.append("certificate", new Blob([certBuffer]), "cert.pem");
+            body = formData;
         }
         else {
-            console.error(`[server] Webhook setup error: ${data.description}`);
+            headers = { "Content-Type": "application/json" };
+            body = JSON.stringify({ url: webhookUrl, drop_pending_updates: false });
         }
+        const bases = getTelegramApiBases();
+        let lastDesc = "";
+        for (const apiBase of bases) {
+            const res = await fetchWithProxyFallback(`${apiBase}/bot${token}/setWebhook`, {
+                method: "POST",
+                headers,
+                body
+            });
+            const data = (await res.json());
+            if (data.ok) {
+                console.log(`[server] Telegram webhook → ${webhookUrl} (API: ${apiBase})`);
+                return;
+            }
+            lastDesc = data.description || "unknown_error";
+        }
+        console.error(`[server] Webhook setup error: ${lastDesc}`);
     }
     catch (err) {
         console.error("[server] Could not reach Telegram API:", err);

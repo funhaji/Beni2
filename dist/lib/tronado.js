@@ -1,4 +1,6 @@
+import fetch from "node-fetch";
 import { env } from "./env.js";
+import { getAgentForUrl } from "./proxy.js";
 function getApiKey() {
     const key = (env.TRONADO_API_KEY || env.TRONADO_X_API_KEY || env.X_API_KEY || "").trim();
     if (!key) {
@@ -20,7 +22,8 @@ export async function getOrderToken(input) {
         headers: {
             "x-api-key": (input.apiKey || "").trim() || getApiKey()
         },
-        body: form
+        body: form,
+        agent: getAgentForUrl(url)
     });
     const data = (await res.json());
     if (!res.ok || !data?.Data?.Token || !data?.Data?.FullPaymentUrl) {
@@ -41,7 +44,8 @@ export async function getStatusByPaymentId(paymentId, apiKey) {
         headers: {
             "x-api-key": (apiKey || "").trim() || getApiKey()
         },
-        body: form
+        body: form,
+        agent: getAgentForUrl(url)
     });
     if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
@@ -56,7 +60,8 @@ export async function getTronPriceToman(apiKey) {
     for (const url of candidates) {
         try {
             const res = await fetch(url, {
-                headers: { "x-api-key": (apiKey || "").trim() || getApiKey() }
+                headers: { "x-api-key": (apiKey || "").trim() || getApiKey() },
+                agent: getAgentForUrl(url)
             });
             if (!res.ok) {
                 continue;

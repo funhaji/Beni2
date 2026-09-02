@@ -1,9 +1,8 @@
 import { sql } from "./db.js";
+import { fetchWithProxyFallback } from "./proxy.js";
 const coingeckoIdCache = new Map();
 function fetchWithTimeout(url, timeoutMs = 6000) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+    return fetchWithProxyFallback(url, { method: "GET" }, { timeoutMs });
 }
 function snippet(raw, limit = 180) {
     const s = raw.trim().slice(0, limit);

@@ -1,3 +1,9 @@
+import dns from "node:dns";
+try {
+    dns.setDefaultResultOrder("ipv4first");
+}
+catch (e) { }
+import fetch from "node-fetch";
 import { ensureSchema, resetBusinessDataPreserveCaches, sql } from "./db.js";
 import { env } from "./env.js";
 import { logError, logInfo } from "./log.js";
@@ -5,7 +11,8 @@ import { getOrderToken, getStatusByPaymentId, getTronPriceToman } from "./tronad
 import { getAdminIds, getBoolSetting, getNumberSetting, getPublicBaseUrl, getSetting, setSetting, invalidateSettingsCache } from "./settings.js";
 import { getUsdtRateTomanCached } from "./rates.js";
 import { getCryptoTomanPerUnitCached } from "./crypto-rates.js";
-import { escapeHtml, tg, tgDownloadFile } from "./telegram.js";
+import { escapeHtml, tg, tgDownloadFile, tgSendConfigQr } from "./telegram.js";
+import { getAgentForUrl } from "./proxy.js";
 import { restoreFromBackup } from "./backup.js";
 import { randomUUID } from "node:crypto";
 import * as crypto from "node:crypto";
@@ -17,9 +24,6 @@ async function isAdmin(userId) {
 function randomCode(length = 8) {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-}
-function qrCodeUrl(value) {
-    return `https://quickchart.io/qr?size=320&text=${encodeURIComponent(value)}`;
 }
 function startMediaTitle(kind, value) {
     const v = String(value || "").trim();
@@ -842,8 +846,6 @@ function normalizePricePerGb(raw, fallback = 500000) {
     const n = Number(raw);
     if (!Number.isFinite(n) || n <= 0)
         return fallback;
-    if (n < 10000)
-        return Math.round(n * 1000);
     return Math.round(n);
 }
 function parseDataAmountToMb(raw) {
@@ -925,6 +927,8 @@ function parseSellMode(raw) {
     const value = String(raw || "").trim().toLowerCase();
     if (value === "panel" || value === "auto_panel" || value === "panel_sale")
         return "panel";
+    if (value === "pingchi")
+        return "pingchi";
     return "manual";
 }
 function parseDeliveryMode(raw) {
@@ -1050,7 +1054,17 @@ function applyTemplate(value, context) {
     return value;
 }
 function sanitizePanelConfig(raw) {
+    if (typeof raw === "string") {
+        const parsed = parseJsonValue(raw.trim());
+        return toJsonObject(parsed) || {};
+    }
     return toJsonObject(raw) || {};
+}
+function getOrderBulkQuantity(order, panelConfig) {
+    const cfg = panelConfig ?? sanitizePanelConfig(order.panel_config_snapshot);
+    const fromSnapshot = Math.round(Number(cfg.bulk_quantity || 0));
+    const fromColumn = Math.round(Number(order.quantity || 0));
+    return Math.max(1, fromSnapshot, fromColumn);
 }
 function serializeDeliveryPayload(payload) {
     return JSON.stringify({
@@ -1329,8 +1343,13 @@ async function getPlisioTomanPerUsdt() {
 export async function fetchWithTimeout(url, init, timeoutMs = 8000) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const agent = getAgentForUrl(url);
     try {
-        return await fetch(url, { ...init, signal: controller.signal });
+        return await fetch(url, {
+            ...init,
+            signal: controller.signal,
+            ...(agent ? { agent } : {})
+        });
     }
     finally {
         clearTimeout(timer);
@@ -1859,8 +1878,9 @@ async function promptProductWizardStep(chatId, payload) {
                 (mode === "edit" ? `\nمقدار فعلی: ${productKind === "account" ? "اکانت" : "کانفیگ V2Ray"}` : ""),
             reply_markup: {
                 inline_keyboard: [
-                    [cb("📶 کانفیگ V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
-                    [cb("👤 اکانت (VPN/وبسایت)", "admin_product_wizard_kind_account", "primary")],
+                    [cb("??? ?????? V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
+                    [cb("??? ????? (VPN/??????)", "admin_product_wizard_kind_account", "primary")],
+                    [cb("??? ???????? (Wireguard)", "admin_product_wizard_kind_wireguard", "primary")],
                     [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                 ]
             }
@@ -1924,9 +1944,29 @@ async function promptProductWizardStep(chatId, payload) {
                 inline_keyboard: [
                     [cb("فروش دستی", "admin_product_wizard_sell_manual", "primary")],
                     [cb("فروش از پنل", "admin_product_wizard_sell_panel", "primary")],
+                    [cb("فروش از پینگچی (Wireguard)", "admin_product_wizard_sell_pingchi", "primary")],
                     [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                 ]
             }
+        });
+        return null;
+    }
+    if (step === "pingchi_plan_id") {
+        const plansReq = await pingchiApi("plans.list");
+        if (!plansReq.ok) {
+            await tg("sendMessage", { chat_id: chatId, text: `خطا در دریافت پلن‌های پینگچی: ${plansReq.message}` });
+            return null;
+        }
+        const plans = plansReq.data?.rows || [];
+        const kb = [];
+        for (const plan of plans) {
+            kb.push([cb(`${plan.name} - ${plan.payable} تومان`, `admin_product_wizard_pingchi_plan_${plan.id}`, "primary")]);
+        }
+        kb.push([cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]);
+        await tg("sendMessage", {
+            chat_id: chatId,
+            text: "پلن پینگچی مربوطه را انتخاب کنید:",
+            reply_markup: { inline_keyboard: kb }
         });
         return null;
     }
@@ -2383,12 +2423,33 @@ async function showPanelDetails(chatId, panelId, notice) {
     });
 }
 async function mainMenuMarkup(userId) {
-    const [testEnabled, adminCheck] = await Promise.all([
+    const [testEnabled, adminCheck, kindsRow] = await Promise.all([
         getBoolSetting("test_config_enabled", false),
-        isAdmin(userId)
+        isAdmin(userId),
+        sql `
+      SELECT
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'v2ray') AS v2ray_count,
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count,
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'wireguard') AS wireguard_count
+      FROM products
+      WHERE is_active = TRUE
+    `
     ]);
+    const v2rayCount = Number(kindsRow[0].v2ray_count);
+    const accountCount = Number(kindsRow[0].account_count);
+    const wireguardCount = Number(kindsRow[0].wireguard_count);
+    let buyBtnText = "?? ???? ?????";
+    if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
+        buyBtnText = "?? ????";
+    }
+    else if (accountCount > 0 && v2rayCount === 0 && wireguardCount === 0) {
+        buyBtnText = "?? ???? ?????";
+    }
+    else if (wireguardCount > 0 && accountCount === 0 && v2rayCount === 0) {
+        buyBtnText = "?? ???? ????????";
+    }
     const rows = [
-        [cb("🛍 خرید کانفیگ", "buy_menu", "primary"), cb("📦 سفارش‌ها و کانفیگ‌ها", "my_configs", "primary")],
+        [cb(buyBtnText, "buy_menu", "primary"), cb("📦 سفارش‌ها و کانفیگ‌ها", "my_configs", "primary")],
         [cb("👛 کیف پول", "wallet_menu", "success"), cb("🎁 دعوت دوستان", "referral_menu", "success")],
         [cb("🆘 پشتیبانی", "support", "primary")]
     ];
@@ -2717,7 +2778,19 @@ async function getState(telegramId) {
     const rows = await sql `SELECT state, payload FROM user_states WHERE telegram_id = ${telegramId} LIMIT 1;`;
     if (!rows.length)
         return null;
-    return { state: String(rows[0].state), payload: rows[0].payload || {} };
+    let payload = rows[0].payload;
+    if (typeof payload === "string") {
+        try {
+            payload = JSON.parse(payload);
+        }
+        catch {
+            payload = {};
+        }
+    }
+    return {
+        state: String(rows[0].state),
+        payload: payload || {}
+    };
 }
 async function isBanned(userId) {
     const rows = await sql `SELECT telegram_id FROM banned_users WHERE telegram_id = ${userId} LIMIT 1;`;
@@ -2891,25 +2964,37 @@ export async function getMarzbanInbounds(baseUrl, token) {
  */
 export async function getPasarguardGroups(baseUrl, token) {
     try {
-        const res = await fetchWithTimeout(`${normalizeBaseUrl(baseUrl)}/api/groups`, {
+        const url = `${normalizeBaseUrl(baseUrl)}/api/groups`;
+        const res = await fetchWithTimeout(url, {
             method: "GET",
             headers: { Authorization: `Bearer ${token}`, Accept: "application/json" }
         });
         const raw = await res.text();
-        if (!res.ok)
+        // Log the raw response for debugging
+        if (!res.ok) {
+            logError("pasarguard_groups_api_error", new Error(`HTTP ${res.status}: ${raw.slice(0, 200)}`), { url, status: res.status });
             return [];
+        }
         const data = parseJsonObject(raw);
-        if (!data?.groups || !Array.isArray(data.groups))
+        if (!data) {
+            logError("pasarguard_groups_parse_error", new Error(`Failed to parse JSON: ${raw.slice(0, 200)}`), { url });
             return [];
-        return data.groups
-            .filter((g) => !g.is_disabled)
-            .map((g) => ({
+        }
+        if (!data.groups || !Array.isArray(data.groups)) {
+            logError("pasarguard_groups_missing_array", new Error(`Groups not array or missing. Keys: ${Object.keys(data).join(", ")}`), { url, data });
+            return [];
+        }
+        // Return ALL groups (including disabled ones) - let caller decide if filtering is needed
+        const groups = data.groups.map((g) => ({
             id: Number(g.id),
             name: String(g.name || ""),
             inbound_tags: Array.isArray(g.inbound_tags) ? g.inbound_tags.map(String) : []
         }));
+        logInfo("pasarguard_groups_fetched", { url, count: groups.length, groups: groups.map(g => ({ id: g.id, name: g.name })) });
+        return groups;
     }
-    catch {
+    catch (error) {
+        logError("pasarguard_groups_exception", error, { baseUrl });
         return [];
     }
 }
@@ -3898,9 +3983,18 @@ async function provisionMarzbanSale(panel, order, panelConfig, overridePanelType
             // Auto-fetch all non-disabled groups and assign all of them
             const fetchedGroups = await getPasarguardGroups(String(panel.base_url), login.token);
             pasarguardGroupIds = fetchedGroups.map((g) => g.id);
+            logInfo("pasarguard_provision_groups", {
+                panelId: panel.id,
+                panelUrl: panel.base_url,
+                fetchedCount: fetchedGroups.length,
+                groupIds: pasarguardGroupIds,
+                groups: fetchedGroups
+            });
         }
         if (pasarguardGroupIds.length === 0) {
-            throw new Error("PasarGuard: no groups found on panel. Create at least one group before provisioning users.");
+            throw new Error("PasarGuard: no groups found on panel. Create at least one group before provisioning users.\n" +
+                `Panel: ${panel.name} (${panel.base_url})\n` +
+                "Check logs for API response details.");
         }
     }
     else {
@@ -4888,10 +4982,44 @@ async function completeMigration(migrationId, decidedBy, targetConfigValue) {
     await sendConfigWithQr(Number(m.requested_for), `M-${migrationId}`, finalConfigValue, [[homeButton()]]);
     return { ok: true, reason: "done" };
 }
-async function showProducts(chatId, forBuy) {
+async function showProducts(chatId, forBuy, page = 0, kind = "") {
     const globalInfinite = await getBoolSetting("global_infinite_mode", false);
     const customEnabled = forBuy ? await getBoolSetting("custom_v2ray_enabled", false) : false;
     const customProductId = customEnabled ? Number((await getSetting("custom_v2ray_product_id")) || 0) : 0;
+    if (forBuy && !kind) {
+        const kindsRow = await sql `
+      SELECT
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'v2ray') AS v2ray_count,
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count,
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'wireguard') AS wireguard_count
+      FROM products
+      WHERE is_active = TRUE
+    `;
+        const v2rayCount = Number(kindsRow[0].v2ray_count);
+        const accountCount = Number(kindsRow[0].account_count);
+        const wireguardCount = Number(kindsRow[0].wireguard_count);
+        if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
+            const keyboard = [];
+            if (v2rayCount > 0)
+                keyboard.push([cb("?? ?????? (V2Ray)", "buy_cat_v2ray_0", "primary")]);
+            if (accountCount > 0)
+                keyboard.push([cb("?? ?????", "buy_cat_account_0", "primary")]);
+            if (wireguardCount > 0)
+                keyboard.push([cb("?? ???????? (Wireguard)", "buy_cat_wireguard_0", "primary")]);
+            keyboard.push([homeButton()]);
+            await tg("sendMessage", { chat_id: chatId, text: "????????? ???? ??? ?? ?????? ????:", reply_markup: { inline_keyboard: keyboard } });
+            return null;
+        }
+        else if (accountCount > 0 && v2rayCount === 0 && wireguardCount === 0) {
+            kind = "account";
+        }
+        else if (wireguardCount > 0 && accountCount === 0 && v2rayCount === 0) {
+            kind = "wireguard";
+        }
+        else {
+            kind = "v2ray";
+        }
+    }
     const rows = await sql `
     SELECT
       p.id,
@@ -4906,6 +5034,7 @@ async function showProducts(chatId, forBuy) {
       pnl.name AS panel_name,
       pnl.active AS panel_active,
       pnl.allow_new_sales AS panel_allow_new_sales,
+      COALESCE(p.panel_config->>'product_kind', 'v2ray') AS kind,
       (SELECT COUNT(*)::int FROM inventory i WHERE i.product_id = p.id AND i.status = 'available') AS stock,
       (
         SELECT COUNT(*)::int
@@ -4928,15 +5057,35 @@ async function showProducts(chatId, forBuy) {
         ? normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")))
         : 0;
     const minCustomPrice = customEnabled ? Math.max(1, pricePerGb + 30 * dayPrice) : 0;
-    const standardRows = customEnabled && customProductId > 0 ? rows.filter((p) => Number(p.id) !== customProductId) : rows;
-    const customRow = customEnabled && customProductId > 0 ? rows.find((p) => Number(p.id) === customProductId) : null;
-    const keyboard = standardRows.map((p) => [
+    const filteredRows = kind ? rows.filter((p) => p.kind === kind) : rows;
+    if (!filteredRows.length) {
+        await tg("sendMessage", { chat_id: chatId, text: "محصولی یافت نشد." });
+        return null;
+    }
+    const standardRows = customEnabled && customProductId > 0 ? filteredRows.filter((p) => Number(p.id) !== customProductId) : filteredRows;
+    const customRow = customEnabled && customProductId > 0 ? filteredRows.find((p) => Number(p.id) === customProductId) : null;
+    const pageSize = 15;
+    const totalPages = Math.ceil(standardRows.length / pageSize) || 1;
+    const safePage = Math.max(0, Math.min(page, totalPages - 1));
+    const start = safePage * pageSize;
+    const slice = standardRows.slice(start, start + pageSize);
+    const keyboard = slice.map((p) => [
         cb(`${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`, forBuy ? `buy_product_${p.id}` : `admin_inventory_product_${p.id}`, "primary")
     ]);
     if (forBuy && customRow) {
         keyboard.push([
             cb(`🎛 سفارشی | از ${formatPriceToman(minCustomPrice)} تومان`, `buy_custom_v2ray_${customProductId}`, "success")
         ]);
+    }
+    if (totalPages > 1) {
+        const navRow = [];
+        const pfx = forBuy ? (kind ? `buy_cat_${kind}_` : `buy_cat__`) : `admin_inv_`;
+        if (safePage > 0)
+            navRow.push({ text: "◀️ قبلی", callback_data: `${pfx}${safePage - 1}` });
+        navRow.push({ text: `صفحه ${safePage + 1} از ${totalPages}`, callback_data: "noop" });
+        if (safePage < totalPages - 1)
+            navRow.push({ text: "بعدی ▶️", callback_data: `${pfx}${safePage + 1}` });
+        keyboard.push(navRow);
     }
     keyboard.push([homeButton()]);
     await tg("sendMessage", {
@@ -4945,7 +5094,7 @@ async function showProducts(chatId, forBuy) {
         reply_markup: { inline_keyboard: keyboard }
     });
 }
-async function listProductsForAdmin(chatId, userId) {
+async function listProductsForAdmin(chatId, userId, page = 0) {
     const showArchived = await getBoolSetting(`admin_products_show_archived_${userId}`, false);
     const rows = await sql `
     SELECT
@@ -4965,7 +5114,12 @@ async function listProductsForAdmin(chatId, userId) {
     WHERE (${showArchived} = TRUE OR p.is_active = TRUE)
     ORDER BY p.id ASC;
   `;
-    const keyboard = rows.flatMap((p) => [
+    const pageSize = 8;
+    const totalPages = Math.ceil(rows.length / pageSize) || 1;
+    const safePage = Math.max(0, Math.min(page, totalPages - 1));
+    const start = safePage * pageSize;
+    const slice = rows.slice(start, start + pageSize);
+    const keyboard = slice.flatMap((p) => [
         [
             {
                 text: `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
@@ -4983,6 +5137,15 @@ async function listProductsForAdmin(chatId, userId) {
             cb("🗑 حذف", `admin_remove_product_${p.id}`, "danger")
         ]
     ]);
+    if (totalPages > 1) {
+        const navRow = [];
+        if (safePage > 0)
+            navRow.push({ text: "◀️ قبلی", callback_data: `admin_products_page_${safePage - 1}` });
+        navRow.push({ text: `صفحه ${safePage + 1} از ${totalPages}`, callback_data: "noop" });
+        if (safePage < totalPages - 1)
+            navRow.push({ text: "بعدی ▶️", callback_data: `admin_products_page_${safePage + 1}` });
+        keyboard.push(navRow);
+    }
     keyboard.push([cb(showArchived ? "📦 مخفی کردن آرشیو" : "📦 نمایش آرشیو", showArchived ? "admin_products_hide_archived" : "admin_products_show_archived", "primary")]);
     keyboard.push([cb("➕ افزودن محصول", "admin_add_product", "success")]);
     keyboard.push([backButton("admin_panel")]);
@@ -5019,12 +5182,17 @@ async function showWalletUsagePrompt(chatId, userId, productId, walletBalance) {
 async function showPaymentMethods(chatId, userId, productId, walletUsed = 0) {
     const userRows = await sql `SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
     const walletBalance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
+    const state = await getState(userId);
+    const bulkQty = state?.state === "bulk_purchase_pending"
+        ? Math.max(1, Math.round(Number(state.payload?.quantity || 1)))
+        : 1;
     const productRows = await sql `SELECT price_toman FROM products WHERE id = ${productId} LIMIT 1;`;
     if (!productRows.length) {
         await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
         return null;
     }
-    const productPrice = Number(productRows[0].price_toman || 0);
+    const unitPrice = Number(productRows[0].price_toman || 0);
+    const productPrice = unitPrice * bulkQty;
     const finalPayable = Math.max(0, productPrice - walletUsed);
     const rows = await sql `SELECT code, title FROM payment_methods WHERE active = TRUE ORDER BY code ASC;`;
     if (!rows.length && walletBalance < finalPayable) {
@@ -5165,8 +5333,10 @@ async function startCustomV2rayWizard(chatId, userId, productId) {
         await tg("sendMessage", { chat_id: chatId, text: "این محصول سفارشی نیست." });
         return null;
     }
-    const baseMb = 1024;
-    const baseDays = 30;
+    const minGb = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_gb")) || 1));
+    const minDays = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_days")) || 30));
+    const baseMb = minGb * 1024;
+    const baseDays = minDays;
     const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
     const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
     const statePayload = {
@@ -5189,10 +5359,14 @@ async function renderCustomV2rayWizard(chatId, userId, messageId) {
         return null;
     const p = state.payload || {};
     const productId = Number(p.productId);
-    const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
-    const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
+    if (!Number.isFinite(productId) || isNaN(productId)) {
+        // Fallback if somehow state is corrupt
+        return null;
+    }
+    const baseMb = Math.max(1, Math.round(Number(p.baseMb || 1024)));
+    const baseDays = Math.max(1, Math.round(Number(p.baseDays || 30)));
     const dataMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
-    const days = Math.max(30, Math.round(Number(p.days || baseDays)));
+    const days = Math.max(baseDays, Math.round(Number(p.days || baseDays)));
     const pricePerGb = Math.max(1, Math.round(Number(p.pricePerGb || 500000)));
     const dayPrice = Math.max(0, Math.round(Number(p.dayPrice || 0)));
     const quantity = Math.max(1, Math.round(Number(p.quantity || 1)));
@@ -5244,10 +5418,10 @@ async function computeCustomV2rayCheckout(userId) {
     if (!state || state.state !== "custom_v2ray_wizard")
         return null;
     const p = state.payload || {};
-    const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
-    const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
+    const baseMb = Math.max(1, Math.round(Number(p.baseMb || 1024)));
+    const baseDays = Math.max(1, Math.round(Number(p.baseDays || 30)));
     const dataMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
-    const days = Math.max(30, Math.round(Number(p.days || baseDays)));
+    const days = Math.max(baseDays, Math.round(Number(p.days || baseDays)));
     const pricePerGb = Math.max(1, Math.round(Number(p.pricePerGb || 500000)));
     const dayPrice = Math.max(0, Math.round(Number(p.dayPrice || 0)));
     const quantity = Math.max(1, Math.round(Number(p.quantity || 1)));
@@ -5773,8 +5947,8 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const quantity = Number(state.payload?.quantity || 1);
         const configName = state.payload?.configName;
         await clearState(userId);
-        if (quantity && quantity > 1 && configName) {
-            await createBulkOrders(chatId, userId, productId, paymentMethod, discountCode, walletUsed, quantity, configName);
+        if (quantity > 1) {
+            await createBulkOrders(chatId, userId, productId, paymentMethod, discountCode, walletUsed, quantity, String(configName || "config").trim() || "config");
         }
         else {
             await createOrder(chatId, userId, productId, paymentMethod, discountCode, walletUsed);
@@ -6141,17 +6315,20 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await tg("sendMessage", { chat_id: chatId, text: "نام محصول نمی‌تواند خالی باشد." });
                 return true;
             }
-            const payload = { ...state.payload, name, step: "product_kind" };
-            await setState(userId, "admin_product_wizard", payload);
-            await promptProductWizardStep(chatId, payload);
+            state.payload.name = name;
+            state.payload.step = "product_kind";
+            await setState(userId, "admin_product_wizard", state.payload);
+            await promptProductWizardStep(chatId, state.payload);
             return true;
         }
-        if (step === "size_mb") {
+        else if (step === "size_mb") {
             const productKind = parseProductKind(state.payload.productKind);
             if (productKind === "account") {
-                const payload = { ...state.payload, sizeMb: 0, priceMode: "manual", step: "price_mode" };
-                await setState(userId, "admin_product_wizard", payload);
-                await promptProductWizardStep(chatId, payload);
+                state.payload.sizeMb = 0;
+                state.payload.priceMode = "manual";
+                state.payload.step = "price_mode";
+                await setState(userId, "admin_product_wizard", state.payload);
+                await promptProductWizardStep(chatId, state.payload);
                 return true;
             }
             const sizeMbRaw = mode === "edit" && raw === "-" ? Number(state.payload.sizeMb || 0) : parseDataAmountToMb(raw);
@@ -6160,23 +6337,25 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await tg("sendMessage", { chat_id: chatId, text: "حجم معتبر بفرستید. مثال: 2048 یا 2GB یا 800MB" });
                 return true;
             }
-            const payload = { ...state.payload, sizeMb: Math.round(sizeMb), step: "price_mode" };
-            await setState(userId, "admin_product_wizard", payload);
-            await promptProductWizardStep(chatId, payload);
+            state.payload.sizeMb = Math.round(sizeMb);
+            state.payload.step = "price_mode";
+            await setState(userId, "admin_product_wizard", state.payload);
+            await promptProductWizardStep(chatId, state.payload);
             return true;
         }
-        if (step === "price_toman") {
+        else if (step === "price_toman") {
             const priceToman = mode === "edit" && raw === "-" ? Number(state.payload.priceToman || 0) : Number(raw);
             if (!Number.isFinite(priceToman) || priceToman <= 0) {
                 await tg("sendMessage", { chat_id: chatId, text: "قیمت معتبر بفرستید. مثال: 450000" });
                 return true;
             }
-            const payload = { ...state.payload, priceToman: Math.round(priceToman), step: "sell_mode" };
-            await setState(userId, "admin_product_wizard", payload);
-            await promptProductWizardStep(chatId, payload);
+            state.payload.priceToman = Math.round(priceToman);
+            state.payload.step = "sell_mode";
+            await setState(userId, "admin_product_wizard", state.payload);
+            await promptProductWizardStep(chatId, state.payload);
             return true;
         }
-        if (step === "panel_sell_limit") {
+        else if (step === "panel_sell_limit") {
             let panelSellLimit = state.payload.panelSellLimit === null || state.payload.panelSellLimit === undefined ? null : Number(state.payload.panelSellLimit);
             if (!(mode === "edit" && raw === "-")) {
                 if (!raw || raw === "0") {
@@ -6191,12 +6370,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                     panelSellLimit = Math.round(n);
                 }
             }
-            const payload = { ...state.payload, panelSellLimit, step: "panel_delivery_mode" };
-            await setState(userId, "admin_product_wizard", payload);
-            await promptProductWizardStep(chatId, payload);
+            state.payload.panelSellLimit = panelSellLimit;
+            state.payload.step = "panel_delivery_mode";
+            await setState(userId, "admin_product_wizard", state.payload);
+            await promptProductWizardStep(chatId, state.payload);
             return true;
         }
-        if (step === "inbound_id" || step === "protocol" || step === "expire_days" || step === "data_limit_mb") {
+        else if (step === "inbound_id" || step === "protocol" || step === "expire_days" || step === "data_limit_mb") {
             const payload = { ...state.payload };
             const result = await saveProductWizard(payload);
             await clearState(userId);
@@ -6218,30 +6398,33 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await tg("sendMessage", { chat_id: chatId, text: "عنوان کارت نمی‌تواند خالی باشد." });
                 return true;
             }
-            const payload = { ...state.payload, label, step: "card_number" };
-            await setState(userId, "admin_card_wizard", payload);
-            await promptCardWizardStep(chatId, payload);
+            state.payload.label = label;
+            state.payload.step = "card_number";
+            await setState(userId, "admin_card_wizard", state.payload);
+            await promptCardWizardStep(chatId, state.payload);
             return true;
         }
-        if (step === "card_number") {
+        else if (step === "card_number") {
             const cardNumber = mode === "edit" && raw === "-" ? String(state.payload.cardNumber || "") : raw;
             if (!cardNumber) {
                 await tg("sendMessage", { chat_id: chatId, text: "شماره کارت نمی‌تواند خالی باشد." });
                 return true;
             }
-            const payload = { ...state.payload, cardNumber, step: "holder_name" };
-            await setState(userId, "admin_card_wizard", payload);
-            await promptCardWizardStep(chatId, payload);
+            state.payload.cardNumber = cardNumber;
+            state.payload.step = "holder_name";
+            await setState(userId, "admin_card_wizard", state.payload);
+            await promptCardWizardStep(chatId, state.payload);
             return true;
         }
-        if (step === "holder_name") {
+        else if (step === "holder_name") {
             const holderName = raw === "-" ? "" : mode === "edit" && raw === "-" ? String(state.payload.holderName || "") : raw;
-            const payload = { ...state.payload, holderName, step: "bank_name" };
-            await setState(userId, "admin_card_wizard", payload);
-            await promptCardWizardStep(chatId, payload);
+            state.payload.holderName = holderName;
+            state.payload.step = "bank_name";
+            await setState(userId, "admin_card_wizard", state.payload);
+            await promptCardWizardStep(chatId, state.payload);
             return true;
         }
-        if (step === "bank_name") {
+        else if (step === "bank_name") {
             const bankName = raw === "-" ? "" : mode === "edit" && raw === "-" ? String(state.payload.bankName || "") : raw;
             if (mode === "add") {
                 await sql `
@@ -6383,6 +6566,39 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             logError("admin_message_user_failed", error, { fromAdminId: userId, targetId });
             await tg("sendMessage", { chat_id: chatId, text: "ارسال پیام انجام نشد. کاربر ممکن است ربات را بلاک کرده باشد." });
         }
+        return true;
+    }
+    if (state.state === "admin_broadcast_message_wizard") {
+        const messageText = text.trim();
+        if (!messageText) {
+            await tg("sendMessage", { chat_id: chatId, text: "متن پیام نمی‌تواند خالی باشد." });
+            return true;
+        }
+        // Get all users
+        const users = await sql `SELECT telegram_id FROM users WHERE telegram_id IS NOT NULL;`;
+        const totalUsers = users.length;
+        await tg("sendMessage", {
+            chat_id: chatId,
+            text: `در حال ارسال پیام به ${totalUsers} کاربر...`
+        });
+        let successCount = 0;
+        let failCount = 0;
+        for (const user of users) {
+            const targetId = Number(user.telegram_id);
+            try {
+                await tg("sendMessage", { chat_id: targetId, text: messageText });
+                successCount++;
+            }
+            catch (error) {
+                failCount++;
+                logError("broadcast_send_failed", error, { targetId });
+            }
+        }
+        await clearState(userId);
+        await tg("sendMessage", {
+            chat_id: chatId,
+            text: `✅ پیام همگانی ارسال شد\n\n✅ موفق: ${successCount}\n❌ ناموفق: ${failCount}\n📊 کل: ${totalUsers}`
+        });
         return true;
     }
     if (state.state === "admin_direct_migrate_wizard") {
@@ -6762,20 +6978,17 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const deduped = Array.from(new Set(lines));
         let insertedCount = 0;
         let skippedCount = 0;
-        for (const line of deduped) {
-            const exists = await sql `
-        SELECT id
-        FROM inventory
-        WHERE product_id = ${productId}
-          AND config_value = ${line}
-        LIMIT 1;
-      `;
-            if (exists.length) {
-                skippedCount += 1;
-                continue;
-            }
-            await sql `INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`;
-            insertedCount += 1;
+        const allExisting = await sql `SELECT config_value FROM inventory WHERE product_id = ${productId};`;
+        const existingSet = new Set(allExisting.map(r => r.config_value));
+        const toInsert = deduped.filter(line => !existingSet.has(line));
+        skippedCount = deduped.length - toInsert.length;
+        // Insert in chunks of 50 to avoid connection pooling limits on serverless
+        const chunkSize = 50;
+        for (let i = 0; i < toInsert.length; i += chunkSize) {
+            const chunk = toInsert.slice(i, i + chunkSize);
+            const insertPromises = chunk.map(line => sql `INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`);
+            await Promise.all(insertPromises);
+            insertedCount += chunk.length;
         }
         await clearState(userId);
         await tg("sendMessage", {
@@ -7119,6 +7332,17 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         await tg("sendMessage", { chat_id: chatId, text: `نرخ دستی (fallback) ذخیره شد ✅\n${rate} تومان` });
         return true;
     }
+    if (state.state === "admin_pingchi_set_key") {
+        const raw = text.trim();
+        if (raw.length < 10) {
+            await tg("sendMessage", { chat_id: chatId, text: "کلید نامعتبر است." });
+            return true;
+        }
+        await setSetting("pingchi_api_key", raw);
+        await clearState(userId);
+        await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی با موفقیت تنظیم شد ✅" });
+        return true;
+    }
     if (state.state === "admin_set_plisio_usd_rate") {
         const raw = text.trim();
         if (raw === "-") {
@@ -7177,11 +7401,55 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
         if (enabled && Number.isFinite(productId) && productId > 0) {
             const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
-            const minPrice = Math.max(1, pricePerGb + 30 * Math.max(0, n));
+            const minGb = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_gb")) || 1));
+            const minDays = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_days")) || 30));
+            const minPrice = Math.max(1, (pricePerGb * minGb) + (minDays * Math.max(0, n)));
             await sql `UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
         }
         await clearState(userId);
         await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nقیمت هر روز: ${formatPriceToman(n)} تومان` });
+        return true;
+    }
+    if (state.state === "admin_set_custom_v2ray_min_gb") {
+        const raw = text.trim();
+        const n = Math.round(Number(raw));
+        if (!Number.isFinite(n) || n < 1) {
+            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. حداقل ۱ گیگابایت" });
+            return true;
+        }
+        await setSetting("custom_v2ray_min_gb", String(n));
+        const enabled = await getBoolSetting("custom_v2ray_enabled", false);
+        const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+        if (enabled && Number.isFinite(productId) && productId > 0) {
+            const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
+            const minDays = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_days")) || 30));
+            const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+            const minPrice = Math.max(1, (pricePerGb * n) + (minDays * dayPrice));
+            await sql `UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
+        }
+        await clearState(userId);
+        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nحداقل حجم کانفیگ دلخواه: ${n}GB` });
+        return true;
+    }
+    if (state.state === "admin_set_custom_v2ray_min_days") {
+        const raw = text.trim();
+        const n = Math.round(Number(raw));
+        if (!Number.isFinite(n) || n < 1) {
+            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. حداقل ۱ روز" });
+            return true;
+        }
+        await setSetting("custom_v2ray_min_days", String(n));
+        const enabled = await getBoolSetting("custom_v2ray_enabled", false);
+        const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
+        if (enabled && Number.isFinite(productId) && productId > 0) {
+            const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
+            const minGb = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_gb")) || 1));
+            const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+            const minPrice = Math.max(1, (pricePerGb * minGb) + (n * dayPrice));
+            await sql `UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
+        }
+        await clearState(userId);
+        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nحداقل زمان کانفیگ دلخواه: ${n} روز` });
         return true;
     }
     if (state.state === "admin_set_purchase_bonus_min") {
@@ -8916,6 +9184,9 @@ async function withClaimedDiscount(discountCode, action) {
 }
 async function insertOrderRecord(input) {
     const panelConfigJson = JSON.stringify(input.panelConfigSnapshot || {});
+    const quantity = Math.max(1, Math.round(Number(input.quantity ??
+        sanitizePanelConfig(input.panelConfigSnapshot).bulk_quantity ??
+        1)));
     const walletUsed = Math.max(0, Math.round(Number(input.walletUsed || 0)));
     const discountAmount = Math.max(0, Math.round(Number(input.discountAmount || 0)));
     const finalPrice = Math.max(0, Math.round(Number(input.finalPrice || 0)));
@@ -8935,7 +9206,7 @@ async function insertOrderRecord(input) {
         INSERT INTO orders
         (
           purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
-          payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used, config_name,
+          payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used, config_name, quantity,
           tronado_token, tronado_payment_url,
           plisio_txn_id, plisio_invoice_url, plisio_status,
           crypto_wallet_id, crypto_currency, crypto_network, crypto_address, crypto_amount, crypto_expires_at,
@@ -8944,7 +9215,7 @@ async function insertOrderRecord(input) {
         SELECT
           ${input.purchaseId}, telegram_id, ${input.productId}, ${input.productNameSnapshot}, ${input.sellMode}, ${input.sourcePanelId}, ${input.panelDeliveryMode},
           ${panelConfigJson}::jsonb,
-          ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed}, ${input.configName ?? null},
+          ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed}, ${input.configName ?? null}, ${quantity},
           ${input.tronadoToken ?? null}, ${input.tronadoPaymentUrl ?? null},
           ${input.plisioTxnId ?? null}, ${input.plisioInvoiceUrl ?? null}, ${input.plisioStatus ?? null},
           ${input.cryptoWalletId ?? null}, ${input.cryptoCurrency ?? null}, ${input.cryptoNetwork ?? null}, ${input.cryptoAddress ?? null}, ${input.cryptoAmount ?? null}, ${input.cryptoExpiresAt ?? null},
@@ -8970,7 +9241,7 @@ async function insertOrderRecord(input) {
     INSERT INTO orders
     (
       purchase_id, telegram_id, product_id, product_name_snapshot, sell_mode, source_panel_id, panel_delivery_mode, panel_config_snapshot,
-      payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used, config_name,
+      payment_method, card_id, discount_code, discount_amount, final_price, tron_amount, status, wallet_used, config_name, quantity,
       tronado_token, tronado_payment_url,
       plisio_txn_id, plisio_invoice_url, plisio_status,
       crypto_wallet_id, crypto_currency, crypto_network, crypto_address, crypto_amount, crypto_expires_at,
@@ -8980,7 +9251,7 @@ async function insertOrderRecord(input) {
     (
       ${input.purchaseId}, ${input.telegramId}, ${input.productId}, ${input.productNameSnapshot}, ${input.sellMode}, ${input.sourcePanelId}, ${input.panelDeliveryMode},
       ${panelConfigJson}::jsonb,
-      ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed}, ${input.configName ?? null},
+      ${input.paymentMethod}, ${input.cardId ?? null}, ${input.discountCode}, ${discountAmount}, ${finalPrice}, ${tronAmount}, ${input.status}, ${walletUsed}, ${input.configName ?? null}, ${quantity},
       ${input.tronadoToken ?? null}, ${input.tronadoPaymentUrl ?? null},
       ${input.plisioTxnId ?? null}, ${input.plisioInvoiceUrl ?? null}, ${input.plisioStatus ?? null},
       ${input.cryptoWalletId ?? null}, ${input.cryptoCurrency ?? null}, ${input.cryptoNetwork ?? null}, ${input.cryptoAddress ?? null}, ${input.cryptoAmount ?? null}, ${input.cryptoExpiresAt ?? null},
@@ -9220,9 +9491,9 @@ async function sendConfigWithQr(chatId, purchaseId, configValue, keyboard, prefi
         `شناسه خرید: ${purchaseId}`,
         `کانفیگ:\n${configValue}`
     ].filter(Boolean);
-    await tg("sendPhoto", {
+    await tgSendConfigQr({
         chat_id: chatId,
-        photo: qrCodeUrl(configValue),
+        qrText: configValue,
         parse_mode: "HTML",
         caption: escapeHtml(truncateText(captionLines.join("\n\n"), 900)),
         reply_markup: { inline_keyboard: keyboard }
@@ -9257,9 +9528,9 @@ async function sendDeliveryPackage(chatId, purchaseId, fallbackConfigValue, deli
         });
         return null;
     }
-    await tg("sendPhoto", {
+    await tgSendConfigQr({
         chat_id: chatId,
-        photo: qrCodeUrl(qrText),
+        qrText,
         parse_mode: "HTML",
         caption: escapeHtml(truncateText(captionLines.join("\n\n"), 900)),
         reply_markup: { inline_keyboard: finalKeyboard }
@@ -9389,10 +9660,18 @@ async function applyTopupOnMarzban(panel, username, addBytes) {
         return { ok: false, message: "Marzban user has no finite data limit." };
     }
     const targetLimit = Math.max(0, Math.round(currentLimit + addBytes));
+    const currentExpire = Number(getData.expire || 0);
+    const thirtyDaysSeconds = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
     const payload = {
         ...getData,
         data_limit: targetLimit
     };
+    if (payload.status && !["active", "disabled", "on_hold"].includes(payload.status)) {
+        payload.status = "active";
+    }
+    if (currentExpire !== 0 && currentExpire < thirtyDaysSeconds) {
+        payload.expire = thirtyDaysSeconds;
+    }
     const putRes = await fetchWithTimeout(`${baseUrl}/api/user/${encodeURIComponent(username)}`, {
         method: "PUT",
         headers: {
@@ -9435,10 +9714,16 @@ async function applyTopupOnSanaei(panel, inboundId, email, addBytes) {
         return { ok: false, message: "Sanaei client has no finite totalGB." };
     }
     const targetTotalGb = Math.max(0, Math.round(currentTotalGb + addBytes));
+    const currentExpiryTime = Number(client.expiryTime || 0);
+    const thirtyDaysMs = Date.now() + (30 * 24 * 60 * 60 * 1000);
     const updatedClient = {
         ...client,
-        totalGB: targetTotalGb
+        totalGB: targetTotalGb,
+        enable: true
     };
+    if (currentExpiryTime !== 0 && currentExpiryTime < thirtyDaysMs) {
+        updatedClient.expiryTime = thirtyDaysMs;
+    }
     const candidateIds = Array.from(new Set([String(client.id || ""), String(client.password || ""), String(client.email || "")].filter(Boolean)));
     let lastFail = "update endpoint failed";
     for (const candidateId of candidateIds) {
@@ -9590,6 +9875,9 @@ async function applyAdminSetLimitOnlyOnMarzban(panel, username, targetBytes) {
     if (currentLimit === newLimit)
         return { ok: true, message: "Marzban data limit unchanged." };
     const payload = { ...getData, data_limit: newLimit };
+    if (payload.status && !["active", "disabled", "on_hold"].includes(payload.status)) {
+        payload.status = "active";
+    }
     const putRes = await fetchWithTimeout(`${baseUrl}/api/user/${encodeURIComponent(username)}`, {
         method: "PUT",
         headers: {
@@ -9608,7 +9896,8 @@ async function applyAdminSetLimitOnlyOnMarzban(panel, username, targetBytes) {
 async function applyAdminSetLimitOnlyOnSanaei(panel, inboundId, email, targetBytes) {
     const res = await updateSanaeiClient(panel, inboundId, email, (client) => ({
         ...client,
-        totalGB: Math.max(0, Math.round(targetBytes))
+        totalGB: Math.max(0, Math.round(targetBytes)),
+        enable: true
     }));
     if (!res.ok)
         return res;
@@ -9647,6 +9936,9 @@ export async function applyAdminSetDataLimitOnMarzban(panel, username, targetByt
         return { ok: true, message: "Marzban data limit and usage reset." };
     }
     const payload = { ...getData, data_limit: newLimit };
+    if (payload.status && !["active", "disabled", "on_hold"].includes(payload.status)) {
+        payload.status = "active";
+    }
     const putRes = await fetchWithTimeout(`${baseUrl}/api/user/${encodeURIComponent(username)}`, {
         method: "PUT",
         headers: {
@@ -9777,7 +10069,8 @@ export async function applyAdminSetDataLimitOnSanaei(panel, inboundId, email, ta
         ...client,
         totalGB: Math.max(0, Math.round(targetBytes)),
         up: 0,
-        down: 0
+        down: 0,
+        enable: true
     }));
     if (!limitRes.ok)
         return limitRes;
@@ -9974,15 +10267,21 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         return null;
     }
     const allowNoStock = sanitizePanelConfig(overrides?.panelConfigPatch).force_awaiting_config === true;
-    if (sellMode !== "panel" && !globalInfinite && !product.is_infinite && Number(product.stock) <= 0 && !allowNoStock) {
-        await tg("sendMessage", { chat_id: chatId, text: "موجودی این محصول تمام شده است." });
-        return null;
-    }
     const surcharge = await getPurchaseSurcharge();
     const basePriceToman = Math.max(1, Math.round(Number(overrides?.basePriceToman ?? product.price_toman)) + surcharge);
     const configName = overrides?.configName ? String(overrides.configName).trim() : null;
     const basePanelConfig = sanitizePanelConfig(product.panel_config);
     const panelConfigSnapshot = overrides?.panelConfigPatch ? { ...basePanelConfig, ...sanitizePanelConfig(overrides.panelConfigPatch) } : basePanelConfig;
+    const orderQuantity = getOrderBulkQuantity({ panel_config_snapshot: panelConfigSnapshot }, panelConfigSnapshot);
+    if (sellMode !== "panel" && !globalInfinite && !product.is_infinite && Number(product.stock) < orderQuantity && !allowNoStock) {
+        await tg("sendMessage", {
+            chat_id: chatId,
+            text: Number(product.stock) <= 0
+                ? "موجودی این محصول تمام شده است."
+                : `موجودی کافی نیست. موجودی: ${Number(product.stock)} عدد، درخواست شما: ${orderQuantity} عدد.`
+        });
+        return null;
+    }
     const productNameSnapshot = `${String(product.name || "")}${overrides?.productNameSuffix ? ` ${overrides.productNameSuffix}` : ""}`.trim();
     const { discountAmount, discountCode } = await resolveDiscount(discountInput, basePriceToman);
     let walletUsed = 0;
@@ -10137,6 +10436,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                         ] });
                 }
             }
+            return purchaseId;
         }
         catch (error) {
             const code = getOrderInsertErrorCode(error);
@@ -10247,6 +10547,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                     inline_keyboard: [[homeButton()]]
                 }
             });
+            return purchaseId;
         }
         catch (error) {
             const code = getOrderInsertErrorCode(error);
@@ -10408,7 +10709,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 ]
             }
         });
-        return null;
+        return purchaseId;
     }
     if (false && paymentMethod === "crypto") {
         if (!cryptoWalletId) {
@@ -10566,6 +10867,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                     ]
                 }
             });
+            return purchaseId;
         }
         catch (error) {
             const code = getOrderInsertErrorCode(error);
@@ -10582,9 +10884,8 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
             });
             await tg("sendMessage", { chat_id: chatId, text: "ساخت لینک پرداخت با خطا مواجه شد. لطفاً کمی بعد دوباره تلاش کنید یا به پشتیبانی پیام دهید." });
+            return null;
         }
-        return purchaseId;
-        return null;
     }
     if (paymentMethod === "tetrapay") {
         const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
@@ -11310,6 +11611,7 @@ async function finalizeOrder(orderId, decidedBy) {
       o.final_price,
       o.payment_method,
       o.config_name,
+      o.quantity,
       COALESCE(o.product_name_snapshot, p.name) AS product_name,
       p.size_mb,
       p.is_infinite
@@ -11336,7 +11638,7 @@ async function finalizeOrder(orderId, decidedBy) {
         const panel = panelRows[0];
         const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
         // Check if this is a bulk order
-        const bulkQuantity = Math.max(1, Math.round(Number(panelConfig.bulk_quantity || 1)));
+        const bulkQuantity = getOrderBulkQuantity(order, panelConfig);
         const bulkConfigNames = Array.isArray(panelConfig.bulk_config_names) ? panelConfig.bulk_config_names : [];
         // For bulk orders, create multiple configs
         const allProvisions = [];
@@ -11455,6 +11757,15 @@ async function finalizeOrder(orderId, decidedBy) {
                     }
                 }
             }
+            else if (parseSellMode(String(order.sell_mode || "")) === "pingchi") {
+                for (const provision of allProvisions) {
+                    const delivered = parseDeliveryPayload(provision.deliveryPayload);
+                    const key = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || "").trim();
+                    if (key) {
+                        pingchiApi("services.delete", { username: key }).catch(() => { });
+                    }
+                }
+            }
             await notifyAdmins(`⚠️ سفارش ${order.purchase_id}: پروویژن تکمیل شد اما سفارش قبلاً لغو/استرداد شده بود.\n` +
                 `کانفیگ‌های ساخته‌شده به‌صورت خودکار پاک‌سازی شدند.\nکاربر: ${order.telegram_id}`).catch(() => { });
             return { ok: false, reason: "order_cancelled_during_provision" };
@@ -11517,9 +11828,131 @@ async function finalizeOrder(orderId, decidedBy) {
         }), { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
         return { ok: true, reason: "fulfilled" };
     }
+    else if (parseSellMode(String(order.sell_mode || "")) === "pingchi") {
+        const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
+        const bulkQuantity = getOrderBulkQuantity(order, panelConfig);
+        const allProvisions = [];
+        for (let i = 0; i < bulkQuantity; i++) {
+            let provision;
+            try {
+                provision = await provisionPingchiSale({ purchase_id: String(order.purchase_id), product_name_snapshot: String(order.product_name) }, panelConfig);
+                allProvisions.push(provision);
+            }
+            catch (err) {
+                logError("pingchi_provision_failed", err, { orderId: order.id, configIndex: i });
+                await sql `
+          UPDATE orders
+          SET status = 'awaiting_config', paid_at = NOW(), admin_decision_by = ${decidedBy}
+          WHERE id = ${order.id} AND status = 'fulfilling';
+        `;
+                await tg("sendMessage", {
+                    chat_id: Number(order.telegram_id),
+                    text: `✅ پرداخت شما تایید شد.\nاما مشکلی در ارتباط با سرور رخ داد. به ادمین پیام دادیم تا سریعا بررسی کند.`
+                }).catch(() => { });
+                const adminIds = await getAdminIds();
+                if (adminIds.length > 0) {
+                    await tg("sendMessage", {
+                        chat_id: adminIds[0],
+                        text: `❌ خطای پینگچی (سفارش ${order.purchase_id})\n${err.message || ""}`
+                    }).catch(() => { });
+                }
+                return { ok: false, reason: "provision_failed" };
+            }
+        }
+        // Save to inventory
+        const allConfigLinks = [];
+        const allSubscriptionUrls = [];
+        let firstInventoryId = null;
+        for (const provision of allProvisions) {
+            const delivered = parseDeliveryPayload(provision.deliveryPayload);
+            const panelUserKey = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || delivered.metadata?.uuid || "").trim() || null;
+            const inserted = await sql `
+        INSERT INTO inventory (
+          product_id, panel_user_key, config_value, delivery_payload, status, owner_telegram_id, sold_order_id, panel_id, sold_at
+        )
+        VALUES (
+          ${order.product_id},
+          ${panelUserKey},
+          ${provision.configValue},
+          ${serializeDeliveryPayload(provision.deliveryPayload)}::jsonb,
+          'sold',
+          ${order.telegram_id},
+          ${order.id},
+          ${order.source_panel_id},
+          NOW()
+        )
+        RETURNING id;
+      `;
+            if (!firstInventoryId)
+                firstInventoryId = Number(inserted[0].id);
+            await recordInventoryForensicEvent(Number(inserted[0].id), "sale_delivered", {
+                purchaseId: String(order.purchase_id),
+                by: decidedBy
+            });
+            if (provision.deliveryPayload.configLinks) {
+                allConfigLinks.push(...provision.deliveryPayload.configLinks);
+            }
+            if (provision.deliveryPayload.subscriptionUrl) {
+                allSubscriptionUrls.push(provision.deliveryPayload.subscriptionUrl);
+            }
+        }
+        const updateResult = await sql `
+      UPDATE orders
+      SET status = 'paid', paid_at = NOW(), inventory_id = ${firstInventoryId}, admin_decision_by = ${decidedBy}
+      WHERE id = ${order.id} AND status = 'fulfilling'
+      RETURNING id, purchase_id;
+    `;
+        if (!updateResult.length) {
+            // Order cancelled during provision
+            for (const p of allProvisions) {
+                const delivered = parseDeliveryPayload(p.deliveryPayload);
+                const key = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || "").trim();
+                if (key) {
+                    pingchiApi("services.delete", { username: key }).catch(() => { });
+                }
+            }
+            await notifyAdmins(`⚠️ سفارش ${order.purchase_id} لغو شد و پینگچی پاک‌سازی شد.`).catch(() => { });
+            return { ok: false, reason: "order_cancelled_during_provision" };
+        }
+        await tg("sendMessage", {
+            chat_id: Number(order.telegram_id),
+            text: `پرداخت شما تایید شد ✅${bulkQuantity > 1 ? `\n${bulkQuantity} کانفیگ ساخته شد.` : ""}`
+        }).catch(() => { });
+        for (let i = 0; i < allProvisions.length; i++) {
+            const prov = allProvisions[i];
+            const isLast = i === allProvisions.length - 1;
+            const provLinks = prov.deliveryPayload.configLinks || [];
+            const provSub = prov.deliveryPayload.subscriptionUrl || null;
+            const singleDelivery = {
+                configLinks: provLinks,
+                subscriptionUrl: provSub,
+                primaryQr: buildQrText(provLinks[0] || null, provLinks, provSub),
+                primaryText: provLinks[0] || provSub || "",
+                metadata: prov.deliveryPayload.metadata
+            };
+            await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), String(provLinks[0] || provSub || ""), singleDelivery, isLast ? [[{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }], [homeButton()]] : []).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
+        }
+        const profile = await getTelegramProfileText(Number(order.telegram_id));
+        const adminDelivery = {
+            configLinks: allConfigLinks,
+            subscriptionUrl: allSubscriptionUrls[0] || null,
+            primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
+            metadata: { bulkCount: bulkQuantity }
+        };
+        await notifyAdmins(buildAdminDeliverySummary({
+            purchaseId: String(order.purchase_id),
+            userId: Number(order.telegram_id),
+            telegramUsername: profile.username,
+            telegramFullName: profile.fullName,
+            productName: String(order.product_name || "-") + (bulkQuantity > 1 ? ` (x${bulkQuantity})` : ""),
+            deliveryPayload: adminDelivery,
+            walletUsed: Number(order.wallet_used || 0)
+        }), { inline_keyboard: [[{ text: "🔎 بررسی", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
+        return { ok: true, reason: "fulfilled" };
+    }
     const globalInfinite = await getBoolSetting("global_infinite_mode", false);
     const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
-    const bulkQty = Math.max(1, Math.round(Number(panelConfig.bulk_quantity || 1)));
+    const bulkQty = getOrderBulkQuantity(order, panelConfig);
     // Allocate N inventory items for bulk orders
     const allocatedItems = [];
     for (let i = 0; i < bulkQty; i++) {
@@ -11536,7 +11969,17 @@ async function finalizeOrder(orderId, decidedBy) {
       RETURNING id, config_value;
     `;
         if (allocated.length) {
-            allocatedItems.push({ id: Number(allocated[0].id), config_value: String(allocated[0].config_value) });
+            const configValue = String(allocated[0].config_value);
+            const itemPayload = serializeDeliveryPayload({
+                configLinks: [configValue],
+                primaryText: configValue
+            });
+            await sql `
+        UPDATE inventory
+        SET delivery_payload = ${itemPayload}::jsonb
+        WHERE id = ${Number(allocated[0].id)};
+      `;
+            allocatedItems.push({ id: Number(allocated[0].id), config_value: configValue });
         }
         else {
             break;
@@ -11560,7 +12003,7 @@ async function finalizeOrder(orderId, decidedBy) {
                 extraLines.push(`حجم: ${Math.max(1, Math.round(Number(panelConfig.data_limit_mb) / 1024))} گیگابایت`);
             if (typeof panelConfig.expire_days === "number")
                 extraLines.push(`زمان: ${Math.max(1, Math.round(Number(panelConfig.expire_days)))} روز`);
-            const bulkQtyNotif = Math.max(1, Math.round(Number(panelConfig.bulk_quantity || 1)));
+            const bulkQtyNotif = getOrderBulkQuantity(order, panelConfig);
             if (bulkQtyNotif > 1)
                 extraLines.push(`تعداد کانفیگ: ${bulkQtyNotif} عدد`);
             const bulkNamesNotif = Array.isArray(panelConfig.bulk_config_names) ? panelConfig.bulk_config_names : [];
@@ -11597,12 +12040,27 @@ async function finalizeOrder(orderId, decidedBy) {
     const allConfigLinks = allocatedItems.map((item) => item.config_value);
     const inventoryDelivery = {
         configLinks: allConfigLinks,
-        primaryText: allConfigLinks[0] || ""
+        primaryText: allConfigLinks[0] || "",
+        metadata: { bulkCount: allocatedItems.length }
     };
-    await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), allConfigLinks[0] || "", inventoryDelivery, [
-        [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
-        [homeButton()]
-    ]).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
+    if (allConfigLinks.length > 1) {
+        for (let i = 0; i < allConfigLinks.length; i++) {
+            const configValue = allConfigLinks[i];
+            const isLast = i === allConfigLinks.length - 1;
+            await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), configValue, { configLinks: [configValue], primaryText: configValue }, isLast
+                ? [
+                    [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
+                    [homeButton()]
+                ]
+                : []).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
+        }
+    }
+    else {
+        await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), allConfigLinks[0] || "", inventoryDelivery, [
+            [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
+            [homeButton()]
+        ]).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
+    }
     await notifyAdmins(buildAdminDeliverySummary({
         purchaseId: String(order.purchase_id),
         userId: Number(order.telegram_id),
@@ -11907,8 +12365,15 @@ async function handleCallback(update) {
         await createCryptoWalletTopup(chatId, userId, amount, w);
         return null;
     }
-    if (data === "buy_menu") {
-        await showProducts(chatId, true);
+    if (data === "buy_menu" || data.startsWith("buy_cat_")) {
+        let page = 0;
+        let kind = "";
+        if (data.startsWith("buy_cat_")) {
+            const parts = data.replace("buy_cat_", "").split("_");
+            kind = parts[0];
+            page = Math.max(0, parseInt(parts[1], 10) || 0);
+        }
+        await showProducts(chatId, true, page, kind);
         return null;
     }
     if (data.startsWith("buy_custom_v2ray_")) {
@@ -11980,8 +12445,8 @@ async function handleCallback(update) {
             if (!state || state.state !== "custom_v2ray_wizard")
                 return null;
             const p = state.payload || {};
-            const baseMb = Math.max(1, Math.round(Number(p.baseMb || 0)));
-            const baseDays = Math.max(30, Math.round(Number(p.baseDays || 30)));
+            const baseMb = Math.max(1, Math.round(Number(p.baseMb || 1024)));
+            const baseDays = Math.max(1, Math.round(Number(p.baseDays || 30)));
             const stepMb = 1024;
             const stepDays = 7;
             const curMb = Math.max(baseMb, Math.round(Number(p.dataMb || baseMb)));
@@ -12398,7 +12863,7 @@ async function handleCallback(update) {
         // Fetch ALL inventory items for this purchase so bulk orders show every config + sub URL
         // Include 'migrated' so migrated bulk configs still show up with a note
         const rows = await sql `
-      SELECT i.id, i.delivery_payload, i.status, i.migrated_to_inventory_id, p.name
+      SELECT i.id, i.config_value, i.delivery_payload, i.status, i.migrated_to_inventory_id, p.name
       FROM inventory i
       INNER JOIN products p ON p.id = i.product_id
       LEFT JOIN orders o ON o.id = i.sold_order_id
@@ -12416,7 +12881,8 @@ async function handleCallback(update) {
         for (const inv of rows) {
             const pd = parseDeliveryPayload(inv.delivery_payload);
             const subUrl = pd.subscriptionUrl || null;
-            const links = pd.configLinks || [];
+            const configValue = String(inv.config_value || "").trim();
+            const links = (pd.configLinks?.length ? pd.configLinks : configValue ? [configValue] : []);
             if (links.length > 0) {
                 // Each config link becomes its own entry (paired with the sub URL if any)
                 for (const link of links) {
@@ -13418,7 +13884,14 @@ async function handleCallback(update) {
             return null;
         }
         const panelType = String(rows[0].panel_type || "");
-        const result = isMarzbanLike(panelType) ? await deleteMarzbanUser(rows[0], key) : await revokeSanaeiClient(rows[0], key);
+        const deliveryPayload = parseDeliveryPayload(rows[0].delivery_payload);
+        let result = { ok: false, message: "unknown panel type" };
+        if (deliveryPayload.type === "pingchi") {
+            result = await pingchiApi("services.delete", { username: key });
+        }
+        else {
+            result = isMarzbanLike(panelType) ? await deleteMarzbanUser(rows[0], key) : await revokeSanaeiClient(rows[0], key);
+        }
         if (!result.ok) {
             await tg("sendMessage", { chat_id: chatId, text: `حذف در پنل ناموفق: ${result.message}` });
             return null;
@@ -13853,8 +14326,12 @@ async function handleCallback(update) {
         await tg("sendMessage", { chat_id: chatId, text: "درخواست رد شد ✅" });
         return null;
     }
-    if (data === "admin_products") {
-        await listProductsForAdmin(chatId, userId);
+    if (data === "admin_products" || data.startsWith("admin_products_page_")) {
+        let page = 0;
+        if (data.startsWith("admin_products_page_")) {
+            page = Math.max(0, parseInt(data.replace("admin_products_page_", ""), 10) || 0);
+        }
+        await listProductsForAdmin(chatId, userId, page);
         return null;
     }
     if (data === "admin_products_show_archived") {
@@ -13915,6 +14392,25 @@ async function handleCallback(update) {
         await promptProductWizardStep(chatId, payload);
         return null;
     }
+    if (data.startsWith("admin_product_wizard_pingchi_plan_")) {
+        const planId = Number(data.replace("admin_product_wizard_pingchi_plan_", ""));
+        const state = await getState(userId);
+        if (!state || state.state !== "admin_product_wizard")
+            return null;
+        const payload = { ...state.payload, panelConfig: { pingchi_plan_id: planId }, step: "is_infinite" };
+        await setState(userId, "admin_product_wizard", payload);
+        await promptProductWizardStep(chatId, payload);
+        return null;
+    }
+    if (data === "admin_product_wizard_sell_pingchi") {
+        const state = await getState(userId);
+        if (!state || state.state !== "admin_product_wizard")
+            return null;
+        const payload = { ...state.payload, sellMode: "pingchi", step: "pingchi_plan_id" };
+        await setState(userId, "admin_product_wizard", payload);
+        await promptProductWizardStep(chatId, payload);
+        return null;
+    }
     if (data === "admin_product_wizard_sell_panel") {
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_wizard")
@@ -13928,11 +14424,11 @@ async function handleCallback(update) {
         await promptProductWizardStep(chatId, payload);
         return null;
     }
-    if (data === "admin_product_wizard_kind_v2ray" || data === "admin_product_wizard_kind_account") {
+    if (data === "admin_product_wizard_kind_v2ray" || data === "admin_product_wizard_kind_account" || data === "admin_product_wizard_kind_wireguard") {
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_wizard")
             return null;
-        const productKind = data === "admin_product_wizard_kind_account" ? "account" : "v2ray";
+        const productKind = data === "admin_product_wizard_kind_account" ? "account" : (data === "admin_product_wizard_kind_wireguard" ? "wireguard" : "v2ray");
         const payload = productKind === "account"
             ? { ...state.payload, productKind, sizeMb: 0, priceMode: "manual", step: "price_mode" }
             : { ...state.payload, productKind, step: "size_mb" };
@@ -14174,8 +14670,12 @@ async function handleCallback(update) {
         await tg("sendMessage", { chat_id: chatId, text: "وضعیت محصول تغییر کرد ✅" });
         return null;
     }
-    if (data === "admin_inventory") {
-        await showProducts(chatId, false);
+    if (data === "admin_inventory" || data.startsWith("admin_inv_")) {
+        let page = 0;
+        if (data.startsWith("admin_inv_")) {
+            page = Math.max(0, parseInt(data.replace("admin_inv_", ""), 10) || 0);
+        }
+        await showProducts(chatId, false, page, "");
         return null;
     }
     if (data.startsWith("admin_inventory_product_")) {
@@ -14893,6 +15393,7 @@ async function handleCallback(update) {
                 inline_keyboard: [
                     [cb("👑 افزودن ادمین", "admin_tool_add_admin", "success"), cb("🚫 حذف ادمین", "admin_tool_remove_admin", "danger")],
                     [cb("⛔ بن با یوزرنیم", "admin_tool_ban_username", "danger")],
+                    [cb("📢 پیام همگانی", "admin_broadcast_message", "primary")],
                     [cb("✉️ ارسال پیام به کاربر", "admin_tool_message_user", "primary")],
                     [cb("🔎 جستجوی شماره سفارش", "admin_tool_lookup_purchase", "primary")],
                     [cb("🧾 جستجوی کانفیگ/UUID", "admin_tool_lookup_config", "primary")],
@@ -14968,6 +15469,20 @@ async function handleCallback(update) {
     }
     if (data === "admin_tool_message_user") {
         await startMessageUserWizard(chatId, userId);
+        return null;
+    }
+    if (data === "admin_broadcast_message") {
+        await setState(userId, "admin_broadcast_message_wizard", { step: "compose" });
+        await tg("sendMessage", {
+            chat_id: chatId,
+            text: "پیام همگانی\n\nمتن پیامی که می‌خواهید به همه کاربران ارسال شود را بنویسید:",
+            reply_markup: { inline_keyboard: [[cancelButton("admin_broadcast_cancel")]] }
+        });
+        return null;
+    }
+    if (data === "admin_broadcast_cancel") {
+        await clearState(userId);
+        await tg("sendMessage", { chat_id: chatId, text: "ارسال پیام همگانی لغو شد." });
         return null;
     }
     if (data === "admin_message_user_wizard_cancel") {
@@ -15217,6 +15732,7 @@ async function handleCallback(update) {
                 inline_keyboard: [
                     [cb("📤 گرفتن بکاپ الان", "admin_trigger_backup", "success")],
                     [cb("📥 بازیابی از فایل بکاپ", "admin_trigger_restore", "danger")],
+                    [cb("تنظیمات پینگچی (Pingchi)", "admin_pingchi_settings", "primary")],
                     [backButton("admin_settings")]
                 ]
             }
@@ -15264,6 +15780,31 @@ async function handleCallback(update) {
     if (data === "admin_cancel_restore") {
         await clearState(userId);
         await tg("sendMessage", { chat_id: chatId, text: "بازیابی لغو شد." });
+        return null;
+    }
+    if (data === "admin_pingchi_settings") {
+        const key = await getPingchiKey();
+        await tg("sendMessage", {
+            chat_id: chatId,
+            text: `تنظیمات پینگچی (Pingchi)\n\nکلید وب‌سرویس: ${key ? "تنظیم شده ✅" : "تنظیم نشده ❌"}\n\nاز گزینه‌های زیر استفاده کنید:`,
+            reply_markup: {
+                inline_keyboard: [
+                    [cb("🔑 تنظیم کلید دسترسی (API Key)", "admin_pingchi_set_key", "primary")],
+                    [cb("🗑 حذف کلید دسترسی", "admin_pingchi_clear_key", "danger")],
+                    [backButton("admin_settings")]
+                ]
+            }
+        });
+        return null;
+    }
+    if (data === "admin_pingchi_clear_key") {
+        await sql `DELETE FROM settings WHERE key = 'pingchi_api_key'`;
+        await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی حذف شد." });
+        return null;
+    }
+    if (data === "admin_pingchi_set_key") {
+        await setState(userId, "admin_pingchi_set_key");
+        await tg("sendMessage", { chat_id: chatId, text: "لطفاً کلید دسترسی (API Key) پینگچی را بفرستید:" });
         return null;
     }
     if (data === "admin_referral_settings") {
@@ -15362,8 +15903,10 @@ async function handleCallback(update) {
     if (data === "admin_custom_v2ray_menu") {
         const enabled = await getBoolSetting("custom_v2ray_enabled", false);
         const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
+        const minGb = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_gb")) || 1));
+        const minDays = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_days")) || 30));
         const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
-        const minPrice = Math.max(1, pricePerGb + 30 * dayPrice);
+        const minPrice = Math.max(1, (pricePerGb * minGb) + (minDays * dayPrice));
         let productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
         if (enabled && (!Number.isFinite(productId) || productId <= 0)) {
             const ensured = await ensureCustomV2rayProduct();
@@ -15377,6 +15920,10 @@ async function handleCallback(update) {
         const keyboard = [];
         keyboard.push([cb(enabled ? "🚫 خاموش‌کردن سفارشی" : "✅ روشن‌کردن سفارشی", "admin_custom_v2ray_toggle", enabled ? "danger" : "success")]);
         keyboard.push([cb("📅 قیمت هر روز (سفارشی)", "admin_set_custom_v2ray_extra_day", "primary")]);
+        keyboard.push([
+            cb("حداقل حجم", "admin_set_custom_v2ray_min_gb", "primary"),
+            cb("حداقل زمان", "admin_set_custom_v2ray_min_days", "primary")
+        ]);
         if (productId) {
             keyboard.push([cb("✏️ ویرایش محصول سفارشی", `admin_edit_product_${productId}`, "primary")]);
             keyboard.push([cb(sellMode === "panel" ? "⚙️ حالت فروش: پنل" : "⚙️ حالت فروش: دستی", `admin_toggle_product_sell_mode_${productId}`, "primary")]);
@@ -15388,7 +15935,7 @@ async function handleCallback(update) {
             text: `🎛 محصول سفارشی\n\n` +
                 `وضعیت: ${enabled ? "روشن ✅" : "خاموش 🚫"}\n` +
                 `محصول: ${productId ? `${productName} (#${productId})${!isActive ? " (مخفی)" : ""}` : "ساخته نشده"}\n` +
-                `شروع خرید: 1GB / 30 روز\n` +
+                `شروع خرید: حداقل ${minGb}GB / حداقل ${minDays} روز\n` +
                 `قیمت هر 1GB: ${formatPriceToman(pricePerGb)} تومان\n` +
                 `قیمت هر روز: ${formatPriceToman(dayPrice)} تومان\n` +
                 `حداقل مبلغ شروع: ${formatPriceToman(minPrice)} تومان\n\n` +
@@ -15731,6 +16278,16 @@ async function handleCallback(update) {
     if (data === "admin_set_custom_v2ray_extra_day") {
         await setState(userId, "admin_set_custom_v2ray_extra_day");
         await tg("sendMessage", { chat_id: chatId, text: "قیمت هر روز برای محصول سفارشی را به تومان ارسال کنید. مثال: 10000\nبرای خاموش: 0" });
+        return null;
+    }
+    if (data === "admin_set_custom_v2ray_min_gb") {
+        await setState(userId, "admin_set_custom_v2ray_min_gb");
+        await tg("sendMessage", { chat_id: chatId, text: "حداقل حجم برای خرید کانفیگ دلخواه را وارد کنید (به گیگابایت). مثال: 1" });
+        return null;
+    }
+    if (data === "admin_set_custom_v2ray_min_days") {
+        await setState(userId, "admin_set_custom_v2ray_min_days");
+        await tg("sendMessage", { chat_id: chatId, text: "حداقل زمان برای خرید کانفیگ دلخواه را وارد کنید (به روز). مثال: 30" });
         return null;
     }
     if (data === "admin_toggle_global_infinite") {
@@ -16095,9 +16652,16 @@ async function handleCallback(update) {
                 const key = String(inv.panel_user_key || "").trim();
                 if (key && inv.panel_type) {
                     try {
-                        const result = isMarzbanLike(String(inv.panel_type))
-                            ? await deleteMarzbanUser(inv, key)
-                            : await revokeSanaeiClient(inv, key);
+                        let result = { ok: false, message: "unknown panel type" };
+                        const dp = parseDeliveryPayload(inv.delivery_payload);
+                        if (dp.type === "pingchi") {
+                            result = await pingchiApi("services.delete", { username: key });
+                        }
+                        else {
+                            result = isMarzbanLike(String(inv.panel_type))
+                                ? await deleteMarzbanUser(inv, key)
+                                : await revokeSanaeiClient(inv, key);
+                        }
                         revokeResults.push(`${String(inv.panel_type)} ${key}: ${result.ok ? "✅" : "⚠️ " + String(result.message || "")}`);
                     }
                     catch (e) {
@@ -16419,4 +16983,56 @@ export async function handleTelegramUpdate(update) {
     if (update.message) {
         await handleMessage(update.message);
     }
+}
+// Pingchi Integration
+export async function getPingchiKey() {
+    return String((await getSetting("pingchi_api_key")) || "").trim();
+}
+export async function pingchiApi(action, payload = {}) {
+    const key = await getPingchiKey();
+    if (!key)
+        return { ok: false, message: "Pingchi API key not configured." };
+    const res = await fetchWithTimeout("https://api.pinha.org/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Access-Key": key
+        },
+        body: JSON.stringify({ action, ...payload })
+    });
+    const raw = await res.text();
+    const data = parseJsonObject(raw);
+    if (!res.ok || !data) {
+        if (data && data.message)
+            return { ok: false, message: data.message, code: data.code };
+        return { ok: false, message: `Pingchi HTTP ${res.status}: ${responseSnippet(raw)}` };
+    }
+    return { ok: data.success, data: data.data, raw: data };
+}
+export async function provisionPingchiSale(order, panelConfig) {
+    const planId = panelConfig.pingchi_plan_id;
+    if (!planId)
+        throw new Error("Pingchi plan ID not configured for this product.");
+    // order_id has to be max 64 chars
+    const orderId = order.purchase_id.substring(0, 64);
+    const name = (order.product_name_snapshot || "?????").substring(0, 60);
+    const res = await pingchiApi("services.create", {
+        plan_id: planId,
+        order_id: orderId,
+        name: name
+    });
+    if (!res.ok) {
+        throw new Error(`Pingchi error: ${res.message}`);
+    }
+    const service = res.data?.service || {};
+    const subUrl = service.subscription_url || "";
+    const username = service.username || "";
+    const configValue = subUrl || username || "No link provided";
+    const deliveryPayload = {
+        type: "pingchi",
+        subscriptionUrl: subUrl,
+        configLinks: subUrl ? [subUrl] : [],
+        metadata: { username }
+    };
+    return { configValue, deliveryPayload };
 }
