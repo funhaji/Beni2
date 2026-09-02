@@ -15715,6 +15715,7 @@ async function handleCallback(update) {
                         cb(infiniteMode ? "♾️ خاموش‌کردن حالت بینهایت" : "♾️ روشن‌کردن حالت بینهایت", "admin_toggle_global_infinite", infiniteMode ? "danger" : "success")
                     ],
                     [cb("💾 پشتیبان‌گیری و بازیابی داده", "admin_backup_menu", "primary")],
+                    [cb("☁️ تنظیمات پینگچی (Pingchi)", "admin_pingchi_settings", "primary")],
                     [backButton("admin_panel")]
                 ]
             }
@@ -15732,7 +15733,6 @@ async function handleCallback(update) {
                 inline_keyboard: [
                     [cb("📤 گرفتن بکاپ الان", "admin_trigger_backup", "success")],
                     [cb("📥 بازیابی از فایل بکاپ", "admin_trigger_restore", "danger")],
-                    [cb("تنظیمات پینگچی (Pingchi)", "admin_pingchi_settings", "primary")],
                     [backButton("admin_settings")]
                 ]
             }
