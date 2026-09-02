@@ -7441,20 +7441,21 @@ async function parseAndApplyState(
     const deduped = Array.from(new Set(lines));
     let insertedCount = 0;
     let skippedCount = 0;
-    for (const line of deduped) {
-      const exists = await sql`
-        SELECT id
-        FROM inventory
-        WHERE product_id = ${productId}
-          AND config_value = ${line}
-        LIMIT 1;
-      `;
-      if (exists.length) {
-        skippedCount += 1;
-        continue;
-      }
-      await sql`INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`;
-      insertedCount += 1;
+    const allExisting = await sql`SELECT config_value FROM inventory WHERE product_id = ${productId};`;
+    const existingSet = new Set(allExisting.map(r => r.config_value));
+    
+    const toInsert = deduped.filter(line => !existingSet.has(line));
+    skippedCount = deduped.length - toInsert.length;
+    
+    // Insert in chunks of 50 to avoid connection pooling limits on serverless
+    const chunkSize = 50;
+    for (let i = 0; i < toInsert.length; i += chunkSize) {
+      const chunk = toInsert.slice(i, i + chunkSize);
+      const insertPromises = chunk.map(line => 
+        sql`INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`
+      );
+      await Promise.all(insertPromises);
+      insertedCount += chunk.length;
     }
     await clearState(userId);
     await tg("sendMessage", {

@@ -1,4 +1,5 @@
-import { neon } from "@neondatabase/serverless";
+import { neon, neonConfig } from '@neondatabase/serverless';
+neonConfig.fetchConnectionCache = true;
 import postgres from "postgres";
 import { databaseUrl } from "./env.js";
 
