@@ -2058,7 +2058,7 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
       reply_markup: {
         inline_keyboard: [
           [cb("?👤 اشتراک? V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
-          [cb("??? ????? (VPN/??????)", "admin_product_wizard_kind_account", "primary")],
+          [cb("👤 اشتراک (VPN/اکانت)", "admin_product_wizard_kind_account", "primary")],
           [cb("?🛡 وایرگارد (Wireguard)", "admin_product_wizard_kind_wireguard", "primary")],
           [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
         ]
@@ -2653,13 +2653,13 @@ async function mainMenuMarkup(userId: number) {
   const accountCount = Number(kindsRow[0].account_count);
   const wireguardCount = Number(kindsRow[0].wireguard_count);
 
-  let buyBtnText = "?? ???? ?????";
+      let buyBtnText = "🛍 خرید اشتراک";
   if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
-    buyBtnText = "?? ????";
+      buyBtnText = "🛍 خرید";
   } else if (accountCount > 0 && v2rayCount === 0 && wireguardCount === 0) {
-    buyBtnText = "?? ???? ?????";
+      buyBtnText = "🛍 خرید اشتراک";
   } else if (wireguardCount > 0 && accountCount === 0 && v2rayCount === 0) {
-    buyBtnText = "?? ???? ????????";
+      buyBtnText = "🛡 خرید وایرگارد";
   }
 
   const rows = [
@@ -5410,8 +5410,8 @@ async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = ""
     if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
       const keyboard = [];
       if (v2rayCount > 0) keyboard.push([cb("🌐 کانفیگ (V2Ray)", "buy_cat_v2ray_0", "primary")]);
-      if (accountCount > 0) keyboard.push([cb("?? ?????", "buy_cat_account_0", "primary")]);
-      if (wireguardCount > 0) keyboard.push([cb("?? ???????? (Wireguard)", "buy_cat_wireguard_0", "primary")]);
+      if (accountCount > 0) keyboard.push([cb("👤 اشتراک", "buy_cat_account_0", "primary")]);
+      if (wireguardCount > 0) keyboard.push([cb("🛡 وایرگارد (Wireguard)", "buy_cat_wireguard_0", "primary")]);
       keyboard.push([homeButton()]);
       await tg("sendMessage", { chat_id: chatId, text: "دسته‌بندی مورد نظر خود را انتخاب کنید:", reply_markup: { inline_keyboard: keyboard } });
       return null;
@@ -17922,7 +17922,7 @@ export async function provisionPingchiSale(
   
   // order_id has to be max 64 chars
   const orderId = order.purchase_id.substring(0, 64);
-  const name = (order.product_name_snapshot || "?????").substring(0, 60);
+  const name = (order.product_name_snapshot || "سفارش").substring(0, 60);
   
   const res = await pingchiApi("services.create", {
     plan_id: planId,
