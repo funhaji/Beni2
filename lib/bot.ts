@@ -10204,6 +10204,9 @@ async function applyTopupOnMarzban(panel: Record<string, unknown>, username: str
     ...getData,
     data_limit: targetLimit
   };
+  if (payload.status && !["active", "disabled", "on_hold"].includes(payload.status)) {
+    payload.status = "active";
+  }
 
   if (currentExpire !== 0 && currentExpire < thirtyDaysSeconds) {
     payload.expire = thirtyDaysSeconds;
@@ -10257,7 +10260,8 @@ async function applyTopupOnSanaei(panel: Record<string, unknown>, inboundId: num
 
   const updatedClient: any = {
     ...client,
-    totalGB: targetTotalGb
+    totalGB: targetTotalGb,
+    enable: true
   };
 
   if (currentExpiryTime !== 0 && currentExpiryTime < thirtyDaysMs) {
@@ -10426,7 +10430,10 @@ async function applyAdminSetLimitOnlyOnMarzban(panel: Record<string, unknown>, u
   const currentLimit = Number(getData.data_limit || 0);
   const newLimit = Math.max(0, Math.round(targetBytes));
   if (currentLimit === newLimit) return { ok: true, message: "Marzban data limit unchanged." };
-  const payload = { ...getData, data_limit: newLimit };
+  const payload: any = { ...getData, data_limit: newLimit };
+  if (payload.status && !["active", "disabled", "on_hold"].includes(payload.status)) {
+    payload.status = "active";
+  }
   const putRes = await fetchWithTimeout(`${baseUrl}/api/user/${encodeURIComponent(username)}`, {
     method: "PUT",
     headers: {
@@ -10446,7 +10453,8 @@ async function applyAdminSetLimitOnlyOnMarzban(panel: Record<string, unknown>, u
 async function applyAdminSetLimitOnlyOnSanaei(panel: Record<string, unknown>, inboundId: number, email: string, targetBytes: number) {
   const res = await updateSanaeiClient(panel, inboundId, email, (client) => ({
     ...client,
-    totalGB: Math.max(0, Math.round(targetBytes))
+    totalGB: Math.max(0, Math.round(targetBytes)),
+    enable: true
   }));
   if (!res.ok) return res;
   return { ok: true, message: "Sanaei data limit updated." };
@@ -10488,7 +10496,10 @@ export async function applyAdminSetDataLimitOnMarzban(panel: Record<string, unkn
     return { ok: true, message: "Marzban data limit and usage reset." };
   }
 
-  const payload = { ...getData, data_limit: newLimit };
+  const payload: any = { ...getData, data_limit: newLimit };
+  if (payload.status && !["active", "disabled", "on_hold"].includes(payload.status)) {
+    payload.status = "active";
+  }
   const putRes = await fetchWithTimeout(`${baseUrl}/api/user/${encodeURIComponent(username)}`, {
     method: "PUT",
     headers: {
@@ -10634,7 +10645,8 @@ export async function applyAdminSetDataLimitOnSanaei(panel: Record<string, unkno
     ...client,
     totalGB: Math.max(0, Math.round(targetBytes)),
     up: 0,
-    down: 0
+    down: 0,
+    enable: true
   }));
 
   if (!limitRes.ok) return limitRes;
