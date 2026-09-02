@@ -72,7 +72,7 @@ type DiscountWizardStep = "code_mode" | "code" | "type" | "amount" | "usage_limi
 type MessageUserWizardStep = "target" | "message";
 type DirectMigrateWizardStep = "source_inventory_id" | "target_panel_id" | "user_telegram_id" | "config";
 type AdminConfigBuilderStep = "target_user" | "panel" | "name" | "data" | "expiry";
-type SellMode = "manual" | "panel";
+type SellMode = "manual" | "panel" | "pingchi";
 type DeliveryMode = "both" | "sub" | "configs";
 type CryptoWalletRow = {
   id: number;
@@ -1053,6 +1053,7 @@ function normalizeFieldKey(raw: string) {
 function parseSellMode(raw: string | null | undefined): SellMode {
   const value = String(raw || "").trim().toLowerCase();
   if (value === "panel" || value === "auto_panel" || value === "panel_sale") return "panel";
+  if (value === "pingchi") return "pingchi";
   return "manual";
 }
 
@@ -2055,8 +2056,9 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
         (mode === "edit" ? `\nمقدار فعلی: ${productKind === "account" ? "اکانت" : "کانفیگ V2Ray"}` : ""),
       reply_markup: {
         inline_keyboard: [
-          [cb("📶 کانفیگ V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
-          [cb("👤 اکانت (VPN/وبسایت)", "admin_product_wizard_kind_account", "primary")],
+          [cb("??? ?????? V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
+          [cb("??? ????? (VPN/??????)", "admin_product_wizard_kind_account", "primary")],
+          [cb("??? ???????? (Wireguard)", "admin_product_wizard_kind_wireguard", "primary")],
           [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
         ]
       }
@@ -2122,9 +2124,29 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
         inline_keyboard: [
           [cb("فروش دستی", "admin_product_wizard_sell_manual", "primary")],
           [cb("فروش از پنل", "admin_product_wizard_sell_panel", "primary")],
+          [cb("فروش از پینگچی (Wireguard)", "admin_product_wizard_sell_pingchi", "primary")],
           [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
         ]
       }
+    });
+    return null;
+  }
+  if (step === "pingchi_plan_id") {
+    const plansReq = await pingchiApi("plans.list");
+    if (!plansReq.ok) {
+      await tg("sendMessage", { chat_id: chatId, text: `خطا در دریافت پلن‌های پینگچی: ${plansReq.message}` });
+      return null;
+    }
+    const plans = plansReq.data?.rows || [];
+    const kb: any[] = [];
+    for (const plan of plans) {
+      kb.push([cb(`${plan.name} - ${plan.payable} تومان`, `admin_product_wizard_pingchi_plan_${plan.id}`, "primary")]);
+    }
+    kb.push([cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]);
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: "پلن پینگچی مربوطه را انتخاب کنید:",
+      reply_markup: { inline_keyboard: kb }
     });
     return null;
   }
@@ -2619,7 +2641,8 @@ async function mainMenuMarkup(userId: number) {
     sql`
       SELECT
         COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'v2ray') AS v2ray_count,
-        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count,
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'wireguard') AS wireguard_count
       FROM products
       WHERE is_active = TRUE
     `
@@ -2627,12 +2650,15 @@ async function mainMenuMarkup(userId: number) {
 
   const v2rayCount = Number(kindsRow[0].v2ray_count);
   const accountCount = Number(kindsRow[0].account_count);
+  const wireguardCount = Number(kindsRow[0].wireguard_count);
 
-  let buyBtnText = "🛍 خرید کانفیگ";
-  if (v2rayCount > 0 && accountCount > 0) {
-    buyBtnText = "🛍 خرید";
-  } else if (accountCount > 0 && v2rayCount === 0) {
-    buyBtnText = "🛍 خرید اکانت";
+  let buyBtnText = "?? ???? ?????";
+  if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
+    buyBtnText = "?? ????";
+  } else if (accountCount > 0 && v2rayCount === 0 && wireguardCount === 0) {
+    buyBtnText = "?? ???? ?????";
+  } else if (wireguardCount > 0 && accountCount === 0 && v2rayCount === 0) {
+    buyBtnText = "?? ???? ????????";
   }
 
   const rows = [
@@ -5371,23 +5397,27 @@ async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = ""
     const kindsRow = await sql`
       SELECT
         COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'v2ray') AS v2ray_count,
-        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count,
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'wireguard') AS wireguard_count
       FROM products
       WHERE is_active = TRUE
     `;
     const v2rayCount = Number(kindsRow[0].v2ray_count);
     const accountCount = Number(kindsRow[0].account_count);
+    const wireguardCount = Number(kindsRow[0].wireguard_count);
 
-    if (v2rayCount > 0 && accountCount > 0) {
-      const keyboard = [
-        [cb("🌐 کانفیگ (V2Ray)", "buy_cat_v2ray_0", "primary")],
-        [cb("👤 اکانت", "buy_cat_account_0", "primary")],
-        [homeButton()]
-      ];
-      await tg("sendMessage", { chat_id: chatId, text: "دسته‌بندی مورد نظر را انتخاب کنید:", reply_markup: { inline_keyboard: keyboard } });
+    if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
+      const keyboard = [];
+      if (v2rayCount > 0) keyboard.push([cb("?? ?????? (V2Ray)", "buy_cat_v2ray_0", "primary")]);
+      if (accountCount > 0) keyboard.push([cb("?? ?????", "buy_cat_account_0", "primary")]);
+      if (wireguardCount > 0) keyboard.push([cb("?? ???????? (Wireguard)", "buy_cat_wireguard_0", "primary")]);
+      keyboard.push([homeButton()]);
+      await tg("sendMessage", { chat_id: chatId, text: "????????? ???? ??? ?? ?????? ????:", reply_markup: { inline_keyboard: keyboard } });
       return null;
-    } else if (accountCount > 0 && v2rayCount === 0) {
+    } else if (accountCount > 0 && v2rayCount === 0 && wireguardCount === 0) {
       kind = "account";
+    } else if (wireguardCount > 0 && accountCount === 0 && v2rayCount === 0) {
+      kind = "wireguard";
     } else {
       kind = "v2ray";
     }
@@ -7767,6 +7797,17 @@ async function parseAndApplyState(
     await setSetting("plisio_usdt_rate_fallback_toman", String(rate));
     await clearState(userId);
     await tg("sendMessage", { chat_id: chatId, text: `نرخ دستی (fallback) ذخیره شد ✅\n${rate} تومان` });
+    return true;
+  }
+  if (state.state === "admin_pingchi_set_key") {
+    const raw = text.trim();
+    if (raw.length < 10) {
+      await tg("sendMessage", { chat_id: chatId, text: "کلید نامعتبر است." });
+      return true;
+    }
+    await setSetting("pingchi_api_key", raw);
+    await clearState(userId);
+    await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی با موفقیت تنظیم شد ✅" });
     return true;
   }
   if (state.state === "admin_set_plisio_usd_rate") {
@@ -12472,6 +12513,16 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
             }
           }
         }
+      } else if (parseSellMode(String(order.sell_mode || "")) === "pingchi") {
+        for (const provision of allProvisions) {
+          const delivered = parseDeliveryPayload(provision.deliveryPayload);
+          const key = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || "").trim();
+          if (key) {
+             pingchiApi("services.delete", { username: key }).catch(() => {});
+          }
+            }
+          }
+        }
       }
       await notifyAdmins(
         `⚠️ سفارش ${order.purchase_id}: پروویژن تکمیل شد اما سفارش قبلاً لغو/استرداد شده بود.\n` +
@@ -14522,7 +14573,13 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       return null;
     }
     const panelType = String(rows[0].panel_type || "");
-    const result = isMarzbanLike(panelType) ? await deleteMarzbanUser(rows[0], key) : await revokeSanaeiClient(rows[0], key);
+    const deliveryPayload = parseDeliveryPayload(rows[0].delivery_payload);
+    let result = { ok: false, message: "unknown panel type" };
+    if (deliveryPayload.type === "pingchi") {
+      result = await pingchiApi("services.delete", { username: key });
+    } else {
+      result = isMarzbanLike(panelType) ? await deleteMarzbanUser(rows[0], key) : await revokeSanaeiClient(rows[0], key);
+    }
     if (!result.ok) {
       await tg("sendMessage", { chat_id: chatId, text: `حذف در پنل ناموفق: ${result.message}` });
       return null;
@@ -15025,6 +15082,23 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await promptProductWizardStep(chatId, payload);
     return null;
   }
+  if (data.startsWith("admin_product_wizard_pingchi_plan_")) {
+    const planId = Number(data.replace("admin_product_wizard_pingchi_plan_", ""));
+    const state = await getState(userId);
+    if (!state || state.state !== "admin_product_wizard") return null;
+    const payload = { ...state.payload, panelConfig: { pingchi_plan_id: planId }, step: "is_infinite" as ProductWizardStep };
+    await setState(userId, "admin_product_wizard", payload);
+    await promptProductWizardStep(chatId, payload);
+    return null;
+  }
+  if (data === "admin_product_wizard_sell_pingchi") {
+    const state = await getState(userId);
+    if (!state || state.state !== "admin_product_wizard") return null;
+    const payload = { ...state.payload, sellMode: "pingchi", step: "pingchi_plan_id" as any };
+    await setState(userId, "admin_product_wizard", payload);
+    await promptProductWizardStep(chatId, payload);
+    return null;
+  }
   if (data === "admin_product_wizard_sell_panel") {
     const state = await getState(userId);
     if (!state || state.state !== "admin_product_wizard") return null;
@@ -15037,10 +15111,10 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await promptProductWizardStep(chatId, payload);
     return null;
   }
-  if (data === "admin_product_wizard_kind_v2ray" || data === "admin_product_wizard_kind_account") {
+  if (data === "admin_product_wizard_kind_v2ray" || data === "admin_product_wizard_kind_account" || data === "admin_product_wizard_kind_wireguard") {
     const state = await getState(userId);
     if (!state || state.state !== "admin_product_wizard") return null;
-    const productKind = data === "admin_product_wizard_kind_account" ? "account" : "v2ray";
+    const productKind = data === "admin_product_wizard_kind_account" ? "account" : (data === "admin_product_wizard_kind_wireguard" ? "wireguard" : "v2ray");
     const payload =
       productKind === "account"
         ? { ...state.payload, productKind, sizeMb: 0, priceMode: "manual", step: "price_mode" as ProductWizardStep }
@@ -16359,6 +16433,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         inline_keyboard: [
           [cb("📤 گرفتن بکاپ الان", "admin_trigger_backup", "success")],
           [cb("📥 بازیابی از فایل بکاپ", "admin_trigger_restore", "danger")],
+          [cb("تنظیمات پینگچی (Pingchi)", "admin_pingchi_settings", "primary")],
           [backButton("admin_settings")]
         ]
       }
@@ -16408,6 +16483,31 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "admin_cancel_restore") {
     await clearState(userId);
     await tg("sendMessage", { chat_id: chatId, text: "بازیابی لغو شد." });
+    return null;
+  }
+  if (data === "admin_pingchi_settings") {
+    const key = await getPingchiKey();
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: `تنظیمات پینگچی (Pingchi)\n\nکلید وب‌سرویس: ${key ? "تنظیم شده ✅" : "تنظیم نشده ❌"}\n\nاز گزینه‌های زیر استفاده کنید:`,
+      reply_markup: {
+        inline_keyboard: [
+          [cb("🔑 تنظیم کلید دسترسی (API Key)", "admin_pingchi_set_key", "primary")],
+          [cb("🗑 حذف کلید دسترسی", "admin_pingchi_clear_key", "danger")],
+          [backButton("admin_settings")]
+        ]
+      }
+    });
+    return null;
+  }
+  if (data === "admin_pingchi_clear_key") {
+    await sql`DELETE FROM settings WHERE key = 'pingchi_api_key'`;
+    await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی حذف شد." });
+    return null;
+  }
+  if (data === "admin_pingchi_set_key") {
+    await setState(userId, "admin_pingchi_set_key");
+    await tg("sendMessage", { chat_id: chatId, text: "لطفاً کلید دسترسی (API Key) پینگچی را بفرستید:" });
     return null;
   }
   if (data === "admin_referral_settings") {
@@ -17293,9 +17393,15 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         const key = String(inv.panel_user_key || "").trim();
         if (key && inv.panel_type) {
           try {
-            const result = isMarzbanLike(String(inv.panel_type))
-              ? await deleteMarzbanUser(inv, key)
-              : await revokeSanaeiClient(inv, key);
+            let result = { ok: false, message: "unknown panel type" };
+            const dp = parseDeliveryPayload(inv.delivery_payload);
+            if (dp.type === "pingchi") {
+               result = await pingchiApi("services.delete", { username: key });
+            } else {
+               result = isMarzbanLike(String(inv.panel_type))
+                 ? await deleteMarzbanUser(inv, key)
+                 : await revokeSanaeiClient(inv, key);
+            }
             revokeResults.push(`${String(inv.panel_type)} ${key}: ${result.ok ? "✅" : "⚠️ " + String(result.message || "")}`);
           } catch (e) {
             revokeResults.push(`${String(inv.panel_type)} ${key}: ❌ خطا`);
@@ -17639,3 +17745,69 @@ export async function handleTelegramUpdate(update: TgUpdate) {
     await handleMessage(update.message);
   }
 }
+// Pingchi Integration
+export async function getPingchiKey(): Promise<string> {
+  return String((await getSetting("pingchi_api_key")) || "").trim();
+}
+
+export async function pingchiApi(action: string, payload: any = {}) {
+  const key = await getPingchiKey();
+  if (!key) return { ok: false, message: "Pingchi API key not configured." };
+  
+  const res = await fetchWithTimeout("https://api.pinha.org/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Access-Key": key
+    },
+    body: JSON.stringify({ action, ...payload })
+  });
+  
+  const raw = await res.text();
+  const data = parseJsonObject(raw);
+  
+  if (!res.ok || !data) {
+    if (data && data.message) return { ok: false, message: data.message, code: data.code };
+    return { ok: false, message: \Pingchi HTTP \: \\ };
+  }
+  
+  return { ok: data.success, data: data.data, raw: data };
+}
+
+export async function provisionPingchiSale(
+  order: { purchase_id: string; product_name_snapshot?: string },
+  panelConfig: { pingchi_plan_id?: number }
+) {
+  const planId = panelConfig.pingchi_plan_id;
+  if (!planId) throw new Error("Pingchi plan ID not configured for this product.");
+  
+  // order_id has to be max 64 chars
+  const orderId = order.purchase_id.substring(0, 64);
+  const name = (order.product_name_snapshot || "?????").substring(0, 60);
+  
+  const res = await pingchiApi("services.create", {
+    plan_id: planId,
+    order_id: orderId,
+    name: name
+  });
+  
+  if (!res.ok) {
+    throw new Error(\Pingchi error: \\);
+  }
+  
+  const service = res.data?.service || {};
+  const subUrl = service.subscription_url || "";
+  const username = service.username || "";
+  
+  const configValue = subUrl || username || "No link provided";
+  const deliveryPayload: DeliveryPayload = {
+    type: "pingchi",
+    sub_url: subUrl,
+    metadata: { username }
+  };
+  
+  return { configValue, deliveryPayload };
+}
+
+
+
