@@ -927,8 +927,6 @@ function parseSellMode(raw) {
     const value = String(raw || "").trim().toLowerCase();
     if (value === "panel" || value === "auto_panel" || value === "panel_sale")
         return "panel";
-    if (value === "pingchi")
-        return "pingchi";
     return "manual";
 }
 function parseDeliveryMode(raw) {
@@ -1878,9 +1876,8 @@ async function promptProductWizardStep(chatId, payload) {
                 (mode === "edit" ? `\nمقدار فعلی: ${productKind === "account" ? "اکانت" : "کانفیگ V2Ray"}` : ""),
             reply_markup: {
                 inline_keyboard: [
-                    [cb("?👤 اشتراک? V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
-                    [cb("??? ????? (VPN/??????)", "admin_product_wizard_kind_account", "primary")],
-                    [cb("?🛡 وایرگارد (Wireguard)", "admin_product_wizard_kind_wireguard", "primary")],
+                    [cb("📶 کانفیگ V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
+                    [cb("👤 اکانت (VPN/وبسایت)", "admin_product_wizard_kind_account", "primary")],
                     [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                 ]
             }
@@ -1944,29 +1941,9 @@ async function promptProductWizardStep(chatId, payload) {
                 inline_keyboard: [
                     [cb("فروش دستی", "admin_product_wizard_sell_manual", "primary")],
                     [cb("فروش از پنل", "admin_product_wizard_sell_panel", "primary")],
-                    [cb("فروش از پینگچی (Wireguard)", "admin_product_wizard_sell_pingchi", "primary")],
                     [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                 ]
             }
-        });
-        return null;
-    }
-    if (step === "pingchi_plan_id") {
-        const plansReq = await pingchiApi("plans.list");
-        if (!plansReq.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `خطا در دریافت پلن‌های پینگچی: ${plansReq.message}` });
-            return null;
-        }
-        const plans = plansReq.data?.rows || [];
-        const kb = [];
-        for (const plan of plans) {
-            kb.push([cb(`${plan.name} - ${plan.payable} تومان`, `admin_product_wizard_pingchi_plan_${plan.id}`, "primary")]);
-        }
-        kb.push([cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]);
-        await tg("sendMessage", {
-            chat_id: chatId,
-            text: "پلن پینگچی مربوطه را انتخاب کنید:",
-            reply_markup: { inline_keyboard: kb }
         });
         return null;
     }
@@ -2429,24 +2406,19 @@ async function mainMenuMarkup(userId) {
         sql `
       SELECT
         COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'v2ray') AS v2ray_count,
-        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count,
-        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'wireguard') AS wireguard_count
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count
       FROM products
       WHERE is_active = TRUE
     `
     ]);
     const v2rayCount = Number(kindsRow[0].v2ray_count);
     const accountCount = Number(kindsRow[0].account_count);
-    const wireguardCount = Number(kindsRow[0].wireguard_count);
-    let buyBtnText = "?? ???? ?????";
-    if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
-        buyBtnText = "?? ????";
+    let buyBtnText = "🛍 خرید کانفیگ";
+    if (v2rayCount > 0 && accountCount > 0) {
+        buyBtnText = "🛍 خرید";
     }
-    else if (accountCount > 0 && v2rayCount === 0 && wireguardCount === 0) {
-        buyBtnText = "?? ???? ?????";
-    }
-    else if (wireguardCount > 0 && accountCount === 0 && v2rayCount === 0) {
-        buyBtnText = "?? ???? ????????";
+    else if (accountCount > 0 && v2rayCount === 0) {
+        buyBtnText = "🛍 خرید اکانت";
     }
     const rows = [
         [cb(buyBtnText, "buy_menu", "primary"), cb("📦 سفارش‌ها و کانفیگ‌ها", "my_configs", "primary")],
@@ -4990,31 +4962,23 @@ async function showProducts(chatId, forBuy, page = 0, kind = "") {
         const kindsRow = await sql `
       SELECT
         COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'v2ray') AS v2ray_count,
-        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count,
-        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'wireguard') AS wireguard_count
+        COUNT(*) FILTER (WHERE COALESCE(panel_config->>'product_kind', 'v2ray') = 'account') AS account_count
       FROM products
       WHERE is_active = TRUE
     `;
         const v2rayCount = Number(kindsRow[0].v2ray_count);
         const accountCount = Number(kindsRow[0].account_count);
-        const wireguardCount = Number(kindsRow[0].wireguard_count);
-        if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
-            const keyboard = [];
-            if (v2rayCount > 0)
-                keyboard.push([cb("🌐 کانفیگ (V2Ray)", "buy_cat_v2ray_0", "primary")]);
-            if (accountCount > 0)
-                keyboard.push([cb("?? ?????", "buy_cat_account_0", "primary")]);
-            if (wireguardCount > 0)
-                keyboard.push([cb("?? ???????? (Wireguard)", "buy_cat_wireguard_0", "primary")]);
-            keyboard.push([homeButton()]);
-            await tg("sendMessage", { chat_id: chatId, text: "دسته‌بندی مورد نظر خود را انتخاب کنید:", reply_markup: { inline_keyboard: keyboard } });
+        if (v2rayCount > 0 && accountCount > 0) {
+            const keyboard = [
+                [cb("🌐 کانفیگ (V2Ray)", "buy_cat_v2ray_0", "primary")],
+                [cb("👤 اکانت", "buy_cat_account_0", "primary")],
+                [homeButton()]
+            ];
+            await tg("sendMessage", { chat_id: chatId, text: "دسته‌بندی مورد نظر را انتخاب کنید:", reply_markup: { inline_keyboard: keyboard } });
             return null;
         }
-        else if (accountCount > 0 && v2rayCount === 0 && wireguardCount === 0) {
+        else if (accountCount > 0 && v2rayCount === 0) {
             kind = "account";
-        }
-        else if (wireguardCount > 0 && accountCount === 0 && v2rayCount === 0) {
-            kind = "wireguard";
         }
         else {
             kind = "v2ray";
@@ -6978,17 +6942,20 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const deduped = Array.from(new Set(lines));
         let insertedCount = 0;
         let skippedCount = 0;
-        const allExisting = await sql `SELECT config_value FROM inventory WHERE product_id = ${productId};`;
-        const existingSet = new Set(allExisting.map(r => r.config_value));
-        const toInsert = deduped.filter(line => !existingSet.has(line));
-        skippedCount = deduped.length - toInsert.length;
-        // Insert in chunks of 50 to avoid connection pooling limits on serverless
-        const chunkSize = 50;
-        for (let i = 0; i < toInsert.length; i += chunkSize) {
-            const chunk = toInsert.slice(i, i + chunkSize);
-            const insertPromises = chunk.map(line => sql `INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`);
-            await Promise.all(insertPromises);
-            insertedCount += chunk.length;
+        for (const line of deduped) {
+            const exists = await sql `
+        SELECT id
+        FROM inventory
+        WHERE product_id = ${productId}
+          AND config_value = ${line}
+        LIMIT 1;
+      `;
+            if (exists.length) {
+                skippedCount += 1;
+                continue;
+            }
+            await sql `INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`;
+            insertedCount += 1;
         }
         await clearState(userId);
         await tg("sendMessage", {
@@ -7330,17 +7297,6 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         await setSetting("plisio_usdt_rate_fallback_toman", String(rate));
         await clearState(userId);
         await tg("sendMessage", { chat_id: chatId, text: `نرخ دستی (fallback) ذخیره شد ✅\n${rate} تومان` });
-        return true;
-    }
-    if (state.state === "admin_pingchi_set_key") {
-        const raw = text.trim();
-        if (raw.length < 10) {
-            await tg("sendMessage", { chat_id: chatId, text: "کلید نامعتبر است." });
-            return true;
-        }
-        await setSetting("pingchi_api_key", raw);
-        await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی با موفقیت تنظیم شد ✅" });
         return true;
     }
     if (state.state === "admin_set_plisio_usd_rate") {
@@ -9666,9 +9622,6 @@ async function applyTopupOnMarzban(panel, username, addBytes) {
         ...getData,
         data_limit: targetLimit
     };
-    if (payload.status && !["active", "disabled", "on_hold"].includes(payload.status)) {
-        payload.status = "active";
-    }
     if (currentExpire !== 0 && currentExpire < thirtyDaysSeconds) {
         payload.expire = thirtyDaysSeconds;
     }
@@ -9718,8 +9671,7 @@ async function applyTopupOnSanaei(panel, inboundId, email, addBytes) {
     const thirtyDaysMs = Date.now() + (30 * 24 * 60 * 60 * 1000);
     const updatedClient = {
         ...client,
-        totalGB: targetTotalGb,
-        enable: true
+        totalGB: targetTotalGb
     };
     if (currentExpiryTime !== 0 && currentExpiryTime < thirtyDaysMs) {
         updatedClient.expiryTime = thirtyDaysMs;
@@ -9875,9 +9827,6 @@ async function applyAdminSetLimitOnlyOnMarzban(panel, username, targetBytes) {
     if (currentLimit === newLimit)
         return { ok: true, message: "Marzban data limit unchanged." };
     const payload = { ...getData, data_limit: newLimit };
-    if (payload.status && !["active", "disabled", "on_hold"].includes(payload.status)) {
-        payload.status = "active";
-    }
     const putRes = await fetchWithTimeout(`${baseUrl}/api/user/${encodeURIComponent(username)}`, {
         method: "PUT",
         headers: {
@@ -9896,8 +9845,7 @@ async function applyAdminSetLimitOnlyOnMarzban(panel, username, targetBytes) {
 async function applyAdminSetLimitOnlyOnSanaei(panel, inboundId, email, targetBytes) {
     const res = await updateSanaeiClient(panel, inboundId, email, (client) => ({
         ...client,
-        totalGB: Math.max(0, Math.round(targetBytes)),
-        enable: true
+        totalGB: Math.max(0, Math.round(targetBytes))
     }));
     if (!res.ok)
         return res;
@@ -9936,9 +9884,6 @@ export async function applyAdminSetDataLimitOnMarzban(panel, username, targetByt
         return { ok: true, message: "Marzban data limit and usage reset." };
     }
     const payload = { ...getData, data_limit: newLimit };
-    if (payload.status && !["active", "disabled", "on_hold"].includes(payload.status)) {
-        payload.status = "active";
-    }
     const putRes = await fetchWithTimeout(`${baseUrl}/api/user/${encodeURIComponent(username)}`, {
         method: "PUT",
         headers: {
@@ -10069,8 +10014,7 @@ export async function applyAdminSetDataLimitOnSanaei(panel, inboundId, email, ta
         ...client,
         totalGB: Math.max(0, Math.round(targetBytes)),
         up: 0,
-        down: 0,
-        enable: true
+        down: 0
     }));
     if (!limitRes.ok)
         return limitRes;
@@ -11757,15 +11701,6 @@ async function finalizeOrder(orderId, decidedBy) {
                     }
                 }
             }
-            else if (parseSellMode(String(order.sell_mode || "")) === "pingchi") {
-                for (const provision of allProvisions) {
-                    const delivered = parseDeliveryPayload(provision.deliveryPayload);
-                    const key = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || "").trim();
-                    if (key) {
-                        pingchiApi("services.delete", { username: key }).catch(() => { });
-                    }
-                }
-            }
             await notifyAdmins(`⚠️ سفارش ${order.purchase_id}: پروویژن تکمیل شد اما سفارش قبلاً لغو/استرداد شده بود.\n` +
                 `کانفیگ‌های ساخته‌شده به‌صورت خودکار پاک‌سازی شدند.\nکاربر: ${order.telegram_id}`).catch(() => { });
             return { ok: false, reason: "order_cancelled_during_provision" };
@@ -11826,128 +11761,6 @@ async function finalizeOrder(orderId, decidedBy) {
             deliveryPayload: adminDelivery,
             walletUsed: Number(order.wallet_used || 0)
         }), { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
-        return { ok: true, reason: "fulfilled" };
-    }
-    else if (parseSellMode(String(order.sell_mode || "")) === "pingchi") {
-        const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
-        const bulkQuantity = getOrderBulkQuantity(order, panelConfig);
-        const allProvisions = [];
-        for (let i = 0; i < bulkQuantity; i++) {
-            let provision;
-            try {
-                provision = await provisionPingchiSale({ purchase_id: String(order.purchase_id), product_name_snapshot: String(order.product_name) }, panelConfig);
-                allProvisions.push(provision);
-            }
-            catch (err) {
-                logError("pingchi_provision_failed", err, { orderId: order.id, configIndex: i });
-                await sql `
-          UPDATE orders
-          SET status = 'awaiting_config', paid_at = NOW(), admin_decision_by = ${decidedBy}
-          WHERE id = ${order.id} AND status = 'fulfilling';
-        `;
-                await tg("sendMessage", {
-                    chat_id: Number(order.telegram_id),
-                    text: `✅ پرداخت شما تایید شد.\nاما مشکلی در ارتباط با سرور رخ داد. به ادمین پیام دادیم تا سریعا بررسی کند.`
-                }).catch(() => { });
-                const adminIds = await getAdminIds();
-                if (adminIds.length > 0) {
-                    await tg("sendMessage", {
-                        chat_id: adminIds[0],
-                        text: `❌ خطای پینگچی (سفارش ${order.purchase_id})\n${err.message || ""}`
-                    }).catch(() => { });
-                }
-                return { ok: false, reason: "provision_failed" };
-            }
-        }
-        // Save to inventory
-        const allConfigLinks = [];
-        const allSubscriptionUrls = [];
-        let firstInventoryId = null;
-        for (const provision of allProvisions) {
-            const delivered = parseDeliveryPayload(provision.deliveryPayload);
-            const panelUserKey = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || delivered.metadata?.uuid || "").trim() || null;
-            const inserted = await sql `
-        INSERT INTO inventory (
-          product_id, panel_user_key, config_value, delivery_payload, status, owner_telegram_id, sold_order_id, panel_id, sold_at
-        )
-        VALUES (
-          ${order.product_id},
-          ${panelUserKey},
-          ${provision.configValue},
-          ${serializeDeliveryPayload(provision.deliveryPayload)}::jsonb,
-          'sold',
-          ${order.telegram_id},
-          ${order.id},
-          ${order.source_panel_id},
-          NOW()
-        )
-        RETURNING id;
-      `;
-            if (!firstInventoryId)
-                firstInventoryId = Number(inserted[0].id);
-            await recordInventoryForensicEvent(Number(inserted[0].id), "sale_delivered", {
-                purchaseId: String(order.purchase_id),
-                by: decidedBy
-            });
-            if (provision.deliveryPayload.configLinks) {
-                allConfigLinks.push(...provision.deliveryPayload.configLinks);
-            }
-            if (provision.deliveryPayload.subscriptionUrl) {
-                allSubscriptionUrls.push(provision.deliveryPayload.subscriptionUrl);
-            }
-        }
-        const updateResult = await sql `
-      UPDATE orders
-      SET status = 'paid', paid_at = NOW(), inventory_id = ${firstInventoryId}, admin_decision_by = ${decidedBy}
-      WHERE id = ${order.id} AND status = 'fulfilling'
-      RETURNING id, purchase_id;
-    `;
-        if (!updateResult.length) {
-            // Order cancelled during provision
-            for (const p of allProvisions) {
-                const delivered = parseDeliveryPayload(p.deliveryPayload);
-                const key = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || "").trim();
-                if (key) {
-                    pingchiApi("services.delete", { username: key }).catch(() => { });
-                }
-            }
-            await notifyAdmins(`⚠️ سفارش ${order.purchase_id} لغو شد و پینگچی پاک‌سازی شد.`).catch(() => { });
-            return { ok: false, reason: "order_cancelled_during_provision" };
-        }
-        await tg("sendMessage", {
-            chat_id: Number(order.telegram_id),
-            text: `پرداخت شما تایید شد ✅${bulkQuantity > 1 ? `\n${bulkQuantity} کانفیگ ساخته شد.` : ""}`
-        }).catch(() => { });
-        for (let i = 0; i < allProvisions.length; i++) {
-            const prov = allProvisions[i];
-            const isLast = i === allProvisions.length - 1;
-            const provLinks = prov.deliveryPayload.configLinks || [];
-            const provSub = prov.deliveryPayload.subscriptionUrl || null;
-            const singleDelivery = {
-                configLinks: provLinks,
-                subscriptionUrl: provSub,
-                primaryQr: buildQrText(provLinks[0] || null, provLinks, provSub),
-                primaryText: provLinks[0] || provSub || "",
-                metadata: prov.deliveryPayload.metadata
-            };
-            await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), String(provLinks[0] || provSub || ""), singleDelivery, isLast ? [[{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }], [homeButton()]] : []).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
-        }
-        const profile = await getTelegramProfileText(Number(order.telegram_id));
-        const adminDelivery = {
-            configLinks: allConfigLinks,
-            subscriptionUrl: allSubscriptionUrls[0] || null,
-            primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
-            metadata: { bulkCount: bulkQuantity }
-        };
-        await notifyAdmins(buildAdminDeliverySummary({
-            purchaseId: String(order.purchase_id),
-            userId: Number(order.telegram_id),
-            telegramUsername: profile.username,
-            telegramFullName: profile.fullName,
-            productName: String(order.product_name || "-") + (bulkQuantity > 1 ? ` (x${bulkQuantity})` : ""),
-            deliveryPayload: adminDelivery,
-            walletUsed: Number(order.wallet_used || 0)
-        }), { inline_keyboard: [[{ text: "🔎 بررسی", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
         return { ok: true, reason: "fulfilled" };
     }
     const globalInfinite = await getBoolSetting("global_infinite_mode", false);
@@ -13884,14 +13697,7 @@ async function handleCallback(update) {
             return null;
         }
         const panelType = String(rows[0].panel_type || "");
-        const deliveryPayload = parseDeliveryPayload(rows[0].delivery_payload);
-        let result = { ok: false, message: "unknown panel type" };
-        if (deliveryPayload.type === "pingchi") {
-            result = await pingchiApi("services.delete", { username: key });
-        }
-        else {
-            result = isMarzbanLike(panelType) ? await deleteMarzbanUser(rows[0], key) : await revokeSanaeiClient(rows[0], key);
-        }
+        const result = isMarzbanLike(panelType) ? await deleteMarzbanUser(rows[0], key) : await revokeSanaeiClient(rows[0], key);
         if (!result.ok) {
             await tg("sendMessage", { chat_id: chatId, text: `حذف در پنل ناموفق: ${result.message}` });
             return null;
@@ -14392,25 +14198,6 @@ async function handleCallback(update) {
         await promptProductWizardStep(chatId, payload);
         return null;
     }
-    if (data.startsWith("admin_product_wizard_pingchi_plan_")) {
-        const planId = Number(data.replace("admin_product_wizard_pingchi_plan_", ""));
-        const state = await getState(userId);
-        if (!state || state.state !== "admin_product_wizard")
-            return null;
-        const payload = { ...state.payload, panelConfig: { pingchi_plan_id: planId }, step: "is_infinite" };
-        await setState(userId, "admin_product_wizard", payload);
-        await promptProductWizardStep(chatId, payload);
-        return null;
-    }
-    if (data === "admin_product_wizard_sell_pingchi") {
-        const state = await getState(userId);
-        if (!state || state.state !== "admin_product_wizard")
-            return null;
-        const payload = { ...state.payload, sellMode: "pingchi", step: "pingchi_plan_id" };
-        await setState(userId, "admin_product_wizard", payload);
-        await promptProductWizardStep(chatId, payload);
-        return null;
-    }
     if (data === "admin_product_wizard_sell_panel") {
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_wizard")
@@ -14424,11 +14211,11 @@ async function handleCallback(update) {
         await promptProductWizardStep(chatId, payload);
         return null;
     }
-    if (data === "admin_product_wizard_kind_v2ray" || data === "admin_product_wizard_kind_account" || data === "admin_product_wizard_kind_wireguard") {
+    if (data === "admin_product_wizard_kind_v2ray" || data === "admin_product_wizard_kind_account") {
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_wizard")
             return null;
-        const productKind = data === "admin_product_wizard_kind_account" ? "account" : (data === "admin_product_wizard_kind_wireguard" ? "wireguard" : "v2ray");
+        const productKind = data === "admin_product_wizard_kind_account" ? "account" : "v2ray";
         const payload = productKind === "account"
             ? { ...state.payload, productKind, sizeMb: 0, priceMode: "manual", step: "price_mode" }
             : { ...state.payload, productKind, step: "size_mb" };
@@ -15732,7 +15519,6 @@ async function handleCallback(update) {
                 inline_keyboard: [
                     [cb("📤 گرفتن بکاپ الان", "admin_trigger_backup", "success")],
                     [cb("📥 بازیابی از فایل بکاپ", "admin_trigger_restore", "danger")],
-                    [cb("تنظیمات پینگچی (Pingchi)", "admin_pingchi_settings", "primary")],
                     [backButton("admin_settings")]
                 ]
             }
@@ -15780,31 +15566,6 @@ async function handleCallback(update) {
     if (data === "admin_cancel_restore") {
         await clearState(userId);
         await tg("sendMessage", { chat_id: chatId, text: "بازیابی لغو شد." });
-        return null;
-    }
-    if (data === "admin_pingchi_settings") {
-        const key = await getPingchiKey();
-        await tg("sendMessage", {
-            chat_id: chatId,
-            text: `تنظیمات پینگچی (Pingchi)\n\nکلید وب‌سرویس: ${key ? "تنظیم شده ✅" : "تنظیم نشده ❌"}\n\nاز گزینه‌های زیر استفاده کنید:`,
-            reply_markup: {
-                inline_keyboard: [
-                    [cb("🔑 تنظیم کلید دسترسی (API Key)", "admin_pingchi_set_key", "primary")],
-                    [cb("🗑 حذف کلید دسترسی", "admin_pingchi_clear_key", "danger")],
-                    [backButton("admin_settings")]
-                ]
-            }
-        });
-        return null;
-    }
-    if (data === "admin_pingchi_clear_key") {
-        await sql `DELETE FROM settings WHERE key = 'pingchi_api_key'`;
-        await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی حذف شد." });
-        return null;
-    }
-    if (data === "admin_pingchi_set_key") {
-        await setState(userId, "admin_pingchi_set_key");
-        await tg("sendMessage", { chat_id: chatId, text: "لطفاً کلید دسترسی (API Key) پینگچی را بفرستید:" });
         return null;
     }
     if (data === "admin_referral_settings") {
@@ -16652,16 +16413,9 @@ async function handleCallback(update) {
                 const key = String(inv.panel_user_key || "").trim();
                 if (key && inv.panel_type) {
                     try {
-                        let result = { ok: false, message: "unknown panel type" };
-                        const dp = parseDeliveryPayload(inv.delivery_payload);
-                        if (dp.type === "pingchi") {
-                            result = await pingchiApi("services.delete", { username: key });
-                        }
-                        else {
-                            result = isMarzbanLike(String(inv.panel_type))
-                                ? await deleteMarzbanUser(inv, key)
-                                : await revokeSanaeiClient(inv, key);
-                        }
+                        const result = isMarzbanLike(String(inv.panel_type))
+                            ? await deleteMarzbanUser(inv, key)
+                            : await revokeSanaeiClient(inv, key);
                         revokeResults.push(`${String(inv.panel_type)} ${key}: ${result.ok ? "✅" : "⚠️ " + String(result.message || "")}`);
                     }
                     catch (e) {
@@ -16983,56 +16737,4 @@ export async function handleTelegramUpdate(update) {
     if (update.message) {
         await handleMessage(update.message);
     }
-}
-// Pingchi Integration
-export async function getPingchiKey() {
-    return String((await getSetting("pingchi_api_key")) || "").trim();
-}
-export async function pingchiApi(action, payload = {}) {
-    const key = await getPingchiKey();
-    if (!key)
-        return { ok: false, message: "Pingchi API key not configured." };
-    const res = await fetchWithTimeout("https://api.pinha.org/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-Access-Key": key
-        },
-        body: JSON.stringify({ action, ...payload })
-    });
-    const raw = await res.text();
-    const data = parseJsonObject(raw);
-    if (!res.ok || !data) {
-        if (data && data.message)
-            return { ok: false, message: data.message, code: data.code };
-        return { ok: false, message: `Pingchi HTTP ${res.status}: ${responseSnippet(raw)}` };
-    }
-    return { ok: data.success, data: data.data, raw: data };
-}
-export async function provisionPingchiSale(order, panelConfig) {
-    const planId = panelConfig.pingchi_plan_id;
-    if (!planId)
-        throw new Error("Pingchi plan ID not configured for this product.");
-    // order_id has to be max 64 chars
-    const orderId = order.purchase_id.substring(0, 64);
-    const name = (order.product_name_snapshot || "?????").substring(0, 60);
-    const res = await pingchiApi("services.create", {
-        plan_id: planId,
-        order_id: orderId,
-        name: name
-    });
-    if (!res.ok) {
-        throw new Error(`Pingchi error: ${res.message}`);
-    }
-    const service = res.data?.service || {};
-    const subUrl = service.subscription_url || "";
-    const username = service.username || "";
-    const configValue = subUrl || username || "No link provided";
-    const deliveryPayload = {
-        type: "pingchi",
-        subscriptionUrl: subUrl,
-        configLinks: subUrl ? [subUrl] : [],
-        metadata: { username }
-    };
-    return { configValue, deliveryPayload };
 }

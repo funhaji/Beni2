@@ -2057,9 +2057,9 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
         (mode === "edit" ? `\nمقدار فعلی: ${productKind === "account" ? "اکانت" : "کانفیگ V2Ray"}` : ""),
       reply_markup: {
         inline_keyboard: [
-          [cb("??? ?????? V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
+          [cb("?👤 اشتراک? V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
           [cb("??? ????? (VPN/??????)", "admin_product_wizard_kind_account", "primary")],
-          [cb("??? ???????? (Wireguard)", "admin_product_wizard_kind_wireguard", "primary")],
+          [cb("?🛡 وایرگارد (Wireguard)", "admin_product_wizard_kind_wireguard", "primary")],
           [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
         ]
       }
@@ -5409,11 +5409,11 @@ async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = ""
 
     if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
       const keyboard = [];
-      if (v2rayCount > 0) keyboard.push([cb("?? ?????? (V2Ray)", "buy_cat_v2ray_0", "primary")]);
+      if (v2rayCount > 0) keyboard.push([cb("🌐 کانفیگ (V2Ray)", "buy_cat_v2ray_0", "primary")]);
       if (accountCount > 0) keyboard.push([cb("?? ?????", "buy_cat_account_0", "primary")]);
       if (wireguardCount > 0) keyboard.push([cb("?? ???????? (Wireguard)", "buy_cat_wireguard_0", "primary")]);
       keyboard.push([homeButton()]);
-      await tg("sendMessage", { chat_id: chatId, text: "????????? ???? ??? ?? ?????? ????:", reply_markup: { inline_keyboard: keyboard } });
+      await tg("sendMessage", { chat_id: chatId, text: "دسته‌بندی مورد نظر خود را انتخاب کنید:", reply_markup: { inline_keyboard: keyboard } });
       return null;
     } else if (accountCount > 0 && v2rayCount === 0 && wireguardCount === 0) {
       kind = "account";

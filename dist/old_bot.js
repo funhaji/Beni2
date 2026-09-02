@@ -28,16 +28,16 @@ function randomCode(length = 8) {
 function startMediaTitle(kind, value) {
     const v = String(value || "").trim();
     if (kind === "none" || !v)
-        return "خاموش";
+        return "╪«╪º┘à┘ê╪┤";
     if (kind === "text")
-        return `متن: ${v.slice(0, 40)}${v.length > 40 ? "…" : ""}`;
+        return `┘à╪¬┘å: ${v.slice(0, 40)}${v.length > 40 ? "ΓÇª" : ""}`;
     if (kind === "sticker")
-        return "استیکر";
+        return "╪º╪│╪¬█î┌⌐╪▒";
     if (kind === "animation")
-        return "گیف";
+        return "┌»█î┘ü";
     if (kind === "photo")
-        return "عکس";
-    return "خاموش";
+        return "╪╣┌⌐╪│";
+    return "╪«╪º┘à┘ê╪┤";
 }
 async function sendStartMedia(chatId) {
     const kindRaw = (await getSetting("start_media_kind")) || "none";
@@ -74,7 +74,7 @@ function truncateText(value, max) {
     const v = String(value || "");
     if (v.length <= max)
         return v;
-    return v.slice(0, Math.max(0, max - 1)) + "…";
+    return v.slice(0, Math.max(0, max - 1)) + "ΓÇª";
 }
 function formatPriceToman(value) {
     const amount = Math.round(Number(value) || 0);
@@ -83,57 +83,57 @@ function formatPriceToman(value) {
 function formatPaymentMethodTitle(methodRaw) {
     const method = String(methodRaw || "").trim().toLowerCase();
     if (method === "wallet")
-        return "کیف پول";
+        return "┌⌐█î┘ü ┘╛┘ê┘ä";
     if (method === "card2card")
-        return "کارت‌به‌کارت";
+        return "┌⌐╪º╪▒╪¬ΓÇî╪¿┘çΓÇî┌⌐╪º╪▒╪¬";
     if (method === "tronado")
         return "TRON (Tronado)";
     if (method === "tetrapay")
-        return "تتراپی";
+        return "╪¬╪¬╪▒╪º┘╛█î";
     if (method === "plisio")
         return "Plisio";
     if (method === "swapwallet")
         return "SwapWallet";
     if (method === "crypto")
-        return "کریپتو";
+        return "┌⌐╪▒█î┘╛╪¬┘ê";
     if (method === "referral_reward")
-        return "جایزه دعوت";
+        return "╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬";
     return methodRaw ? String(methodRaw) : "-";
 }
 function formatOrderStatusTitle(statusRaw) {
     const status = String(statusRaw || "").trim().toLowerCase();
     if (status === "pending")
-        return "⏳ در انتظار پرداخت";
+        return "ΓÅ│ ╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ┘╛╪▒╪»╪º╪«╪¬";
     if (status === "awaiting_receipt")
-        return "📷 منتظر ارسال رسید";
+        return "≡ƒô╖ ┘à┘å╪¬╪╕╪▒ ╪º╪▒╪│╪º┘ä ╪▒╪│█î╪»";
     if (status === "receipt_submitted")
-        return "🕵️ در انتظار بررسی";
+        return "≡ƒò╡∩╕Å ╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ╪¿╪▒╪▒╪│█î";
     if (status === "fulfilling")
-        return "⚙️ در حال آماده‌سازی";
+        return "ΓÜÖ∩╕Å ╪»╪▒ ╪¡╪º┘ä ╪ó┘à╪º╪»┘çΓÇî╪│╪º╪▓█î";
     if (status === "paid")
-        return "✅ تحویل شده";
+        return "Γ£à ╪¬╪¡┘ê█î┘ä ╪┤╪»┘ç";
     if (status === "denied")
-        return "❌ رد شده";
+        return "Γ¥î ╪▒╪» ╪┤╪»┘ç";
     if (status === "cancelled")
-        return "🗑 لغو شده";
+        return "≡ƒùæ ┘ä╪║┘ê ╪┤╪»┘ç";
     if (status === "awaiting_config")
-        return "🧩 نیازمند کانفیگ دستی";
+        return "≡ƒº⌐ ┘å█î╪º╪▓┘à┘å╪» ┌⌐╪º┘å┘ü█î┌» ╪»╪│╪¬█î";
     return statusRaw ? String(statusRaw) : "-";
 }
 function formatWalletTransactionType(typeRaw) {
     const type = String(typeRaw || "").trim().toLowerCase();
     if (type === "charge")
-        return "شارژ کیف پول";
+        return "╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä";
     if (type === "purchase")
-        return "خرید محصول";
+        return "╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä";
     if (type === "refund")
-        return "بازگشت وجه";
+        return "╪¿╪º╪▓┌»╪┤╪¬ ┘ê╪¼┘ç";
     if (type === "admin_add")
-        return "افزایش توسط ادمین";
+        return "╪º┘ü╪▓╪º█î╪┤ ╪¬┘ê╪│╪╖ ╪º╪»┘à█î┘å";
     if (type === "admin_sub")
-        return "کسر توسط ادمین";
+        return "┌⌐╪│╪▒ ╪¬┘ê╪│╪╖ ╪º╪»┘à█î┘å";
     if (type === "referral_reward")
-        return "جایزه دعوت";
+        return "╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬";
     return typeRaw ? String(typeRaw) : "-";
 }
 function parseStartCommand(text) {
@@ -155,17 +155,17 @@ function normalizeReferralConfigDeliveryMode(raw) {
 }
 function referralConfigDeliveryModeLabel(mode) {
     if (mode === "panel")
-        return "تحویل از پنل";
-    return "تحویل دستی ادمین (اولویت با انبار)";
+        return "╪¬╪¡┘ê█î┘ä ╪º╪▓ ┘╛┘å┘ä";
+    return "╪¬╪¡┘ê█î┘ä ╪»╪│╪¬█î ╪º╪»┘à█î┘å (╪º┘ê┘ä┘ê█î╪¬ ╪¿╪º ╪º┘å╪¿╪º╪▒)";
 }
 function referralRewardStatusLabel(status) {
     if (status === "granted")
-        return "تحویل شد";
+        return "╪¬╪¡┘ê█î┘ä ╪┤╪»";
     if (status === "awaiting_admin")
-        return "در انتظار تحویل ادمین";
+        return "╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ╪¬╪¡┘ê█î┘ä ╪º╪»┘à█î┘å";
     if (status === "blocked")
-        return "متوقف به دلیل کمبود/تنظیمات";
-    return "در حال پردازش";
+        return "┘à╪¬┘ê┘é┘ü ╪¿┘ç ╪»┘ä█î┘ä ┌⌐┘à╪¿┘ê╪»/╪¬┘å╪╕█î┘à╪º╪¬";
+    return "╪»╪▒ ╪¡╪º┘ä ┘╛╪▒╪»╪º╪▓╪┤";
 }
 function getReferralRemainingCount(qualifiedCount, threshold) {
     if (threshold <= 0)
@@ -176,9 +176,9 @@ function getReferralRemainingCount(qualifiedCount, threshold) {
 }
 function describeReferralReward(settings, productName) {
     if (settings.rewardType === "config") {
-        return productName ? `یک کانفیگ از محصول «${productName}» (روش تحویل خودکار بر اساس پنل محصول)` : `یک کانفیگ رایگان (روش تحویل خودکار)`;
+        return productName ? `█î┌⌐ ┌⌐╪º┘å┘ü█î┌» ╪º╪▓ ┘à╪¡╪╡┘ê┘ä ┬½${productName}┬╗ (╪▒┘ê╪┤ ╪¬╪¡┘ê█î┘ä ╪«┘ê╪»┌⌐╪º╪▒ ╪¿╪▒ ╪º╪│╪º╪│ ┘╛┘å┘ä ┘à╪¡╪╡┘ê┘ä)` : `█î┌⌐ ┌⌐╪º┘å┘ü█î┌» ╪▒╪º█î┌»╪º┘å (╪▒┘ê╪┤ ╪¬╪¡┘ê█î┘ä ╪«┘ê╪»┌⌐╪º╪▒)`;
     }
-    return `${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول`;
+    return `${formatPriceToman(settings.walletAmount)} ╪¬┘ê┘à╪º┘å ╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä`;
 }
 async function getBotUsername() {
     if (botUsernameCache !== undefined)
@@ -200,7 +200,7 @@ async function buildReferralInviteLink(userId) {
     return `https://t.me/${username}?start=ref_${userId}`;
 }
 function buildReferralShareUrl(inviteLink) {
-    const message = `با لینک من وارد ربات شو و از سرویس استفاده کن:\n${inviteLink}`;
+    const message = `╪¿╪º ┘ä█î┘å┌⌐ ┘à┘å ┘ê╪º╪▒╪» ╪▒╪¿╪º╪¬ ╪┤┘ê ┘ê ╪º╪▓ ╪│╪▒┘ê█î╪│ ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å:\n${inviteLink}`;
     return `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(message)}`;
 }
 async function getReferralSettingsSnapshot() {
@@ -331,7 +331,7 @@ async function createReferralRewardOrder(inviterId, productId, batch) {
         purchaseId,
         telegramId: inviterId,
         productId: Number(product.id),
-        productNameSnapshot: `${String(product.name || "").trim()} | جایزه دعوت (${batch})`,
+        productNameSnapshot: `${String(product.name || "").trim()} | ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ (${batch})`,
         sellMode,
         sourcePanelId,
         panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
@@ -343,7 +343,7 @@ async function createReferralRewardOrder(inviterId, productId, batch) {
         tronAmount: 0,
         status: "pending",
         walletUsed: 0,
-        walletTransactionDescription: `جایزه دعوت دوستان (${purchaseId})`
+        walletTransactionDescription: `╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å (${purchaseId})`
     });
     const result = await finalizeOrder(orderId, null);
     if (!result.ok) {
@@ -369,7 +369,7 @@ async function maybeGrantReferralRewards(inviterId) {
         const productRows = await sql `SELECT name FROM products WHERE id = ${settings.productId} LIMIT 1;`;
         productName = productRows.length ? String(productRows[0].name || "") : null;
         if (!productName) {
-            await notifyAdmins(`⚠️ سیستم دعوت تنظیم شده اما محصول جایزه پیدا نشد.\nproduct_id: ${settings.productId}`);
+            await notifyAdmins(`ΓÜá∩╕Å ╪│█î╪│╪¬┘à ╪»╪╣┘ê╪¬ ╪¬┘å╪╕█î┘à ╪┤╪»┘ç ╪º┘à╪º ┘à╪¡╪╡┘ê┘ä ╪¼╪º█î╪▓┘ç ┘╛█î╪»╪º ┘å╪┤╪».\nproduct_id: ${settings.productId}`);
             return null;
         }
     }
@@ -414,44 +414,44 @@ async function maybeGrantReferralRewards(inviterId) {
             ${inviterId},
             ${settings.walletAmount},
             'referral_reward',
-            ${`جایزه دعوت دوستان - مرحله ${batch}`}
+            ${`╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å - ┘à╪▒╪¡┘ä┘ç ${batch}`}
           );
         `;
                 await sql `
           UPDATE referral_rewards
-          SET description = ${`جایزه دعوت دوستان - ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول`}
+          SET description = ${`╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å - ${formatPriceToman(settings.walletAmount)} ╪¬┘ê┘à╪º┘å ╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä`}
           WHERE id = ${rewardId};
         `;
                 await tg("sendMessage", {
                     chat_id: inviterId,
-                    text: `🎁 جایزه دعوت شما آماده شد!\n` +
-                        `مرحله: ${batch}\n` +
-                        `پاداش: ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول\n` +
-                        `دعوت‌های تاییدشده: ${qualifiedCount}`
+                    text: `≡ƒÄü ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪┤┘à╪º ╪ó┘à╪º╪»┘ç ╪┤╪»!\n` +
+                        `┘à╪▒╪¡┘ä┘ç: ${batch}\n` +
+                        `┘╛╪º╪»╪º╪┤: ${formatPriceToman(settings.walletAmount)} ╪¬┘ê┘à╪º┘å ╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä\n` +
+                        `╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪¬╪º█î█î╪»╪┤╪»┘ç: ${qualifiedCount}`
                 }).catch(() => { });
-                await notifyAdmins(`🎁 جایزه دعوت پرداخت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nپاداش: ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول\nدعوت‌های تاییدشده: ${qualifiedCount}`);
+                await notifyAdmins(`≡ƒÄü ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪┤╪»\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n┘à╪▒╪¡┘ä┘ç: ${batch}\n┘╛╪º╪»╪º╪┤: ${formatPriceToman(settings.walletAmount)} ╪¬┘ê┘à╪º┘å ╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä\n╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪¬╪º█î█î╪»╪┤╪»┘ç: ${qualifiedCount}`);
                 continue;
             }
             const granted = await createReferralRewardOrder(inviterId, Number(settings.productId), batch);
             if (!granted.ok) {
                 await sql `DELETE FROM referral_rewards WHERE id = ${rewardId};`;
-                await notifyAdmins(`⚠️ جایزه دعوت کانفیگ پرداخت نشد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || settings.productId}\nعلت: ${granted.reason}`);
+                await notifyAdmins(`ΓÜá∩╕Å ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┌⌐╪º┘å┘ü█î┌» ┘╛╪▒╪»╪º╪«╪¬ ┘å╪┤╪»\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n┘à╪▒╪¡┘ä┘ç: ${batch}\n┘à╪¡╪╡┘ê┘ä: ${productName || settings.productId}\n╪╣┘ä╪¬: ${granted.reason}`);
                 continue;
             }
             await sql `
         UPDATE referral_rewards
         SET order_id = ${granted.orderId},
-            description = ${`جایزه دعوت دوستان - ${productName || "کانفیگ رایگان"}`}
+            description = ${`╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å - ${productName || "┌⌐╪º┘å┘ü█î┌» ╪▒╪º█î┌»╪º┘å"}`}
         WHERE id = ${rewardId};
       `;
             await tg("sendMessage", {
                 chat_id: inviterId,
-                text: `🎁 جایزه دعوت شما ثبت شد!\n` +
-                    `مرحله: ${batch}\n` +
-                    `پاداش: ${productName ? `کانفیگ ${productName}` : "کانفیگ رایگان"}\n` +
-                    `شناسه سفارش: ${granted.purchaseId}`
+                text: `≡ƒÄü ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪┤┘à╪º ╪½╪¿╪¬ ╪┤╪»!\n` +
+                    `┘à╪▒╪¡┘ä┘ç: ${batch}\n` +
+                    `┘╛╪º╪»╪º╪┤: ${productName ? `┌⌐╪º┘å┘ü█î┌» ${productName}` : "┌⌐╪º┘å┘ü█î┌» ╪▒╪º█î┌»╪º┘å"}\n` +
+                    `╪┤┘å╪º╪│┘ç ╪│┘ü╪º╪▒╪┤: ${granted.purchaseId}`
             }).catch(() => { });
-            await notifyAdmins(`🎁 جایزه دعوت کانفیگ ثبت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || settings.productId}\nسفارش: ${granted.purchaseId}`);
+            await notifyAdmins(`≡ƒÄü ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┌⌐╪º┘å┘ü█î┌» ╪½╪¿╪¬ ╪┤╪»\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n┘à╪▒╪¡┘ä┘ç: ${batch}\n┘à╪¡╪╡┘ê┘ä: ${productName || settings.productId}\n╪│┘ü╪º╪▒╪┤: ${granted.purchaseId}`);
         }
         catch (error) {
             await sql `DELETE FROM referral_rewards WHERE id = ${rewardId};`;
@@ -500,13 +500,13 @@ async function createReferralRewardOrderV2(inviterId, productId, batch) {
     let sellMode = "manual";
     let sourcePanelId = null;
     let panelConfigSnapshot = basePanelConfig;
-    // Auto-detect delivery mode: if the product has a v2ray panel linked → panel mode (auto-create config).
-    // Otherwise → admin mode (ask admin to deliver config manually).
+    // Auto-detect delivery mode: if the product has a v2ray panel linked ΓåÆ panel mode (auto-create config).
+    // Otherwise ΓåÆ admin mode (ask admin to deliver config manually).
     const hasPanel = !!(product.panel_id);
     const deliveryMode = hasPanel ? "panel" : "admin";
     if (deliveryMode === "panel") {
         if (Number(product.panel_sell_limit || 0) > 0 && panelRemaining <= 0) {
-            // Panel sell limit exhausted — fall back to admin delivery instead of blocking.
+            // Panel sell limit exhausted ΓÇö fall back to admin delivery instead of blocking.
             sellMode = "manual";
             sourcePanelId = null;
             panelConfigSnapshot = { ...basePanelConfig, force_awaiting_config: true };
@@ -517,7 +517,7 @@ async function createReferralRewardOrderV2(inviterId, productId, batch) {
         }
     }
     else {
-        // No panel linked — admin must deliver manually. Try inventory first, then manual.
+        // No panel linked ΓÇö admin must deliver manually. Try inventory first, then manual.
         if (Number(product.stock || 0) > 0) {
             sellMode = "manual";
             sourcePanelId = null;
@@ -533,7 +533,7 @@ async function createReferralRewardOrderV2(inviterId, productId, batch) {
         purchaseId,
         telegramId: inviterId,
         productId: Number(product.id),
-        productNameSnapshot: `${String(product.name || "").trim()} | جایزه دعوت (${batch})`,
+        productNameSnapshot: `${String(product.name || "").trim()} | ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ (${batch})`,
         sellMode,
         sourcePanelId,
         panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
@@ -545,7 +545,7 @@ async function createReferralRewardOrderV2(inviterId, productId, batch) {
         tronAmount: 0,
         status: "pending",
         walletUsed: 0,
-        walletTransactionDescription: `جایزه دعوت دوستان (${purchaseId})`
+        walletTransactionDescription: `╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å (${purchaseId})`
     });
     const result = await finalizeOrder(orderId, null);
     if (result.ok) {
@@ -594,11 +594,11 @@ async function maybeGrantReferralRewardsV2(inviterId) {
     }
     if (settings.rewardType === "config" && !settings.productId) {
         logError("referral_reward_config_missing_product", new Error("referral_reward_product_id_missing"), { inviterId });
-        await notifyAdmins(`⚠️ جایزه دعوت کانفیگ تنظیم نشده است\nکاربر: ${inviterId}\nعلت: محصول جایزه انتخاب نشده است.`);
+        await notifyAdmins(`ΓÜá∩╕Å ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┌⌐╪º┘å┘ü█î┌» ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n╪╣┘ä╪¬: ┘à╪¡╪╡┘ê┘ä ╪¼╪º█î╪▓┘ç ╪º┘å╪¬╪«╪º╪¿ ┘å╪┤╪»┘ç ╪º╪│╪¬.`);
         await tg("sendMessage", {
             chat_id: inviterId,
-            text: "⚠️ محصول جایزه دعوت هنوز توسط ادمین تنظیم نشده.\n" +
-                "بعد از تنظیم محصول، جایزه شما به صورت خودکار ثبت می‌شود."
+            text: "ΓÜá∩╕Å ┘à╪¡╪╡┘ê┘ä ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┘ç┘å┘ê╪▓ ╪¬┘ê╪│╪╖ ╪º╪»┘à█î┘å ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç.\n" +
+                "╪¿╪╣╪» ╪º╪▓ ╪¬┘å╪╕█î┘à ┘à╪¡╪╡┘ê┘ä╪î ╪¼╪º█î╪▓┘ç ╪┤┘à╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪«┘ê╪»┌⌐╪º╪▒ ╪½╪¿╪¬ ┘à█îΓÇî╪┤┘ê╪»."
         }).catch(() => { });
         return null;
     }
@@ -665,12 +665,12 @@ async function maybeGrantReferralRewardsV2(inviterId) {
           LIMIT 1;
         `;
                 if (orderRows.length && String(orderRows[0].status || "").toLowerCase() === "awaiting_config") {
-                    await notifyAdmins(`🛠 جایزه دعوت در انتظار اقدام ادمین است\nکاربر: ${inviterId}\nمرحله: ${batch}\nسفارش: ${String(orderRows[0].purchase_id || "-")}`, { inline_keyboard: [[{ text: "ارسال کانفیگ جایزه", callback_data: `admin_provide_config_${rewardOrderId}` }]] });
+                    await notifyAdmins(`≡ƒ¢á ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ╪º┘é╪»╪º┘à ╪º╪»┘à█î┘å ╪º╪│╪¬\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n┘à╪▒╪¡┘ä┘ç: ${batch}\n╪│┘ü╪º╪▒╪┤: ${String(orderRows[0].purchase_id || "-")}`, { inline_keyboard: [[{ text: "╪º╪▒╪│╪º┘ä ┌⌐╪º┘å┘ü█î┌» ╪¼╪º█î╪▓┘ç", callback_data: `admin_provide_config_${rewardOrderId}` }]] });
                     if ((await getAdminIds()).length === 0) {
                         await tg("sendMessage", {
                             chat_id: inviterId,
-                            text: "⚠️ جایزه شما در انتظار آماده‌سازی ادمین است اما هیچ ادمینی تنظیم نشده است.\n" +
-                                "لطفاً ADMIN_IDS را تنظیم کنید یا به پشتیبانی پیام دهید."
+                            text: "ΓÜá∩╕Å ╪¼╪º█î╪▓┘ç ╪┤┘à╪º ╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ╪ó┘à╪º╪»┘çΓÇî╪│╪º╪▓█î ╪º╪»┘à█î┘å ╪º╪│╪¬ ╪º┘à╪º ┘ç█î┌å ╪º╪»┘à█î┘å█î ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬.\n" +
+                                "┘ä╪╖┘ü╪º┘ï ADMIN_IDS ╪▒╪º ╪¬┘å╪╕█î┘à ┌⌐┘å█î╪» █î╪º ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»."
                         }).catch(() => { });
                     }
                     await sql `UPDATE referral_rewards SET updated_at = NOW() WHERE id = ${rewardId};`;
@@ -703,25 +703,25 @@ async function maybeGrantReferralRewardsV2(inviterId) {
             ${inviterId},
             ${settings.walletAmount},
             'referral_reward',
-            ${`جایزه دعوت دوستان - مرحله ${batch}`}
+            ${`╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å - ┘à╪▒╪¡┘ä┘ç ${batch}`}
           );
         `;
                 await sql `
           UPDATE referral_rewards
           SET status = 'granted',
               failure_reason = NULL,
-              description = ${`جایزه دعوت دوستان - ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول`},
+              description = ${`╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å - ${formatPriceToman(settings.walletAmount)} ╪¬┘ê┘à╪º┘å ╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä`},
               updated_at = NOW()
           WHERE id = ${rewardId};
         `;
                 await tg("sendMessage", {
                     chat_id: inviterId,
-                    text: `🎁 جایزه دعوت شما آماده شد!\n` +
-                        `مرحله: ${batch}\n` +
-                        `پاداش: ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول\n` +
-                        `دعوت‌های تاییدشده: ${qualifiedCount}`
+                    text: `≡ƒÄü ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪┤┘à╪º ╪ó┘à╪º╪»┘ç ╪┤╪»!\n` +
+                        `┘à╪▒╪¡┘ä┘ç: ${batch}\n` +
+                        `┘╛╪º╪»╪º╪┤: ${formatPriceToman(settings.walletAmount)} ╪¬┘ê┘à╪º┘å ╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä\n` +
+                        `╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪¬╪º█î█î╪»╪┤╪»┘ç: ${qualifiedCount}`
                 }).catch(() => { });
-                await notifyAdmins(`🎁 جایزه دعوت پرداخت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nپاداش: ${formatPriceToman(settings.walletAmount)} تومان اعتبار کیف پول\nدعوت‌های تاییدشده: ${qualifiedCount}`);
+                await notifyAdmins(`≡ƒÄü ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪┤╪»\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n┘à╪▒╪¡┘ä┘ç: ${batch}\n┘╛╪º╪»╪º╪┤: ${formatPriceToman(settings.walletAmount)} ╪¬┘ê┘à╪º┘å ╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä\n╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪¬╪º█î█î╪»╪┤╪»┘ç: ${qualifiedCount}`);
                 continue;
             }
             const productId = Number(settings.productId || 0);
@@ -734,54 +734,54 @@ async function maybeGrantReferralRewardsV2(inviterId) {
           UPDATE referral_rewards
           SET status = 'blocked',
               failure_reason = ${granted.reason},
-              description = ${`جایزه دعوت - ${productName || productId} - ${granted.reason}`},
+              description = ${`╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ - ${productName || productId} - ${granted.reason}`},
               updated_at = NOW()
           WHERE id = ${rewardId};
         `;
                 await tg("sendMessage", {
                     chat_id: inviterId,
-                    text: "⚠️ جایزه دعوت شما فعلاً قابل ثبت نیست.\n" +
-                        "برای پیگیری، از پشتیبانی کمک بگیرید."
+                    text: "ΓÜá∩╕Å ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪┤┘à╪º ┘ü╪╣┘ä╪º┘ï ┘é╪º╪¿┘ä ╪½╪¿╪¬ ┘å█î╪│╪¬.\n" +
+                        "╪¿╪▒╪º█î ┘╛█î┌»█î╪▒█î╪î ╪º╪▓ ┘╛╪┤╪¬█î╪¿╪º┘å█î ┌⌐┘à┌⌐ ╪¿┌»█î╪▒█î╪»."
                 }).catch(() => { });
                 if (previousStatus !== "blocked" || previousFailureReason !== granted.reason) {
-                    await notifyAdmins(`⚠️ جایزه دعوت کانفیگ پرداخت نشد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || productId}\nعلت: ${granted.reason}`);
+                    await notifyAdmins(`ΓÜá∩╕Å ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┌⌐╪º┘å┘ü█î┌» ┘╛╪▒╪»╪º╪«╪¬ ┘å╪┤╪»\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n┘à╪▒╪¡┘ä┘ç: ${batch}\n┘à╪¡╪╡┘ê┘ä: ${productName || productId}\n╪╣┘ä╪¬: ${granted.reason}`);
                 }
                 continue;
             }
-            const deliveryModeLabel = detectedDeliveryMode === "panel" ? "تحویل خودکار از پنل" : "تحویل دستی توسط ادمین";
+            const deliveryModeLabel = detectedDeliveryMode === "panel" ? "╪¬╪¡┘ê█î┘ä ╪«┘ê╪»┌⌐╪º╪▒ ╪º╪▓ ┘╛┘å┘ä" : "╪¬╪¡┘ê█î┘ä ╪»╪│╪¬█î ╪¬┘ê╪│╪╖ ╪º╪»┘à█î┘å";
             await sql `
         UPDATE referral_rewards
         SET order_id = ${granted.orderId},
             reward_delivery_mode = ${detectedDeliveryMode},
             status = ${granted.status},
             failure_reason = NULL,
-            description = ${`جایزه دعوت دوستان - ${productName || "کانفیگ رایگان"} (${deliveryModeLabel})`},
+            description = ${`╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å - ${productName || "┌⌐╪º┘å┘ü█î┌» ╪▒╪º█î┌»╪º┘å"} (${deliveryModeLabel})`},
             updated_at = NOW()
         WHERE id = ${rewardId};
       `;
             await tg("sendMessage", {
                 chat_id: inviterId,
-                text: `🎁 جایزه دعوت شما ثبت شد!\n` +
-                    `مرحله: ${batch}\n` +
-                    `پاداش: ${productName ? `کانفیگ ${productName}` : "کانفیگ رایگان"}\n` +
-                    `روش تحویل: ${deliveryModeLabel}\n` +
-                    `شناسه سفارش: ${granted.purchaseId}` +
-                    (granted.status === "awaiting_admin" ? `\nوضعیت: در انتظار آماده‌سازی توسط ادمین` : "")
+                text: `≡ƒÄü ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪┤┘à╪º ╪½╪¿╪¬ ╪┤╪»!\n` +
+                    `┘à╪▒╪¡┘ä┘ç: ${batch}\n` +
+                    `┘╛╪º╪»╪º╪┤: ${productName ? `┌⌐╪º┘å┘ü█î┌» ${productName}` : "┌⌐╪º┘å┘ü█î┌» ╪▒╪º█î┌»╪º┘å"}\n` +
+                    `╪▒┘ê╪┤ ╪¬╪¡┘ê█î┘ä: ${deliveryModeLabel}\n` +
+                    `╪┤┘å╪º╪│┘ç ╪│┘ü╪º╪▒╪┤: ${granted.purchaseId}` +
+                    (granted.status === "awaiting_admin" ? `\n┘ê╪╢╪╣█î╪¬: ╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ╪ó┘à╪º╪»┘çΓÇî╪│╪º╪▓█î ╪¬┘ê╪│╪╖ ╪º╪»┘à█î┘å` : "")
             }).catch(() => { });
             if (granted.status === "awaiting_admin") {
-                await notifyAdmins(`🛠 جایزه دعوت نیازمند اقدام ادمین است\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || productId}\nروش: ${deliveryModeLabel}\nسفارش: ${granted.purchaseId}`, {
-                    inline_keyboard: [[{ text: "ارسال کانفیگ جایزه", callback_data: `admin_provide_config_${granted.orderId}` }]]
+                await notifyAdmins(`≡ƒ¢á ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┘å█î╪º╪▓┘à┘å╪» ╪º┘é╪»╪º┘à ╪º╪»┘à█î┘å ╪º╪│╪¬\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n┘à╪▒╪¡┘ä┘ç: ${batch}\n┘à╪¡╪╡┘ê┘ä: ${productName || productId}\n╪▒┘ê╪┤: ${deliveryModeLabel}\n╪│┘ü╪º╪▒╪┤: ${granted.purchaseId}`, {
+                    inline_keyboard: [[{ text: "╪º╪▒╪│╪º┘ä ┌⌐╪º┘å┘ü█î┌» ╪¼╪º█î╪▓┘ç", callback_data: `admin_provide_config_${granted.orderId}` }]]
                 });
                 if ((await getAdminIds()).length === 0) {
                     await tg("sendMessage", {
                         chat_id: inviterId,
-                        text: "⚠️ جایزه شما ثبت شد اما هیچ ادمینی برای تحویل کانفیگ تنظیم نشده است.\n" +
-                            "لطفاً به پشتیبانی پیام دهید."
+                        text: "ΓÜá∩╕Å ╪¼╪º█î╪▓┘ç ╪┤┘à╪º ╪½╪¿╪¬ ╪┤╪» ╪º┘à╪º ┘ç█î┌å ╪º╪»┘à█î┘å█î ╪¿╪▒╪º█î ╪¬╪¡┘ê█î┘ä ┌⌐╪º┘å┘ü█î┌» ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬.\n" +
+                            "┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»."
                     }).catch(() => { });
                 }
             }
             else if (granted.status === "granted") {
-                await notifyAdmins(`🎁 جایزه دعوت کانفیگ ثبت شد\nکاربر: ${inviterId}\nمرحله: ${batch}\nمحصول: ${productName || productId}\nروش: ${deliveryModeLabel}\nسفارش: ${granted.purchaseId}`);
+                await notifyAdmins(`≡ƒÄü ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┌⌐╪º┘å┘ü█î┌» ╪½╪¿╪¬ ╪┤╪»\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n┘à╪▒╪¡┘ä┘ç: ${batch}\n┘à╪¡╪╡┘ê┘ä: ${productName || productId}\n╪▒┘ê╪┤: ${deliveryModeLabel}\n╪│┘ü╪º╪▒╪┤: ${granted.purchaseId}`);
             }
         }
         catch (error) {
@@ -789,15 +789,15 @@ async function maybeGrantReferralRewardsV2(inviterId) {
         UPDATE referral_rewards
         SET status = 'blocked',
             failure_reason = 'unexpected_error',
-            description = 'جایزه دعوت - unexpected_error',
+            description = '╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ - unexpected_error',
             updated_at = NOW()
         WHERE id = ${rewardId};
       `;
-            await notifyAdmins(`❌ خطا در ثبت جایزه دعوت\nکاربر: ${inviterId}\nمرحله: ${batch}\nعلت: ${String(error?.message || error || "unknown")}`);
+            await notifyAdmins(`Γ¥î ╪«╪╖╪º ╪»╪▒ ╪½╪¿╪¬ ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬\n┌⌐╪º╪▒╪¿╪▒: ${inviterId}\n┘à╪▒╪¡┘ä┘ç: ${batch}\n╪╣┘ä╪¬: ${String(error?.message || error || "unknown")}`);
             await tg("sendMessage", {
                 chat_id: inviterId,
-                text: "❌ در ثبت جایزه دعوت خطای داخلی رخ داد.\n" +
-                    "موضوع برای ادمین ارسال شد. لطفاً کمی بعد دوباره بررسی کنید."
+                text: "Γ¥î ╪»╪▒ ╪½╪¿╪¬ ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪«╪╖╪º█î ╪»╪º╪«┘ä█î ╪▒╪« ╪»╪º╪».\n" +
+                    "┘à┘ê╪╢┘ê╪╣ ╪¿╪▒╪º█î ╪º╪»┘à█î┘å ╪º╪▒╪│╪º┘ä ╪┤╪». ┘ä╪╖┘ü╪º┘ï ┌⌐┘à█î ╪¿╪╣╪» ╪»┘ê╪¿╪º╪▒┘ç ╪¿╪▒╪▒╪│█î ┌⌐┘å█î╪»."
             }).catch(() => { });
             logError("grant_referral_reward_v2_failed", error, { inviterId, batch });
         }
@@ -827,17 +827,17 @@ async function maybeQualifyReferralUser(userId) {
   `;
     const referred = referredRows[0];
     const referredName = [String(referred?.first_name || "").trim(), String(referred?.last_name || "").trim()].filter(Boolean).join(" ").trim() ||
-        (referred?.username ? `@${String(referred.username).replace(/^@/, "").trim()}` : "یک کاربر");
+        (referred?.username ? `@${String(referred.username).replace(/^@/, "").trim()}` : "█î┌⌐ ┌⌐╪º╪▒╪¿╪▒");
     const trailingLines = [];
     if (settings.enabled && settings.threshold > 0) {
         const remaining = getReferralRemainingCount(qualifiedCount, settings.threshold);
-        trailingLines.push(remaining > 0 ? `فقط ${remaining} نفر تا پاداش بعدی باقی مانده است.` : "✅ آستانه پاداش تکمیل شد. وضعیت ثبت جایزه تا لحظاتی دیگر اعلام می‌شود.");
+        trailingLines.push(remaining > 0 ? `┘ü┘é╪╖ ${remaining} ┘å┘ü╪▒ ╪¬╪º ┘╛╪º╪»╪º╪┤ ╪¿╪╣╪»█î ╪¿╪º┘é█î ┘à╪º┘å╪»┘ç ╪º╪│╪¬.` : "Γ£à ╪ó╪│╪¬╪º┘å┘ç ┘╛╪º╪»╪º╪┤ ╪¬┌⌐┘à█î┘ä ╪┤╪». ┘ê╪╢╪╣█î╪¬ ╪½╪¿╪¬ ╪¼╪º█î╪▓┘ç ╪¬╪º ┘ä╪¡╪╕╪º╪¬█î ╪»█î┌»╪▒ ╪º╪╣┘ä╪º┘à ┘à█îΓÇî╪┤┘ê╪».");
     }
     await tg("sendMessage", {
         chat_id: inviterId,
-        text: `👥 دعوت شما تایید شد!\n` +
-            `کاربر: ${referredName}\n` +
-            `دعوت‌های تاییدشده: ${qualifiedCount}` +
+        text: `≡ƒæÑ ╪»╪╣┘ê╪¬ ╪┤┘à╪º ╪¬╪º█î█î╪» ╪┤╪»!\n` +
+            `┌⌐╪º╪▒╪¿╪▒: ${referredName}\n` +
+            `╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪¬╪º█î█î╪»╪┤╪»┘ç: ${qualifiedCount}` +
             (trailingLines.length ? `\n${trailingLines.join("\n")}` : "")
     }).catch(() => { });
     await maybeGrantReferralRewardsV2(inviterId);
@@ -870,7 +870,7 @@ function parseDataAmountToMb(raw) {
 }
 function parseInfiniteDataFlag(raw) {
     const normalized = raw.trim().toLowerCase();
-    return ["infinite", "unlimited", "∞", "inf", "نامحدود", "بینهایت", "بی‌نهایت", "بى‌نهايت"].includes(normalized);
+    return ["infinite", "unlimited", "Γê₧", "inf", "┘å╪º┘à╪¡╪»┘ê╪»", "╪¿█î┘å┘ç╪º█î╪¬", "╪¿█îΓÇî┘å┘ç╪º█î╪¬", "╪¿┘ëΓÇî┘å┘ç╪º┘è╪¬"].includes(normalized);
 }
 function formatBytesShort(value) {
     const bytes = Number(value);
@@ -884,15 +884,15 @@ function formatBytesShort(value) {
 function formatExpiryLabelFromSeconds(unixSeconds) {
     const n = Number(unixSeconds);
     if (!Number.isFinite(n) || n <= 0)
-        return "بدون انقضا";
+        return "╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º";
     const ts = n * 1000;
-    return `${new Date(ts).toLocaleString("en-US")} (${Math.max(0, Math.ceil((ts - Date.now()) / (24 * 60 * 60 * 1000)))} روز مانده)`;
+    return `${new Date(ts).toLocaleString("en-US")} (${Math.max(0, Math.ceil((ts - Date.now()) / (24 * 60 * 60 * 1000)))} ╪▒┘ê╪▓ ┘à╪º┘å╪»┘ç)`;
 }
 function formatExpiryLabelFromMilliseconds(ms) {
     const n = Number(ms);
     if (!Number.isFinite(n) || n <= 0)
-        return "بدون انقضا";
-    return `${new Date(n).toLocaleString("en-US")} (${Math.max(0, Math.ceil((n - Date.now()) / (24 * 60 * 60 * 1000)))} روز مانده)`;
+        return "╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º";
+    return `${new Date(n).toLocaleString("en-US")} (${Math.max(0, Math.ceil((n - Date.now()) / (24 * 60 * 60 * 1000)))} ╪▒┘ê╪▓ ┘à╪º┘å╪»┘ç)`;
 }
 function parsePanelType(raw) {
     const value = raw.trim().toLowerCase();
@@ -941,10 +941,10 @@ function parseDeliveryMode(raw) {
 }
 function formatDeliveryModeLabel(mode) {
     if (mode === "both")
-        return "ساب + کانفیگ";
+        return "╪│╪º╪¿ + ┌⌐╪º┘å┘ü█î┌»";
     if (mode === "sub")
-        return "فقط ساب";
-    return "فقط کانفیگ";
+        return "┘ü┘é╪╖ ╪│╪º╪¿";
+    return "┘ü┘é╪╖ ┌⌐╪º┘å┘ü█î┌»";
 }
 function parseProductKind(raw) {
     const value = String(raw || "").trim().toLowerCase();
@@ -1023,9 +1023,9 @@ function parseMaybeBoolean(value) {
     const normalized = String(value ?? "").trim().toLowerCase();
     if (!normalized)
         return null;
-    if (["true", "1", "yes", "on", "فعال", "روشن"].includes(normalized))
+    if (["true", "1", "yes", "on", "┘ü╪╣╪º┘ä", "╪▒┘ê╪┤┘å"].includes(normalized))
         return true;
-    if (["false", "0", "no", "off", "غیرفعال", "خاموش"].includes(normalized))
+    if (["false", "0", "no", "off", "╪║█î╪▒┘ü╪╣╪º┘ä", "╪«╪º┘à┘ê╪┤"].includes(normalized))
         return false;
     return null;
 }
@@ -1096,16 +1096,16 @@ export function parseDeliveryPayload(raw) {
 function configSummaryLine(payload, outboundHostHint) {
     const configCount = payload.configLinks?.length || 0;
     let base = payload.subscriptionUrl && configCount
-        ? `ساب + ${configCount} کانفیگ`
+        ? `╪│╪º╪¿ + ${configCount} ┌⌐╪º┘å┘ü█î┌»`
         : payload.subscriptionUrl
-            ? "فقط ساب"
+            ? "┘ü┘é╪╖ ╪│╪º╪¿"
             : configCount
-                ? `${configCount} کانفیگ`
-                : "نامشخص";
+                ? `${configCount} ┌⌐╪º┘å┘ü█î┌»`
+                : "┘å╪º┘à╪┤╪«╪╡";
     const h = (outboundHostHint || "").trim();
     if (h) {
-        const short = h.length > 24 ? `${h.slice(0, 22)}…` : h;
-        base = `${base} · @${short}`;
+        const short = h.length > 24 ? `${h.slice(0, 22)}ΓÇª` : h;
+        base = `${base} ┬╖ @${short}`;
     }
     return base;
 }
@@ -1219,13 +1219,13 @@ function panelTypeTitle(panelType) {
 }
 function panelResultLabel(ok) {
     if (ok === null || ok === undefined)
-        return "ندارد";
-    return ok ? "موفق" : "ناموفق";
+        return "┘å╪»╪º╪▒╪»";
+    return ok ? "┘à┘ê┘ü┘é" : "┘å╪º┘à┘ê┘ü┘é";
 }
 function maskSecret(value) {
     if (!value)
         return "-";
-    return "•".repeat(Math.min(Math.max(value.length, 4), 12));
+    return "ΓÇó".repeat(Math.min(Math.max(value.length, 4), 12));
 }
 function isValidHttpUrl(raw) {
     try {
@@ -1270,14 +1270,14 @@ async function createCryptoWalletTopup(chatId, userId, amount, w) {
         tomanPerUnit = Number(w.rate_toman_per_unit || 0) + Number(w.extra_toman_per_unit || 0);
     }
     if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
-        await tg("sendMessage", { chat_id: chatId, text: "نرخ کیف پول کریپتو معتبر نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
         return null;
     }
     const decimals = String(w.currency).toUpperCase() === "USDT" ? 2 : 6;
     const factor = 10 ** decimals;
     const cryptoAmount = Math.ceil((amount / tomanPerUnit) * factor) / factor;
     if (!Number.isFinite(cryptoAmount) || cryptoAmount <= 0) {
-        await tg("sendMessage", { chat_id: chatId, text: "مبلغ کریپتو معتبر نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ┌⌐╪▒█î┘╛╪¬┘ê ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
         return null;
     }
     const rows = await sql `
@@ -1289,30 +1289,30 @@ async function createCryptoWalletTopup(chatId, userId, amount, w) {
     await setState(userId, "await_wallet_receipt", { topupId });
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `شارژ کیف پول ساخته شد ✅\n` +
-            `مبلغ: ${formatPriceToman(amount)} تومان\n\n` +
-            `⏰ مهلت پرداخت: 20 دقیقه\n` +
-            `🪙 ارز: ${String(w.currency)}\n` +
-            `🌐 شبکه: ${String(w.network)}\n` +
-            `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
-            `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
-            `بعد از پرداخت، اسکرین‌شات/رسید پرداخت را همینجا ارسال کنید.`,
-        reply_markup: { inline_keyboard: [[backButton("wallet_menu", "🔙 بازگشت")]] }
+        text: `╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+            `┘à╪¿┘ä╪║: ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å\n\n` +
+            `ΓÅ░ ┘à┘ç┘ä╪¬ ┘╛╪▒╪»╪º╪«╪¬: 20 ╪»┘é█î┘é┘ç\n` +
+            `≡ƒ¬Ö ╪º╪▒╪▓: ${String(w.currency)}\n` +
+            `≡ƒîÉ ╪┤╪¿┌⌐┘ç: ${String(w.network)}\n` +
+            `Γÿæ∩╕Å ┘à╪¿┘ä╪║ ┘╛╪▒╪»╪º╪«╪¬█î: ${cryptoAmount}\n\n` +
+            `≡ƒô▒ ╪ó╪»╪▒╪│ ┌⌐█î┘ü ┘╛┘ê┘ä:\n\n${String(w.address || "-")}\n\n` +
+            `╪¿╪╣╪» ╪º╪▓ ┘╛╪▒╪»╪º╪«╪¬╪î ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬/╪▒╪│█î╪» ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ┘ç┘à█î┘å╪¼╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».`,
+        reply_markup: { inline_keyboard: [[backButton("wallet_menu", "≡ƒöÖ ╪¿╪º╪▓┌»╪┤╪¬")]] }
     });
 }
 function cb(text, callback_data, style) {
     return style ? { text, callback_data, style } : { text, callback_data };
 }
 function homeButton() {
-    return cb("🏠 منوی اصلی", "home", "primary");
+    return cb("≡ƒÅá ┘à┘å┘ê█î ╪º╪╡┘ä█î", "home", "primary");
 }
-function backButton(callback_data, text = "🔙 بازگشت") {
+function backButton(callback_data, text = "≡ƒöÖ ╪¿╪º╪▓┌»╪┤╪¬") {
     return cb(text, callback_data, "primary");
 }
-function cancelButton(callback_data = "home", text = "❌ لغو") {
+function cancelButton(callback_data = "home", text = "Γ¥î ┘ä╪║┘ê") {
     return cb(text, callback_data, "danger");
 }
-function confirmButton(callback_data, text = "✅ تایید") {
+function confirmButton(callback_data, text = "Γ£à ╪¬╪º█î█î╪»") {
     return cb(text, callback_data, "success");
 }
 async function getPlisioTomanPerUsdt() {
@@ -1538,7 +1538,7 @@ async function promptPanelTypePicker(chatId, mode, panelId) {
     const prefix = mode === "add" ? "admin_panel_pick_type_add_" : `admin_panel_pick_type_edit_${panelId}_`;
     await tg("sendMessage", {
         chat_id: chatId,
-        text: mode === "add" ? "نوع پنل جدید را انتخاب کنید:" : "نوع پنل را برای ویرایش انتخاب کنید:",
+        text: mode === "add" ? "┘å┘ê╪╣ ┘╛┘å┘ä ╪¼╪»█î╪» ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:" : "┘å┘ê╪╣ ┘╛┘å┘ä ╪▒╪º ╪¿╪▒╪º█î ┘ê█î╪▒╪º█î╪┤ ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:",
         reply_markup: {
             inline_keyboard: [
                 [
@@ -1557,44 +1557,44 @@ async function promptPanelWizardStep(chatId, payload) {
     const panelId = Number(payload.panelId || 0);
     const panelType = String(payload.panelType || "");
     const totalSteps = panelType === "sanaei" ? 5 : 4; // marzban=4, pasarguard=4, sanaei=5
-    const keepHint = mode === "edit" ? "\nبرای نگه داشتن مقدار فعلی، فقط - بفرستید." : "";
+    const keepHint = mode === "edit" ? "\n╪¿╪▒╪º█î ┘å┌»┘ç ╪»╪º╪┤╪¬┘å ┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î╪î ┘ü┘é╪╖ - ╪¿┘ü╪▒╪│╪¬█î╪»." : "";
     let text = "";
     if (step === "name") {
         text =
-            `مرحله 1 از ${totalSteps} - نام پنل\n` +
-                `نوع: ${panelTypeTitle(panelType)}` +
-                (mode === "edit" ? `\nمقدار فعلی: ${String(payload.name || "-")}` : "") +
-                `${keepHint}\n\nنام پنل را بفرستید.`;
+            `┘à╪▒╪¡┘ä┘ç 1 ╪º╪▓ ${totalSteps} - ┘å╪º┘à ┘╛┘å┘ä\n` +
+                `┘å┘ê╪╣: ${panelTypeTitle(panelType)}` +
+                (mode === "edit" ? `\n┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${String(payload.name || "-")}` : "") +
+                `${keepHint}\n\n┘å╪º┘à ┘╛┘å┘ä ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».`;
     }
     if (step === "base_url") {
         text =
-            `مرحله 2 از ${totalSteps} - آدرس پنل\n` +
-                `نوع: ${panelTypeTitle(panelType)}` +
-                (mode === "edit" ? `\nمقدار فعلی: ${String(payload.baseUrl || "-")}` : "") +
-                `${keepHint}\n\nآدرس کامل را بفرستید.\nنمونه:\nhttps://panel.example.com`;
+            `┘à╪▒╪¡┘ä┘ç 2 ╪º╪▓ ${totalSteps} - ╪ó╪»╪▒╪│ ┘╛┘å┘ä\n` +
+                `┘å┘ê╪╣: ${panelTypeTitle(panelType)}` +
+                (mode === "edit" ? `\n┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${String(payload.baseUrl || "-")}` : "") +
+                `${keepHint}\n\n╪ó╪»╪▒╪│ ┌⌐╪º┘à┘ä ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n┘å┘à┘ê┘å┘ç:\nhttps://panel.example.com`;
     }
     if (step === "username") {
         text =
-            `مرحله 3 از ${totalSteps} - نام کاربری\n` +
-                (mode === "edit" ? `مقدار فعلی: ${String(payload.username || "-")}` : "") +
-                `${keepHint}\n\nنام کاربری پنل را بفرستید.`;
+            `┘à╪▒╪¡┘ä┘ç 3 ╪º╪▓ ${totalSteps} - ┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î\n` +
+                (mode === "edit" ? `┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${String(payload.username || "-")}` : "") +
+                `${keepHint}\n\n┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î ┘╛┘å┘ä ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».`;
     }
     if (step === "password") {
         text =
-            `مرحله 4 از ${totalSteps} - رمز عبور\n` +
-                (mode === "edit" ? `مقدار فعلی: ${maskSecret(String(payload.password || ""))}` : "") +
-                `${keepHint}\n\nرمز عبور پنل را بفرستید.`;
+            `┘à╪▒╪¡┘ä┘ç 4 ╪º╪▓ ${totalSteps} - ╪▒┘à╪▓ ╪╣╪¿┘ê╪▒\n` +
+                (mode === "edit" ? `┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${maskSecret(String(payload.password || ""))}` : "") +
+                `${keepHint}\n\n╪▒┘à╪▓ ╪╣╪¿┘ê╪▒ ┘╛┘å┘ä ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».`;
     }
     if (step === "sub_port") {
         const cur = payload.subscriptionPublicPort !== undefined && payload.subscriptionPublicPort !== null
             ? String(payload.subscriptionPublicPort)
-            : "خودکار (پورت آدرس پنل)";
+            : "╪«┘ê╪»┌⌐╪º╪▒ (┘╛┘ê╪▒╪¬ ╪ó╪»╪▒╪│ ┘╛┘å┘ä)";
         text =
-            `مرحله 5 از 5 - پورت عمومی لینک سابسکریپشن (فقط Sanaei / 3x-ui)\n` +
-                `اگر ساب روی پورت دیگری سرو می‌شود (مثلاً 8080)، همان را بفرستید.\n` +
-                `0 یا auto = همان پورتی که در آدرس پنل است\n` +
-                (mode === "edit" ? `مقدار فعلی: ${cur}\nبرای نگه داشتن مقدار فعلی، - بفرستید.\n` : "") +
-                `\nپورت را بفرستید (۱–۶۵۵۳۵).`;
+            `┘à╪▒╪¡┘ä┘ç 5 ╪º╪▓ 5 - ┘╛┘ê╪▒╪¬ ╪╣┘à┘ê┘à█î ┘ä█î┘å┌⌐ ╪│╪º╪¿╪│┌⌐╪▒█î┘╛╪┤┘å (┘ü┘é╪╖ Sanaei / 3x-ui)\n` +
+                `╪º┌»╪▒ ╪│╪º╪¿ ╪▒┘ê█î ┘╛┘ê╪▒╪¬ ╪»█î┌»╪▒█î ╪│╪▒┘ê ┘à█îΓÇî╪┤┘ê╪» (┘à╪½┘ä╪º┘ï 8080)╪î ┘ç┘à╪º┘å ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n` +
+                `0 █î╪º auto = ┘ç┘à╪º┘å ┘╛┘ê╪▒╪¬█î ┌⌐┘ç ╪»╪▒ ╪ó╪»╪▒╪│ ┘╛┘å┘ä ╪º╪│╪¬\n` +
+                (mode === "edit" ? `┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${cur}\n╪¿╪▒╪º█î ┘å┌»┘ç ╪»╪º╪┤╪¬┘å ┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î╪î - ╪¿┘ü╪▒╪│╪¬█î╪».\n` : "") +
+                `\n┘╛┘ê╪▒╪¬ ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪» (█▒ΓÇô█╢█╡█╡█│█╡).`;
     }
     await tg("sendMessage", {
         chat_id: chatId,
@@ -1609,7 +1609,7 @@ async function startPanelWizard(chatId, userId, mode, panelType, panelId) {
     if (mode === "edit") {
         const panel = await getPanelById(Number(panelId));
         if (!panel) {
-            await tg("sendMessage", { chat_id: chatId, text: "پنل پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         current = panel;
@@ -1657,18 +1657,18 @@ async function promptProductPanelWizardStep(chatId, payload) {
         if (!panels.length) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "هیچ پنلی ثبت نشده است. اول از بخش پنل‌ها یک پنل اضافه کنید.",
+                text: "┘ç█î┌å ┘╛┘å┘ä█î ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬. ╪º┘ê┘ä ╪º╪▓ ╪¿╪«╪┤ ┘╛┘å┘äΓÇî┘ç╪º █î┌⌐ ┘╛┘å┘ä ╪º╪╢╪º┘ü┘ç ┌⌐┘å█î╪».",
                 reply_markup: { inline_keyboard: [[backButton("admin_products")]] }
             });
             return null;
         }
         const keyboard = panels.map((panel) => [
-            cb(`${panel.name}${panel.active && panel.allow_new_sales ? "" : " ⛔"}`, `admin_product_panel_pick_${panel.id}`, "primary")
+            cb(`${panel.name}${panel.active && panel.allow_new_sales ? "" : " Γ¢ö"}`, `admin_product_panel_pick_${panel.id}`, "primary")
         ]);
         keyboard.push([cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `تنظیم فروش پنل برای «${productName}»\nمرحله 1 از 2: پنل مقصد را انتخاب کنید:`,
+            text: `╪¬┘å╪╕█î┘à ┘ü╪▒┘ê╪┤ ┘╛┘å┘ä ╪¿╪▒╪º█î ┬½${productName}┬╗\n┘à╪▒╪¡┘ä┘ç 1 ╪º╪▓ 2: ┘╛┘å┘ä ┘à┘é╪╡╪» ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
             reply_markup: { inline_keyboard: keyboard }
         });
         return null;
@@ -1676,13 +1676,13 @@ async function promptProductPanelWizardStep(chatId, payload) {
     if (step === "mode") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `مرحله 2 از 2: نوع تنظیم را انتخاب کنید\n` +
-                `سریع: بقیه موارد خودکار تنظیم می‌شود.\n` +
-                `مرحله‌ای: مقادیر دلخواه را می‌پرسد.`,
+            text: `┘à╪▒╪¡┘ä┘ç 2 ╪º╪▓ 2: ┘å┘ê╪╣ ╪¬┘å╪╕█î┘à ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»\n` +
+                `╪│╪▒█î╪╣: ╪¿┘é█î┘ç ┘à┘ê╪º╪▒╪» ╪«┘ê╪»┌⌐╪º╪▒ ╪¬┘å╪╕█î┘à ┘à█îΓÇî╪┤┘ê╪».\n` +
+                `┘à╪▒╪¡┘ä┘çΓÇî╪º█î: ┘à┘é╪º╪»█î╪▒ ╪»┘ä╪«┘ê╪º┘ç ╪▒╪º ┘à█îΓÇî┘╛╪▒╪│╪».`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("⚡ تنظیم سریع (پیشنهادی)", "admin_product_panel_quick", "success")],
-                    [cb("⚙️ تنظیم مرحله‌ای", "admin_product_panel_custom", "primary")],
+                    [cb("ΓÜí ╪¬┘å╪╕█î┘à ╪│╪▒█î╪╣ (┘╛█î╪┤┘å┘ç╪º╪»█î)", "admin_product_panel_quick", "success")],
+                    [cb("ΓÜÖ∩╕Å ╪¬┘å╪╕█î┘à ┘à╪▒╪¡┘ä┘çΓÇî╪º█î", "admin_product_panel_custom", "primary")],
                     [cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]
                 ]
             }
@@ -1692,11 +1692,11 @@ async function promptProductPanelWizardStep(chatId, payload) {
     if (step === "sell_limit") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `تنظیم مرحله‌ای - 1 از 5\n` +
-                `سقف فروش پنل را بفرستید.\n` +
-                `0 = بدون سقف\n` +
-                `- = نگه داشتن مقدار فعلی\n` +
-                `مقدار فعلی: ${payload.panelSellLimit === null || payload.panelSellLimit === undefined ? "بدون سقف" : payload.panelSellLimit}`,
+            text: `╪¬┘å╪╕█î┘à ┘à╪▒╪¡┘ä┘çΓÇî╪º█î - 1 ╪º╪▓ 5\n` +
+                `╪│┘é┘ü ┘ü╪▒┘ê╪┤ ┘╛┘å┘ä ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n` +
+                `0 = ╪¿╪»┘ê┘å ╪│┘é┘ü\n` +
+                `- = ┘å┌»┘ç ╪»╪º╪┤╪¬┘å ┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î\n` +
+                `┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${payload.panelSellLimit === null || payload.panelSellLimit === undefined ? "╪¿╪»┘ê┘å ╪│┘é┘ü" : payload.panelSellLimit}`,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]] }
         });
         return null;
@@ -1704,13 +1704,13 @@ async function promptProductPanelWizardStep(chatId, payload) {
     if (step === "delivery") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "تنظیم مرحله‌ای - 2 از 5\nحالت تحویل را انتخاب کنید:",
+            text: "╪¬┘å╪╕█î┘à ┘à╪▒╪¡┘ä┘çΓÇî╪º█î - 2 ╪º╪▓ 5\n╪¡╪º┘ä╪¬ ╪¬╪¡┘ê█î┘ä ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:",
             reply_markup: {
                 inline_keyboard: [
                     [
-                        cb("ساب + کانفیگ", "admin_product_panel_delivery_both", "primary"),
-                        cb("فقط ساب", "admin_product_panel_delivery_sub", "primary"),
-                        cb("فقط کانفیگ", "admin_product_panel_delivery_configs", "primary")
+                        cb("╪│╪º╪¿ + ┌⌐╪º┘å┘ü█î┌»", "admin_product_panel_delivery_both", "primary"),
+                        cb("┘ü┘é╪╖ ╪│╪º╪¿", "admin_product_panel_delivery_sub", "primary"),
+                        cb("┘ü┘é╪╖ ┌⌐╪º┘å┘ü█î┌»", "admin_product_panel_delivery_configs", "primary")
                     ],
                     [cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]
                 ]
@@ -1721,7 +1721,7 @@ async function promptProductPanelWizardStep(chatId, payload) {
     if (step === "inbound_id") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `تنظیم مرحله‌ای - 3 از 5\ninbound_id را بفرستید.\n- = مقدار فعلی (${payload.inboundId || 1})`,
+            text: `╪¬┘å╪╕█î┘à ┘à╪▒╪¡┘ä┘çΓÇî╪º█î - 3 ╪º╪▓ 5\ninbound_id ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n- = ┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î (${payload.inboundId || 1})`,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]] }
         });
         return null;
@@ -1729,7 +1729,7 @@ async function promptProductPanelWizardStep(chatId, payload) {
     if (step === "protocol") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `تنظیم مرحله‌ای - 4 از 5\nپروتکل را انتخاب کنید یا دستی بفرستید.\nمقدار فعلی: ${String(payload.protocol || "vless")}`,
+            text: `╪¬┘å╪╕█î┘à ┘à╪▒╪¡┘ä┘çΓÇî╪º█î - 4 ╪º╪▓ 5\n┘╛╪▒┘ê╪¬┌⌐┘ä ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪» █î╪º ╪»╪│╪¬█î ╪¿┘ü╪▒╪│╪¬█î╪».\n┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${String(payload.protocol || "vless")}`,
             reply_markup: {
                 inline_keyboard: [
                     [
@@ -1746,7 +1746,7 @@ async function promptProductPanelWizardStep(chatId, payload) {
     if (step === "expire_days") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `تنظیم مرحله‌ای - 5 از 5\nexpire_days را بفرستید.\n- = مقدار فعلی (${payload.expireDays || 30})`,
+            text: `╪¬┘å╪╕█î┘à ┘à╪▒╪¡┘ä┘çΓÇî╪º█î - 5 ╪º╪▓ 5\nexpire_days ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n- = ┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î (${payload.expireDays || 30})`,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]] }
         });
         return null;
@@ -1754,7 +1754,7 @@ async function promptProductPanelWizardStep(chatId, payload) {
     if (step === "data_limit_mb") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `آخرین مرحله\ndata_limit_mb را بفرستید.\n- = مقدار فعلی (${payload.dataLimitMb || 1024})`,
+            text: `╪ó╪«╪▒█î┘å ┘à╪▒╪¡┘ä┘ç\ndata_limit_mb ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n- = ┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î (${payload.dataLimitMb || 1024})`,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]] }
         });
     }
@@ -1763,18 +1763,18 @@ async function saveProductPanelWizard(payload, quickMode) {
     const productId = Number(payload.productId || 0);
     const panelId = Number(payload.panelId || 0);
     if (!Number.isFinite(productId) || productId <= 0) {
-        return { ok: false, message: "محصول نامعتبر است." };
+        return { ok: false, message: "┘à╪¡╪╡┘ê┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." };
     }
     if (!Number.isFinite(panelId) || panelId <= 0) {
-        return { ok: false, message: "لطفاً یک پنل معتبر انتخاب کنید." };
+        return { ok: false, message: "┘ä╪╖┘ü╪º┘ï █î┌⌐ ┘╛┘å┘ä ┘à╪╣╪¬╪¿╪▒ ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»." };
     }
     const product = await getProductForPanelWizard(productId);
     if (!product) {
-        return { ok: false, message: "محصول پیدا نشد." };
+        return { ok: false, message: "┘à╪¡╪╡┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪»." };
     }
     const panelRows = await sql `SELECT name FROM panels WHERE id = ${panelId} LIMIT 1;`;
     if (!panelRows.length) {
-        return { ok: false, message: "پنل انتخاب‌شده پیدا نشد." };
+        return { ok: false, message: "┘╛┘å┘ä ╪º┘å╪¬╪«╪º╪¿ΓÇî╪┤╪»┘ç ┘╛█î╪»╪º ┘å╪┤╪»." };
     }
     const currentConfig = sanitizePanelConfig(product.panel_config);
     const inboundId = parseMaybeNumber(payload.inboundId) ?? parseMaybeNumber(currentConfig.inbound_id) ?? 1;
@@ -1804,11 +1804,11 @@ async function saveProductPanelWizard(payload, quickMode) {
   `;
     return {
         ok: true,
-        message: `تنظیم فروش پنل ذخیره شد ✅\n` +
-            `محصول: ${product.name}\n` +
-            `پنل: ${panelRows[0].name}\n` +
-            `حالت تحویل: ${formatDeliveryModeLabel(panelDeliveryMode)}\n` +
-            `سقف فروش: ${panelSellLimit === null ? "بدون سقف" : panelSellLimit}\n` +
+        message: `╪¬┘å╪╕█î┘à ┘ü╪▒┘ê╪┤ ┘╛┘å┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n` +
+            `┘à╪¡╪╡┘ê┘ä: ${product.name}\n` +
+            `┘╛┘å┘ä: ${panelRows[0].name}\n` +
+            `╪¡╪º┘ä╪¬ ╪¬╪¡┘ê█î┘ä: ${formatDeliveryModeLabel(panelDeliveryMode)}\n` +
+            `╪│┘é┘ü ┘ü╪▒┘ê╪┤: ${panelSellLimit === null ? "╪¿╪»┘ê┘å ╪│┘é┘ü" : panelSellLimit}\n` +
             `protocol: ${protocol} | inbound_id: ${inboundId} | expire_days: ${expireDays} | data_limit_mb: ${dataLimitMb}`
     };
 }
@@ -1823,7 +1823,7 @@ async function startProductWizard(chatId, userId, mode, productId) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         current = rows[0];
@@ -1858,13 +1858,13 @@ async function promptProductWizardStep(chatId, payload) {
     const step = String(payload.step || "name");
     const productId = Number(payload.productId || 0);
     const productKind = parseProductKind(payload.productKind);
-    const keepHint = mode === "edit" ? "\nبرای نگه داشتن مقدار فعلی، - بفرستید." : "";
+    const keepHint = mode === "edit" ? "\n╪¿╪▒╪º█î ┘å┌»┘ç ╪»╪º╪┤╪¬┘å ┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î╪î - ╪¿┘ü╪▒╪│╪¬█î╪»." : "";
     if (step === "name") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 1 از 9\n` +
-                `نام محصول را بفرستید.` +
-                (mode === "edit" ? `\nمقدار فعلی: ${String(payload.name || "-")}` : "") +
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 1 ╪º╪▓ 9\n` +
+                `┘å╪º┘à ┘à╪¡╪╡┘ê┘ä ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».` +
+                (mode === "edit" ? `\n┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${String(payload.name || "-")}` : "") +
                 keepHint,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
         });
@@ -1873,14 +1873,14 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "product_kind") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 2 از 9\n` +
-                `نوع محصول را انتخاب کنید:` +
-                (mode === "edit" ? `\nمقدار فعلی: ${productKind === "account" ? "اکانت" : "کانفیگ V2Ray"}` : ""),
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 2 ╪º╪▓ 9\n` +
+                `┘å┘ê╪╣ ┘à╪¡╪╡┘ê┘ä ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:` +
+                (mode === "edit" ? `\n┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${productKind === "account" ? "╪º┌⌐╪º┘å╪¬" : "┌⌐╪º┘å┘ü█î┌» V2Ray"}` : ""),
             reply_markup: {
                 inline_keyboard: [
-                    [cb("?👤 اشتراک? V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
+                    [cb("??? ?????? V2Ray", "admin_product_wizard_kind_v2ray", "primary")],
                     [cb("??? ????? (VPN/??????)", "admin_product_wizard_kind_account", "primary")],
-                    [cb("?🛡 وایرگارد (Wireguard)", "admin_product_wizard_kind_wireguard", "primary")],
+                    [cb("??? ???????? (Wireguard)", "admin_product_wizard_kind_wireguard", "primary")],
                     [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                 ]
             }
@@ -1890,9 +1890,9 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "size_mb") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 3 از 9\n` +
-                `حجم را بفرستید (MB یا GB). نمونه: 2048 یا 2GB` +
-                (mode === "edit" ? `\nمقدار فعلی: ${String(payload.sizeMb || "-")}` : "") +
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 3 ╪º╪▓ 9\n` +
+                `╪¡╪¼┘à ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪» (MB █î╪º GB). ┘å┘à┘ê┘å┘ç: 2048 █î╪º 2GB` +
+                (mode === "edit" ? `\n┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${String(payload.sizeMb || "-")}` : "") +
                 keepHint,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
         });
@@ -1902,10 +1902,10 @@ async function promptProductWizardStep(chatId, payload) {
         if (productKind === "account") {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 4 از 9\nبرای محصول اکانتی، قیمت باید دستی ثبت شود.`,
+                text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 4 ╪º╪▓ 9\n╪¿╪▒╪º█î ┘à╪¡╪╡┘ê┘ä ╪º┌⌐╪º┘å╪¬█î╪î ┘é█î┘à╪¬ ╪¿╪º█î╪» ╪»╪│╪¬█î ╪½╪¿╪¬ ╪┤┘ê╪».`,
                 reply_markup: {
                     inline_keyboard: [
-                        [cb("✍️ ثبت قیمت دستی", "admin_product_wizard_price_manual", "primary")],
+                        [cb("Γ£ì∩╕Å ╪½╪¿╪¬ ┘é█î┘à╪¬ ╪»╪│╪¬█î", "admin_product_wizard_price_manual", "primary")],
                         [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                     ]
                 }
@@ -1914,11 +1914,11 @@ async function promptProductWizardStep(chatId, payload) {
         }
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 4 از 9\nروش قیمت‌گذاری را انتخاب کنید:`,
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 4 ╪º╪▓ 9\n╪▒┘ê╪┤ ┘é█î┘à╪¬ΓÇî┌»╪░╪º╪▒█î ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("🤖 خودکار", "admin_product_wizard_price_auto", "primary")],
-                    [cb("✍️ دستی", "admin_product_wizard_price_manual", "primary")],
+                    [cb("≡ƒñû ╪«┘ê╪»┌⌐╪º╪▒", "admin_product_wizard_price_auto", "primary")],
+                    [cb("Γ£ì∩╕Å ╪»╪│╪¬█î", "admin_product_wizard_price_manual", "primary")],
                     [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                 ]
             }
@@ -1928,9 +1928,9 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "price_toman") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 5 از 9\n` +
-                `قیمت را به تومان بفرستید.` +
-                (mode === "edit" ? `\nمقدار فعلی: ${String(payload.priceToman || "-")}` : "") +
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 5 ╪º╪▓ 9\n` +
+                `┘é█î┘à╪¬ ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ╪¿┘ü╪▒╪│╪¬█î╪».` +
+                (mode === "edit" ? `\n┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${String(payload.priceToman || "-")}` : "") +
                 keepHint,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
         });
@@ -1939,12 +1939,12 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "sell_mode") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 6 از 9\nحالت فروش را انتخاب کنید:`,
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 6 ╪º╪▓ 9\n╪¡╪º┘ä╪¬ ┘ü╪▒┘ê╪┤ ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("فروش دستی", "admin_product_wizard_sell_manual", "primary")],
-                    [cb("فروش از پنل", "admin_product_wizard_sell_panel", "primary")],
-                    [cb("فروش از پینگچی (Wireguard)", "admin_product_wizard_sell_pingchi", "primary")],
+                    [cb("┘ü╪▒┘ê╪┤ ╪»╪│╪¬█î", "admin_product_wizard_sell_manual", "primary")],
+                    [cb("┘ü╪▒┘ê╪┤ ╪º╪▓ ┘╛┘å┘ä", "admin_product_wizard_sell_panel", "primary")],
+                    [cb("┘ü╪▒┘ê╪┤ ╪º╪▓ ┘╛█î┘å┌»┌å█î (Wireguard)", "admin_product_wizard_sell_pingchi", "primary")],
                     [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                 ]
             }
@@ -1954,18 +1954,18 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "pingchi_plan_id") {
         const plansReq = await pingchiApi("plans.list");
         if (!plansReq.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `خطا در دریافت پلن‌های پینگچی: ${plansReq.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪«╪╖╪º ╪»╪▒ ╪»╪▒█î╪º┘ü╪¬ ┘╛┘ä┘åΓÇî┘ç╪º█î ┘╛█î┘å┌»┌å█î: ${plansReq.message}` });
             return null;
         }
         const plans = plansReq.data?.rows || [];
         const kb = [];
         for (const plan of plans) {
-            kb.push([cb(`${plan.name} - ${plan.payable} تومان`, `admin_product_wizard_pingchi_plan_${plan.id}`, "primary")]);
+            kb.push([cb(`${plan.name} - ${plan.payable} ╪¬┘ê┘à╪º┘å`, `admin_product_wizard_pingchi_plan_${plan.id}`, "primary")]);
         }
         kb.push([cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "پلن پینگچی مربوطه را انتخاب کنید:",
+            text: "┘╛┘ä┘å ┘╛█î┘å┌»┌å█î ┘à╪▒╪¿┘ê╪╖┘ç ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:",
             reply_markup: { inline_keyboard: kb }
         });
         return null;
@@ -1973,12 +1973,12 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "is_infinite") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 7 از 9\nمحصول بی‌نهایت باشد؟`,
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 7 ╪º╪▓ 9\n┘à╪¡╪╡┘ê┘ä ╪¿█îΓÇî┘å┘ç╪º█î╪¬ ╪¿╪º╪┤╪»╪ƒ`,
             reply_markup: {
                 inline_keyboard: [
                     [
-                        confirmButton("admin_product_wizard_infinite_yes", "✅ بله"),
-                        cb("❌ خیر", "admin_product_wizard_infinite_no", "danger")
+                        confirmButton("admin_product_wizard_infinite_yes", "Γ£à ╪¿┘ä┘ç"),
+                        cb("Γ¥î ╪«█î╪▒", "admin_product_wizard_infinite_no", "danger")
                     ],
                     [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                 ]
@@ -1993,16 +1993,16 @@ async function promptProductWizardStep(chatId, payload) {
       ORDER BY active DESC, allow_new_sales DESC, priority DESC, id ASC;
     `;
         if (!panels.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "هیچ پنلی ثبت نشده است. اول یک پنل اضافه کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å ┘╛┘å┘ä█î ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬. ╪º┘ê┘ä █î┌⌐ ┘╛┘å┘ä ╪º╪╢╪º┘ü┘ç ┌⌐┘å█î╪»." });
             return null;
         }
         const keyboard = panels.map((panel) => [
-            cb(`${panel.name}${panel.active && panel.allow_new_sales ? "" : " ⛔"}`, `admin_product_wizard_panel_${panel.id}`, "primary")
+            cb(`${panel.name}${panel.active && panel.allow_new_sales ? "" : " Γ¢ö"}`, `admin_product_wizard_panel_${panel.id}`, "primary")
         ]);
         keyboard.push([cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 7 از 9\nپنل مقصد را انتخاب کنید:`,
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 7 ╪º╪▓ 9\n┘╛┘å┘ä ┘à┘é╪╡╪» ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
             reply_markup: { inline_keyboard: keyboard }
         });
         return null;
@@ -2010,9 +2010,9 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "panel_sell_limit") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 8 از 9\n` +
-                `سقف فروش پنل را بفرستید.\n0 = بدون سقف` +
-                (mode === "edit" ? `\nمقدار فعلی: ${payload.panelSellLimit ?? "بدون سقف"}` : "") +
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 8 ╪º╪▓ 9\n` +
+                `╪│┘é┘ü ┘ü╪▒┘ê╪┤ ┘╛┘å┘ä ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n0 = ╪¿╪»┘ê┘å ╪│┘é┘ü` +
+                (mode === "edit" ? `\n┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î: ${payload.panelSellLimit ?? "╪¿╪»┘ê┘å ╪│┘é┘ü"}` : "") +
                 keepHint,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
         });
@@ -2021,15 +2021,15 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "panel_delivery_mode") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 9 از 9\n` +
-                `حالت تحویل را انتخاب کنید.\n` +
-                `بعد از این مرحله، باقی تنظیمات پنل به‌صورت خودکار مثل حالت سریع ثبت می‌شود.`,
+            text: `┘à╪¡╪╡┘ê┘ä ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 9 ╪º╪▓ 9\n` +
+                `╪¡╪º┘ä╪¬ ╪¬╪¡┘ê█î┘ä ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪».\n` +
+                `╪¿╪╣╪» ╪º╪▓ ╪º█î┘å ┘à╪▒╪¡┘ä┘ç╪î ╪¿╪º┘é█î ╪¬┘å╪╕█î┘à╪º╪¬ ┘╛┘å┘ä ╪¿┘çΓÇî╪╡┘ê╪▒╪¬ ╪«┘ê╪»┌⌐╪º╪▒ ┘à╪½┘ä ╪¡╪º┘ä╪¬ ╪│╪▒█î╪╣ ╪½╪¿╪¬ ┘à█îΓÇî╪┤┘ê╪».`,
             reply_markup: {
                 inline_keyboard: [
                     [
-                        cb("ساب + کانفیگ", "admin_product_wizard_delivery_both", "primary"),
-                        cb("فقط ساب", "admin_product_wizard_delivery_sub", "primary"),
-                        cb("فقط کانفیگ", "admin_product_wizard_delivery_configs", "primary")
+                        cb("╪│╪º╪¿ + ┌⌐╪º┘å┘ü█î┌»", "admin_product_wizard_delivery_both", "primary"),
+                        cb("┘ü┘é╪╖ ╪│╪º╪¿", "admin_product_wizard_delivery_sub", "primary"),
+                        cb("┘ü┘é╪╖ ┌⌐╪º┘å┘ü█î┌»", "admin_product_wizard_delivery_configs", "primary")
                     ],
                     [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
                 ]
@@ -2040,7 +2040,7 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "inbound_id" || step === "protocol" || step === "expire_days" || step === "data_limit_mb") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "این مرحله دیگر لازم نیست. تنظیمات پنل به‌صورت خودکار اعمال می‌شود."
+            text: "╪º█î┘å ┘à╪▒╪¡┘ä┘ç ╪»█î┌»╪▒ ┘ä╪º╪▓┘à ┘å█î╪│╪¬. ╪¬┘å╪╕█î┘à╪º╪¬ ┘╛┘å┘ä ╪¿┘çΓÇî╪╡┘ê╪▒╪¬ ╪«┘ê╪»┌⌐╪º╪▒ ╪º╪╣┘à╪º┘ä ┘à█îΓÇî╪┤┘ê╪»."
         });
     }
 }
@@ -2050,20 +2050,20 @@ async function saveProductWizard(payload) {
     const sellMode = parseSellMode(String(payload.sellMode || "manual"));
     const sizeMb = Number(payload.sizeMb);
     if (productKind === "v2ray" && (!Number.isFinite(sizeMb) || sizeMb <= 0))
-        return { ok: false, message: "حجم محصول معتبر نیست." };
+        return { ok: false, message: "╪¡╪¼┘à ┘à╪¡╪╡┘ê┘ä ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." };
     if (productKind === "account" && sellMode === "panel")
-        return { ok: false, message: "محصول اکانتی فقط با فروش دستی قابل استفاده است." };
+        return { ok: false, message: "┘à╪¡╪╡┘ê┘ä ╪º┌⌐╪º┘å╪¬█î ┘ü┘é╪╖ ╪¿╪º ┘ü╪▒┘ê╪┤ ╪»╪│╪¬█î ┘é╪º╪¿┘ä ╪º╪│╪¬┘ü╪º╪»┘ç ╪º╪│╪¬." };
     const name = String(payload.name || "").trim();
     if (!name)
-        return { ok: false, message: "نام محصول نمی‌تواند خالی باشد." };
+        return { ok: false, message: "┘å╪º┘à ┘à╪¡╪╡┘ê┘ä ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." };
     const useAutoPrice = String(payload.priceMode || "auto") === "auto";
     const manualPrice = Number(payload.priceToman || 0);
     const price = useAutoPrice && productKind !== "account" ? await getProductPriceFromSizeMb(sizeMb) : manualPrice;
     if (!Number.isFinite(price) || price <= 0)
-        return { ok: false, message: "قیمت محصول معتبر نیست." };
+        return { ok: false, message: "┘é█î┘à╪¬ ┘à╪¡╪╡┘ê┘ä ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." };
     const panelId = sellMode === "panel" ? Number(payload.panelId || 0) : null;
     if (sellMode === "panel" && (!Number.isFinite(panelId) || Number(panelId) <= 0)) {
-        return { ok: false, message: "برای فروش پنل باید یک پنل انتخاب شود." };
+        return { ok: false, message: "╪¿╪▒╪º█î ┘ü╪▒┘ê╪┤ ┘╛┘å┘ä ╪¿╪º█î╪» █î┌⌐ ┘╛┘å┘ä ╪º┘å╪¬╪«╪º╪¿ ╪┤┘ê╪»." };
     }
     const panelSellLimitRaw = payload.panelSellLimit;
     const panelSellLimit = sellMode !== "panel" || panelSellLimitRaw === null || panelSellLimitRaw === undefined || Number(panelSellLimitRaw) <= 0
@@ -2111,15 +2111,15 @@ async function saveProductWizard(payload) {
     `;
         return {
             ok: true,
-            message: `محصول ذخیره شد ✅\n` +
-                `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice ? "خودکار" : "دلخواه"})\n` +
-                `حالت فروش: ${sellMode === "panel" ? "از پنل" : "دستی"}\n` +
-                `تحویل: ${panelDeliveryMode}`
+            message: `┘à╪¡╪╡┘ê┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n` +
+                `┘é█î┘à╪¬: ${formatPriceToman(price)} ╪¬┘ê┘à╪º┘å (${useAutoPrice ? "╪«┘ê╪»┌⌐╪º╪▒" : "╪»┘ä╪«┘ê╪º┘ç"})\n` +
+                `╪¡╪º┘ä╪¬ ┘ü╪▒┘ê╪┤: ${sellMode === "panel" ? "╪º╪▓ ┘╛┘å┘ä" : "╪»╪│╪¬█î"}\n` +
+                `╪¬╪¡┘ê█î┘ä: ${panelDeliveryMode}`
         };
     }
     const id = Number(payload.productId || 0);
     if (!Number.isFinite(id) || id <= 0)
-        return { ok: false, message: "شناسه محصول معتبر نیست." };
+        return { ok: false, message: "╪┤┘å╪º╪│┘ç ┘à╪¡╪╡┘ê┘ä ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." };
     await sql `
     UPDATE products
     SET
@@ -2136,10 +2136,10 @@ async function saveProductWizard(payload) {
   `;
     return {
         ok: true,
-        message: `محصول ویرایش شد ✅\n` +
-            `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice ? "خودکار" : "دلخواه"})\n` +
-            `حالت فروش: ${sellMode === "panel" ? "از پنل" : "دستی"}\n` +
-            `تحویل: ${panelDeliveryMode}`
+        message: `┘à╪¡╪╡┘ê┘ä ┘ê█î╪▒╪º█î╪┤ ╪┤╪» Γ£à\n` +
+            `┘é█î┘à╪¬: ${formatPriceToman(price)} ╪¬┘ê┘à╪º┘å (${useAutoPrice ? "╪«┘ê╪»┌⌐╪º╪▒" : "╪»┘ä╪«┘ê╪º┘ç"})\n` +
+            `╪¡╪º┘ä╪¬ ┘ü╪▒┘ê╪┤: ${sellMode === "panel" ? "╪º╪▓ ┘╛┘å┘ä" : "╪»╪│╪¬█î"}\n` +
+            `╪¬╪¡┘ê█î┘ä: ${panelDeliveryMode}`
     };
 }
 async function startCardWizard(chatId, userId, mode, cardId) {
@@ -2147,7 +2147,7 @@ async function startCardWizard(chatId, userId, mode, cardId) {
     if (mode === "edit") {
         const rows = await sql `SELECT id, label, card_number, holder_name, bank_name FROM cards WHERE id = ${Number(cardId || 0)} LIMIT 1;`;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کارت پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¬ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         current = rows[0];
@@ -2168,12 +2168,12 @@ async function promptCardWizardStep(chatId, payload) {
     const mode = String(payload.mode || "add");
     const step = String(payload.step || "label");
     const cardId = Number(payload.cardId || 0);
-    const keepHint = mode === "edit" ? "\nبرای نگه داشتن مقدار فعلی، - بفرستید." : "";
+    const keepHint = mode === "edit" ? "\n╪¿╪▒╪º█î ┘å┌»┘ç ╪»╪º╪┤╪¬┘å ┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î╪î - ╪¿┘ü╪▒╪│╪¬█î╪»." : "";
     const cancel = { inline_keyboard: [[cancelButton(`admin_card_wizard_cancel_${cardId || 0}`)]] };
     if (step === "label") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `کارت ${mode === "add" ? "جدید" : "ویرایش"} - 1 از 4\nعنوان کارت را بفرستید.` + (mode === "edit" ? `\nفعلی: ${payload.label || "-"}` : "") + keepHint,
+            text: `┌⌐╪º╪▒╪¬ ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 1 ╪º╪▓ 4\n╪╣┘å┘ê╪º┘å ┌⌐╪º╪▒╪¬ ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».` + (mode === "edit" ? `\n┘ü╪╣┘ä█î: ${payload.label || "-"}` : "") + keepHint,
             reply_markup: cancel
         });
         return null;
@@ -2181,7 +2181,7 @@ async function promptCardWizardStep(chatId, payload) {
     if (step === "card_number") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `کارت ${mode === "add" ? "جدید" : "ویرایش"} - 2 از 4\nشماره کارت را بفرستید.` + (mode === "edit" ? `\nفعلی: ${payload.cardNumber || "-"}` : "") + keepHint,
+            text: `┌⌐╪º╪▒╪¬ ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 2 ╪º╪▓ 4\n╪┤┘à╪º╪▒┘ç ┌⌐╪º╪▒╪¬ ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».` + (mode === "edit" ? `\n┘ü╪╣┘ä█î: ${payload.cardNumber || "-"}` : "") + keepHint,
             reply_markup: cancel
         });
         return null;
@@ -2189,14 +2189,14 @@ async function promptCardWizardStep(chatId, payload) {
     if (step === "holder_name") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `کارت ${mode === "add" ? "جدید" : "ویرایش"} - 3 از 4\nنام صاحب کارت را بفرستید.\nبرای خالی: -` + (mode === "edit" ? `\nفعلی: ${payload.holderName || "-"}` : ""),
+            text: `┌⌐╪º╪▒╪¬ ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 3 ╪º╪▓ 4\n┘å╪º┘à ╪╡╪º╪¡╪¿ ┌⌐╪º╪▒╪¬ ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n╪¿╪▒╪º█î ╪«╪º┘ä█î: -` + (mode === "edit" ? `\n┘ü╪╣┘ä█î: ${payload.holderName || "-"}` : ""),
             reply_markup: cancel
         });
         return null;
     }
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `کارت ${mode === "add" ? "جدید" : "ویرایش"} - 4 از 4\nنام بانک را بفرستید.\nبرای خالی: -` + (mode === "edit" ? `\nفعلی: ${payload.bankName || "-"}` : ""),
+        text: `┌⌐╪º╪▒╪¬ ${mode === "add" ? "╪¼╪»█î╪»" : "┘ê█î╪▒╪º█î╪┤"} - 4 ╪º╪▓ 4\n┘å╪º┘à ╪¿╪º┘å┌⌐ ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n╪¿╪▒╪º█î ╪«╪º┘ä█î: -` + (mode === "edit" ? `\n┘ü╪╣┘ä█î: ${payload.bankName || "-"}` : ""),
         reply_markup: cancel
     });
 }
@@ -2205,7 +2205,7 @@ async function startDiscountWizard(chatId, userId, mode, discountId) {
     if (mode === "edit") {
         const rows = await sql `SELECT id, code, type, amount, usage_limit FROM discounts WHERE id = ${Number(discountId || 0)} LIMIT 1;`;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "تخفیف پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¬╪«┘ü█î┘ü ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         current = rows[0];
@@ -2226,15 +2226,15 @@ async function promptDiscountWizardStep(chatId, payload) {
     const mode = String(payload.mode || "add");
     const step = String(payload.step || "code_mode");
     const discountId = Number(payload.discountId || 0);
-    const keepHint = mode === "edit" ? "\nبرای نگه داشتن مقدار فعلی، - بفرستید." : "";
+    const keepHint = mode === "edit" ? "\n╪¿╪▒╪º█î ┘å┌»┘ç ╪»╪º╪┤╪¬┘å ┘à┘é╪»╪º╪▒ ┘ü╪╣┘ä█î╪î - ╪¿┘ü╪▒╪│╪¬█î╪»." : "";
     if (step === "code_mode") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "تخفیف جدید - مرحله 1 از 4\nروش کد را انتخاب کنید:",
+            text: "╪¬╪«┘ü█î┘ü ╪¼╪»█î╪» - ┘à╪▒╪¡┘ä┘ç 1 ╪º╪▓ 4\n╪▒┘ê╪┤ ┌⌐╪» ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:",
             reply_markup: {
                 inline_keyboard: [
-                    [cb("🎲 کد تصادفی", "admin_discount_wizard_code_random", "primary")],
-                    [cb("✍️ کد دستی", "admin_discount_wizard_code_manual", "primary")],
+                    [cb("≡ƒÄ▓ ┌⌐╪» ╪¬╪╡╪º╪»┘ü█î", "admin_discount_wizard_code_random", "primary")],
+                    [cb("Γ£ì∩╕Å ┌⌐╪» ╪»╪│╪¬█î", "admin_discount_wizard_code_manual", "primary")],
                     [cancelButton(`admin_discount_wizard_cancel_${discountId || 0}`)]
                 ]
             }
@@ -2244,7 +2244,7 @@ async function promptDiscountWizardStep(chatId, payload) {
     if (step === "code") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "تخفیف جدید - مرحله 1 از 4\nکد تخفیف را بفرستید. مثلا: NOW10",
+            text: "╪¬╪«┘ü█î┘ü ╪¼╪»█î╪» - ┘à╪▒╪¡┘ä┘ç 1 ╪º╪▓ 4\n┌⌐╪» ╪¬╪«┘ü█î┘ü ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½┘ä╪º: NOW10",
             reply_markup: { inline_keyboard: [[cancelButton(`admin_discount_wizard_cancel_${discountId || 0}`)]] }
         });
         return null;
@@ -2252,7 +2252,7 @@ async function promptDiscountWizardStep(chatId, payload) {
     if (step === "type") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `مرحله ${mode === "add" ? "2" : "1"} از ${mode === "add" ? "4" : "3"}\nنوع تخفیف را انتخاب کنید:`,
+            text: `┘à╪▒╪¡┘ä┘ç ${mode === "add" ? "2" : "1"} ╪º╪▓ ${mode === "add" ? "4" : "3"}\n┘å┘ê╪╣ ╪¬╪«┘ü█î┘ü ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
             reply_markup: {
                 inline_keyboard: [
                     [
@@ -2268,9 +2268,9 @@ async function promptDiscountWizardStep(chatId, payload) {
     if (step === "amount") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `مرحله ${mode === "add" ? "3" : "2"} از ${mode === "add" ? "4" : "3"}\n` +
-                `مقدار تخفیف را بفرستید.` +
-                (mode === "edit" ? `\nفعلی: ${payload.amount || "-"}` : "") +
+            text: `┘à╪▒╪¡┘ä┘ç ${mode === "add" ? "3" : "2"} ╪º╪▓ ${mode === "add" ? "4" : "3"}\n` +
+                `┘à┘é╪»╪º╪▒ ╪¬╪«┘ü█î┘ü ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».` +
+                (mode === "edit" ? `\n┘ü╪╣┘ä█î: ${payload.amount || "-"}` : "") +
                 keepHint,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_discount_wizard_cancel_${discountId || 0}`)]] }
         });
@@ -2278,9 +2278,9 @@ async function promptDiscountWizardStep(chatId, payload) {
     }
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `مرحله ${mode === "add" ? "4" : "3"} از ${mode === "add" ? "4" : "3"}\n` +
-            `سقف استفاده را بفرستید. 0 = بدون سقف` +
-            (mode === "edit" ? `\nفعلی: ${payload.usageLimit ?? "بدون سقف"}` : "") +
+        text: `┘à╪▒╪¡┘ä┘ç ${mode === "add" ? "4" : "3"} ╪º╪▓ ${mode === "add" ? "4" : "3"}\n` +
+            `╪│┘é┘ü ╪º╪│╪¬┘ü╪º╪»┘ç ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪». 0 = ╪¿╪»┘ê┘å ╪│┘é┘ü` +
+            (mode === "edit" ? `\n┘ü╪╣┘ä█î: ${payload.usageLimit ?? "╪¿╪»┘ê┘å ╪│┘é┘ü"}` : "") +
             keepHint,
         reply_markup: { inline_keyboard: [[cancelButton(`admin_discount_wizard_cancel_${discountId || 0}`)]] }
     });
@@ -2290,7 +2290,7 @@ async function startMessageUserWizard(chatId, userId) {
     await setState(userId, "admin_message_user_wizard", payload);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "ارسال پیام - مرحله 1 از 2\nآیدی عددی یا یوزرنیم (با یا بدون @) را بفرستید.",
+        text: "╪º╪▒╪│╪º┘ä ┘╛█î╪º┘à - ┘à╪▒╪¡┘ä┘ç 1 ╪º╪▓ 2\n╪ó█î╪»█î ╪╣╪»╪»█î █î╪º █î┘ê╪▓╪▒┘å█î┘à (╪¿╪º █î╪º ╪¿╪»┘ê┘å @) ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».",
         reply_markup: { inline_keyboard: [[cancelButton("admin_message_user_wizard_cancel")]] }
     });
 }
@@ -2305,7 +2305,7 @@ async function startDirectMigrateWizard(chatId, userId) {
     await setState(userId, "admin_direct_migrate_wizard", payload);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "انتقال مستقیم - مرحله 1 از 4\nشناسه inventory مبدا را بفرستید.",
+        text: "╪º┘å╪¬┘é╪º┘ä ┘à╪│╪¬┘é█î┘à - ┘à╪▒╪¡┘ä┘ç 1 ╪º╪▓ 4\n╪┤┘å╪º╪│┘ç inventory ┘à╪¿╪»╪º ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».",
         reply_markup: { inline_keyboard: [[cancelButton("admin_direct_migrate_wizard_cancel")]] }
     });
 }
@@ -2323,100 +2323,100 @@ async function startAdminConfigBuilderWizard(chatId, userId) {
     await setState(userId, "admin_config_builder_wizard", payload);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "ساخت کانفیگ سفارشی - مرحله 1 از 5\nآیدی عددی کاربر یا یوزرنیم (با یا بدون @) را ارسال کنید.",
+        text: "╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î - ┘à╪▒╪¡┘ä┘ç 1 ╪º╪▓ 5\n╪ó█î╪»█î ╪╣╪»╪»█î ┌⌐╪º╪▒╪¿╪▒ █î╪º █î┘ê╪▓╪▒┘å█î┘à (╪¿╪º █î╪º ╪¿╪»┘ê┘å @) ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».",
         reply_markup: { inline_keyboard: [[cancelButton("admin_config_builder_cancel")]] }
     });
 }
 async function promptAdminConfigBuilderPanel(chatId) {
     const rows = await sql `SELECT id, name, panel_type, active, allow_new_sales FROM panels ORDER BY active DESC, allow_new_sales DESC, priority DESC, id ASC;`;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "هیچ پنلی ثبت نشده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å ┘╛┘å┘ä█î ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬." });
         return null;
     }
     const keyboard = rows.map((row) => [
-        cb(`${row.name} (${panelTypeTitle(String(row.panel_type || ""))})${row.active && row.allow_new_sales ? "" : " ⛔"}`, `admin_config_builder_panel_${row.id}`, "primary")
+        cb(`${row.name} (${panelTypeTitle(String(row.panel_type || ""))})${row.active && row.allow_new_sales ? "" : " Γ¢ö"}`, `admin_config_builder_panel_${row.id}`, "primary")
     ]);
     keyboard.push([cancelButton("admin_config_builder_cancel")]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "ساخت کانفیگ سفارشی - مرحله 2 از 5\nپنل مقصد را انتخاب کنید:",
+        text: "╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î - ┘à╪▒╪¡┘ä┘ç 2 ╪º╪▓ 5\n┘╛┘å┘ä ┘à┘é╪╡╪» ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
 async function promptDirectMigrateTargetPanel(chatId) {
     const rows = await sql `SELECT id, name, active, allow_new_sales FROM panels ORDER BY active DESC, allow_new_sales DESC, priority DESC, id ASC;`;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "هیچ پنلی ثبت نشده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å ┘╛┘å┘ä█î ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬." });
         return null;
     }
-    const keyboard = rows.map((row) => [cb(`${row.name}${row.active && row.allow_new_sales ? "" : " ⛔"}`, `admin_direct_migrate_panel_${row.id}`, "primary")]);
+    const keyboard = rows.map((row) => [cb(`${row.name}${row.active && row.allow_new_sales ? "" : " Γ¢ö"}`, `admin_direct_migrate_panel_${row.id}`, "primary")]);
     keyboard.push([cancelButton("admin_direct_migrate_wizard_cancel")]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "انتقال مستقیم - مرحله 2 از 4\nپنل مقصد را انتخاب کنید:",
+        text: "╪º┘å╪¬┘é╪º┘ä ┘à╪│╪¬┘é█î┘à - ┘à╪▒╪¡┘ä┘ç 2 ╪º╪▓ 4\n┘╛┘å┘ä ┘à┘é╪╡╪» ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
 async function showPanelDetails(chatId, panelId, notice) {
     const panel = await getPanelById(panelId);
     if (!panel) {
-        await tg("sendMessage", { chat_id: chatId, text: "پنل پیدا نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
         return null;
     }
     await tg("sendMessage", {
         chat_id: chatId,
         text: `${notice ? `${notice}\n\n` : ""}` +
-            `پنل #${panel.id}\n` +
-            `نام: ${panel.name}\n` +
-            `نوع: ${panelTypeTitle(String(panel.panel_type))}\n` +
-            `آدرس: ${panel.base_url}\n` +
+            `┘╛┘å┘ä #${panel.id}\n` +
+            `┘å╪º┘à: ${panel.name}\n` +
+            `┘å┘ê╪╣: ${panelTypeTitle(String(panel.panel_type))}\n` +
+            `╪ó╪»╪▒╪│: ${panel.base_url}\n` +
             (String(panel.panel_type) === "sanaei"
-                ? `پورت لینک ساب (عمومی): ${panel.subscription_public_port != null && Number(panel.subscription_public_port) > 0
+                ? `┘╛┘ê╪▒╪¬ ┘ä█î┘å┌⌐ ╪│╪º╪¿ (╪╣┘à┘ê┘à█î): ${panel.subscription_public_port != null && Number(panel.subscription_public_port) > 0
                     ? Number(panel.subscription_public_port)
-                    : "همان پورت آدرس پنل"}\n` +
-                    `دامنه لینک ساب: ${String(panel.subscription_public_host || "").trim() || "همان نام میزبان آدرس پنل"}\n` +
-                    `پروتکل لینک ساب: ${(() => {
+                    : "┘ç┘à╪º┘å ┘╛┘ê╪▒╪¬ ╪ó╪»╪▒╪│ ┘╛┘å┘ä"}\n` +
+                    `╪»╪º┘à┘å┘ç ┘ä█î┘å┌⌐ ╪│╪º╪¿: ${String(panel.subscription_public_host || "").trim() || "┘ç┘à╪º┘å ┘å╪º┘à ┘à█î╪▓╪¿╪º┘å ╪ó╪»╪▒╪│ ┘╛┘å┘ä"}\n` +
+                    `┘╛╪▒┘ê╪¬┌⌐┘ä ┘ä█î┘å┌⌐ ╪│╪º╪¿: ${(() => {
                         const p = String(panel.subscription_link_protocol || "").trim().toLowerCase();
-                        return p === "http" || p === "https" ? p : "همان پروتکل آدرس پنل";
+                        return p === "http" || p === "https" ? p : "┘ç┘à╪º┘å ┘╛╪▒┘ê╪¬┌⌐┘ä ╪ó╪»╪▒╪│ ┘╛┘å┘ä";
                     })()}\n` +
-                    `دامنه نمایش در کانفیگ: ${String(panel.config_public_host || "").trim() || "همان تشخیص خودکار (محصول/پنل)"}\n`
+                    `╪»╪º┘à┘å┘ç ┘å┘à╪º█î╪┤ ╪»╪▒ ┌⌐╪º┘å┘ü█î┌»: ${String(panel.config_public_host || "").trim() || "┘ç┘à╪º┘å ╪¬╪┤╪«█î╪╡ ╪«┘ê╪»┌⌐╪º╪▒ (┘à╪¡╪╡┘ê┘ä/┘╛┘å┘ä)"}\n`
                 : "") +
-            `یوزرنیم: ${panel.username || "-"}\n` +
-            `وضعیت: ${panel.active ? "فعال" : "غیرفعال"}\n` +
-            `فروش جدید: ${panel.allow_new_sales ? "روشن" : "خاموش"}\n` +
-            `مهاجرت کاربر: ${panel.allow_customer_migration ? "روشن" : "خاموش"}\n` +
-            `اولویت: ${panel.priority}\n` +
-            `آخرین تست: ${panel.last_check_at || "-"}\n` +
-            `نتیجه: ${panelResultLabel(panel.last_check_ok)}\n` +
-            `پیام: ${panel.last_check_message || "-"}\n` +
+            `█î┘ê╪▓╪▒┘å█î┘à: ${panel.username || "-"}\n` +
+            `┘ê╪╢╪╣█î╪¬: ${panel.active ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"}\n` +
+            `┘ü╪▒┘ê╪┤ ╪¼╪»█î╪»: ${panel.allow_new_sales ? "╪▒┘ê╪┤┘å" : "╪«╪º┘à┘ê╪┤"}\n` +
+            `┘à┘ç╪º╪¼╪▒╪¬ ┌⌐╪º╪▒╪¿╪▒: ${panel.allow_customer_migration ? "╪▒┘ê╪┤┘å" : "╪«╪º┘à┘ê╪┤"}\n` +
+            `╪º┘ê┘ä┘ê█î╪¬: ${panel.priority}\n` +
+            `╪ó╪«╪▒█î┘å ╪¬╪│╪¬: ${panel.last_check_at || "-"}\n` +
+            `┘å╪¬█î╪¼┘ç: ${panelResultLabel(panel.last_check_ok)}\n` +
+            `┘╛█î╪º┘à: ${panel.last_check_message || "-"}\n` +
             `meta: ${JSON.stringify(panel.cached_meta || {}, null, 2)}`,
         reply_markup: {
             inline_keyboard: [
                 [
-                    cb("✏️ ویرایش", `admin_panel_edit_${panel.id}`, "primary"),
-                    cb("🧪 تست", `admin_panel_test_${panel.id}`, "primary")
+                    cb("Γ£Å∩╕Å ┘ê█î╪▒╪º█î╪┤", `admin_panel_edit_${panel.id}`, "primary"),
+                    cb("≡ƒº¬ ╪¬╪│╪¬", `admin_panel_test_${panel.id}`, "primary")
                 ],
                 ...(String(panel.panel_type) === "sanaei"
                     ? [
                         [
-                            cb("🔢 پورت ساب", `admin_panel_set_subport_${panel.id}`, "primary"),
-                            cb("🔗 دامنه/پروتکل ساب", `admin_panel_set_suburl_${panel.id}`, "primary")
+                            cb("≡ƒöó ┘╛┘ê╪▒╪¬ ╪│╪º╪¿", `admin_panel_set_subport_${panel.id}`, "primary"),
+                            cb("≡ƒöù ╪»╪º┘à┘å┘ç/┘╛╪▒┘ê╪¬┌⌐┘ä ╪│╪º╪¿", `admin_panel_set_suburl_${panel.id}`, "primary")
                         ],
-                        [cb("🌐 دامنه کانفیگ", `admin_panel_set_confighost_${panel.id}`, "primary")],
-                        [cb("📥 وارد کردن بکاپ inbound", `admin_panel_import_sanaei_backup_${panel.id}`, "primary")]
+                        [cb("≡ƒîÉ ╪»╪º┘à┘å┘ç ┌⌐╪º┘å┘ü█î┌»", `admin_panel_set_confighost_${panel.id}`, "primary")],
+                        [cb("≡ƒôÑ ┘ê╪º╪▒╪» ┌⌐╪▒╪»┘å ╪¿┌⌐╪º┘╛ inbound", `admin_panel_import_sanaei_backup_${panel.id}`, "primary")]
                     ]
                     : []),
                 [
-                    cb(panel.active ? "⛔ غیرفعال" : "✅ فعال", `admin_panel_toggle_${panel.id}`, panel.active ? "danger" : "success"),
-                    cb(panel.allow_new_sales ? "🛑 بستن فروش" : "🟢 بازکردن فروش", `admin_panel_toggle_sales_${panel.id}`, panel.allow_new_sales ? "danger" : "success")
+                    cb(panel.active ? "Γ¢ö ╪║█î╪▒┘ü╪╣╪º┘ä" : "Γ£à ┘ü╪╣╪º┘ä", `admin_panel_toggle_${panel.id}`, panel.active ? "danger" : "success"),
+                    cb(panel.allow_new_sales ? "≡ƒ¢æ ╪¿╪│╪¬┘å ┘ü╪▒┘ê╪┤" : "≡ƒƒó ╪¿╪º╪▓┌⌐╪▒╪»┘å ┘ü╪▒┘ê╪┤", `admin_panel_toggle_sales_${panel.id}`, panel.allow_new_sales ? "danger" : "success")
                 ],
                 [
-                    cb(panel.allow_customer_migration ? "🔒 قفل مهاجرت" : "🔓 آزاد مهاجرت", `admin_panel_toggle_move_${panel.id}`, "primary"),
-                    cb("🗑 حذف", `admin_panel_remove_${panel.id}`, "danger")
+                    cb(panel.allow_customer_migration ? "≡ƒöÆ ┘é┘ü┘ä ┘à┘ç╪º╪¼╪▒╪¬" : "≡ƒöô ╪ó╪▓╪º╪» ┘à┘ç╪º╪¼╪▒╪¬", `admin_panel_toggle_move_${panel.id}`, "primary"),
+                    cb("≡ƒùæ ╪¡╪░┘ü", `admin_panel_remove_${panel.id}`, "danger")
                 ],
                 [
-                    cb("📋 کش", `admin_panel_cache_${panel.id}`, "primary"),
-                    backButton("admin_panels", "🔙 لیست پنل‌ها")
+                    cb("≡ƒôï ┌⌐╪┤", `admin_panel_cache_${panel.id}`, "primary"),
+                    backButton("admin_panels", "≡ƒöÖ ┘ä█î╪│╪¬ ┘╛┘å┘äΓÇî┘ç╪º")
                 ]
             ]
         }
@@ -2449,15 +2449,15 @@ async function mainMenuMarkup(userId) {
         buyBtnText = "?? ???? ????????";
     }
     const rows = [
-        [cb(buyBtnText, "buy_menu", "primary"), cb("📦 سفارش‌ها و کانفیگ‌ها", "my_configs", "primary")],
-        [cb("👛 کیف پول", "wallet_menu", "success"), cb("🎁 دعوت دوستان", "referral_menu", "success")],
-        [cb("🆘 پشتیبانی", "support", "primary")]
+        [cb(buyBtnText, "buy_menu", "primary"), cb("≡ƒôª ╪│┘ü╪º╪▒╪┤ΓÇî┘ç╪º ┘ê ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º", "my_configs", "primary")],
+        [cb("≡ƒæ¢ ┌⌐█î┘ü ┘╛┘ê┘ä", "wallet_menu", "success"), cb("≡ƒÄü ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å", "referral_menu", "success")],
+        [cb("≡ƒåÿ ┘╛╪┤╪¬█î╪¿╪º┘å█î", "support", "primary")]
     ];
     if (testEnabled) {
-        rows.splice(2, 0, [cb("🆓 کانفیگ تست رایگان", "test_config_claim", "success")]);
+        rows.splice(2, 0, [cb("≡ƒåô ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪▒╪º█î┌»╪º┘å", "test_config_claim", "success")]);
     }
     if (adminCheck) {
-        rows.push([cb("🛠 پنل ادمین", "admin_panel", "primary")]);
+        rows.push([cb("≡ƒ¢á ┘╛┘å┘ä ╪º╪»┘à█î┘å", "admin_panel", "primary")]);
     }
     return { inline_keyboard: rows };
 }
@@ -2479,8 +2479,8 @@ async function sendMainMenu(chatId, userId, text) {
     await tg("sendMessage", {
         chat_id: chatId,
         text: text ||
-            "🏠 منوی اصلی\n\n" +
-                "از گزینه‌های زیر می‌توانید خرید، پیگیری سفارش، مدیریت کیف پول و دعوت دوستان را انجام دهید.",
+            "≡ƒÅá ┘à┘å┘ê█î ╪º╪╡┘ä█î\n\n" +
+                "╪º╪▓ ┌»╪▓█î┘å┘çΓÇî┘ç╪º█î ╪▓█î╪▒ ┘à█îΓÇî╪¬┘ê╪º┘å█î╪» ╪«╪▒█î╪»╪î ┘╛█î┌»█î╪▒█î ╪│┘ü╪º╪▒╪┤╪î ┘à╪»█î╪▒█î╪¬ ┌⌐█î┘ü ┘╛┘ê┘ä ┘ê ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å ╪▒╪º ╪º┘å╪¼╪º┘à ╪»┘ç█î╪».",
         reply_markup: await mainMenuMarkup(userId)
     });
 }
@@ -2489,13 +2489,13 @@ async function sendWalletMenu(chatId, userId) {
     const balance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `👛 کیف پول شما\n\n` +
-            `موجودی فعلی: ${formatPriceToman(balance)} تومان\n\n` +
-            `از این بخش می‌توانید کیف پول را شارژ کنید یا گردش اخیر را ببینید.`,
+        text: `≡ƒæ¢ ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º\n\n` +
+            `┘à┘ê╪¼┘ê╪»█î ┘ü╪╣┘ä█î: ${formatPriceToman(balance)} ╪¬┘ê┘à╪º┘å\n\n` +
+            `╪º╪▓ ╪º█î┘å ╪¿╪«╪┤ ┘à█îΓÇî╪¬┘ê╪º┘å█î╪» ┌⌐█î┘ü ┘╛┘ê┘ä ╪▒╪º ╪┤╪º╪▒┌ÿ ┌⌐┘å█î╪» █î╪º ┌»╪▒╪»╪┤ ╪º╪«█î╪▒ ╪▒╪º ╪¿╪¿█î┘å█î╪».`,
         reply_markup: {
             inline_keyboard: [
-                [cb("➕ شارژ کیف پول", "wallet_charge", "success"), cb("🧾 گردش کیف پول", "wallet_transactions", "primary")],
-                [cb("🎁 دعوت دوستان", "referral_menu", "primary")],
+                [cb("Γ₧ò ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä", "wallet_charge", "success"), cb("≡ƒº╛ ┌»╪▒╪»╪┤ ┌⌐█î┘ü ┘╛┘ê┘ä", "wallet_transactions", "primary")],
+                [cb("≡ƒÄü ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å", "referral_menu", "primary")],
                 [homeButton()]
             ]
         }
@@ -2512,21 +2512,21 @@ async function showWalletTransactions(chatId, userId) {
     if (!rows.length) {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "🧾 هنوز تراکنشی برای کیف پول شما ثبت نشده است.",
+            text: "≡ƒº╛ ┘ç┘å┘ê╪▓ ╪¬╪▒╪º┌⌐┘å╪┤█î ╪¿╪▒╪º█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬.",
             reply_markup: { inline_keyboard: [[backButton("wallet_menu")], [homeButton()]] }
         });
         return null;
     }
     const lines = rows.map((row, idx) => {
         const amount = Number(row.amount || 0);
-        const amountText = `${amount >= 0 ? "+" : ""}${formatPriceToman(amount)} تومان`;
+        const amountText = `${amount >= 0 ? "+" : ""}${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å`;
         const title = formatWalletTransactionType(row.type);
         const description = String(row.description || "").trim();
         return `${idx + 1}. ${title}\n${amountText}\n${description || "-"}\n${String(row.created_at)}`;
     });
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `🧾 گردش اخیر کیف پول\n\n${lines.join("\n\n")}`,
+        text: `≡ƒº╛ ┌»╪▒╪»╪┤ ╪º╪«█î╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä\n\n${lines.join("\n\n")}`,
         reply_markup: { inline_keyboard: [[backButton("wallet_menu")], [homeButton()]] }
     });
 }
@@ -2541,7 +2541,7 @@ async function showReferralInvitees(chatId, userId) {
     if (!rows.length) {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "👥 هنوز کسی با لینک شما وارد ربات نشده است.",
+            text: "≡ƒæÑ ┘ç┘å┘ê╪▓ ┌⌐╪│█î ╪¿╪º ┘ä█î┘å┌⌐ ╪┤┘à╪º ┘ê╪º╪▒╪» ╪▒╪¿╪º╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬.",
             reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
         });
         return null;
@@ -2549,12 +2549,12 @@ async function showReferralInvitees(chatId, userId) {
     const lines = rows.map((row, idx) => {
         const username = row.username ? `@${String(row.username)}` : "-";
         const fullName = [row.first_name ? String(row.first_name) : "", row.last_name ? String(row.last_name) : ""].filter(Boolean).join(" ").trim() || "-";
-        const status = row.referral_qualified_at ? "✅ تاییدشده" : "⏳ در انتظار تایید";
-        return `${idx + 1}. ${username} | ${fullName}\nوضعیت: ${status}`;
+        const status = row.referral_qualified_at ? "Γ£à ╪¬╪º█î█î╪»╪┤╪»┘ç" : "ΓÅ│ ╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ╪¬╪º█î█î╪»";
+        return `${idx + 1}. ${username} | ${fullName}\n┘ê╪╢╪╣█î╪¬: ${status}`;
     });
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `👥 فهرست دعوت‌های شما\n\n${lines.join("\n\n")}`,
+        text: `≡ƒæÑ ┘ü┘ç╪▒╪│╪¬ ╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪┤┘à╪º\n\n${lines.join("\n\n")}`,
         reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
     });
 }
@@ -2579,7 +2579,7 @@ async function showReferralRewardHistory(chatId, userId) {
     if (!rows.length) {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "🎁 هنوز جایزه‌ای از بخش دعوت دوستان برای شما ثبت نشده است.",
+            text: "≡ƒÄü ┘ç┘å┘ê╪▓ ╪¼╪º█î╪▓┘çΓÇî╪º█î ╪º╪▓ ╪¿╪«╪┤ ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å ╪¿╪▒╪º█î ╪┤┘à╪º ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬.",
             reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
         });
         return null;
@@ -2590,20 +2590,20 @@ async function showReferralRewardHistory(chatId, userId) {
         const deliveryMode = normalizeReferralConfigDeliveryMode(row.reward_delivery_mode);
         const rewardText = rewardType === "config"
             ? row.product_name
-                ? `کانفیگ ${String(row.product_name)}${row.order_id ? ` (#${row.order_id})` : ""}`
+                ? `┌⌐╪º┘å┘ü█î┌» ${String(row.product_name)}${row.order_id ? ` (#${row.order_id})` : ""}`
                 : row.order_id
-                    ? `کانفیگ رایگان (#${row.order_id})`
-                    : "کانفیگ رایگان"
-            : `${formatPriceToman(Number(row.wallet_amount || 0))} تومان اعتبار`;
+                    ? `┌⌐╪º┘å┘ü█î┌» ╪▒╪º█î┌»╪º┘å (#${row.order_id})`
+                    : "┌⌐╪º┘å┘ü█î┌» ╪▒╪º█î┌»╪º┘å"
+            : `${formatPriceToman(Number(row.wallet_amount || 0))} ╪¬┘ê┘à╪º┘å ╪º╪╣╪¬╪¿╪º╪▒`;
         const extra = rewardType === "config"
-            ? `\nروش تحویل: ${referralConfigDeliveryModeLabel(deliveryMode)}`
+            ? `\n╪▒┘ê╪┤ ╪¬╪¡┘ê█î┘ä: ${referralConfigDeliveryModeLabel(deliveryMode)}`
             : "";
-        const failureReason = row.failure_reason ? `\nعلت توقف: ${String(row.failure_reason)}` : "";
-        return `${idx + 1}. مرحله ${Number(row.reward_batch || 0)}\nپاداش: ${rewardText}${extra}\nوضعیت: ${referralRewardStatusLabel(status)}${failureReason}\nزمان: ${String(row.created_at)}`;
+        const failureReason = row.failure_reason ? `\n╪╣┘ä╪¬ ╪¬┘ê┘é┘ü: ${String(row.failure_reason)}` : "";
+        return `${idx + 1}. ┘à╪▒╪¡┘ä┘ç ${Number(row.reward_batch || 0)}\n┘╛╪º╪»╪º╪┤: ${rewardText}${extra}\n┘ê╪╢╪╣█î╪¬: ${referralRewardStatusLabel(status)}${failureReason}\n╪▓┘à╪º┘å: ${String(row.created_at)}`;
     });
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `🎁 تاریخچه جوایز دعوت\n\n${lines.join("\n\n")}`,
+        text: `≡ƒÄü ╪¬╪º╪▒█î╪«┌å┘ç ╪¼┘ê╪º█î╪▓ ╪»╪╣┘ê╪¬\n\n${lines.join("\n\n")}`,
         reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
     });
 }
@@ -2616,9 +2616,9 @@ async function sendReferralMenu(chatId, userId) {
     if (!settings.enabled) {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "🎁 سیستم دعوت دوستان\n\n" +
-                "در حال حاضر این بخش غیرفعال است.\n" +
-                "بعد از فعال‌سازی توسط ادمین، لینک اختصاصی و جزئیات پاداش شما اینجا نمایش داده می‌شود.",
+            text: "≡ƒÄü ╪│█î╪│╪¬┘à ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å\n\n" +
+                "╪»╪▒ ╪¡╪º┘ä ╪¡╪º╪╢╪▒ ╪º█î┘å ╪¿╪«╪┤ ╪║█î╪▒┘ü╪╣╪º┘ä ╪º╪│╪¬.\n" +
+                "╪¿╪╣╪» ╪º╪▓ ┘ü╪╣╪º┘äΓÇî╪│╪º╪▓█î ╪¬┘ê╪│╪╖ ╪º╪»┘à█î┘å╪î ┘ä█î┘å┌⌐ ╪º╪«╪¬╪╡╪º╪╡█î ┘ê ╪¼╪▓╪ª█î╪º╪¬ ┘╛╪º╪»╪º╪┤ ╪┤┘à╪º ╪º█î┘å╪¼╪º ┘å┘à╪º█î╪┤ ╪»╪º╪»┘ç ┘à█îΓÇî╪┤┘ê╪».",
             reply_markup: { inline_keyboard: [[homeButton()]] }
         });
         return null;
@@ -2632,33 +2632,33 @@ async function sendReferralMenu(chatId, userId) {
     const remaining = getReferralRemainingCount(qualifiedInvites, settings.threshold);
     const rewardSummary = describeReferralReward(settings, productName || null);
     const lines = [
-        "🎁 سیستم دعوت دوستان",
+        "≡ƒÄü ╪│█î╪│╪¬┘à ╪»╪╣┘ê╪¬ ╪»┘ê╪│╪¬╪º┘å",
         "",
-        `پاداش هر ${settings.threshold} دعوت تاییدشده: ${rewardSummary}`,
-        `دعوت‌های ثبت‌شده: ${totalInvites}`,
-        `دعوت‌های تاییدشده: ${qualifiedInvites}`,
-        `در انتظار تایید: ${pendingInvites}`,
-        `جوایز دریافت‌شده: ${rewardCount}`,
-        `تا پاداش بعدی: ${remaining === 0 ? "آستانه تکمیل شده" : `${remaining} نفر`}`,
+        `┘╛╪º╪»╪º╪┤ ┘ç╪▒ ${settings.threshold} ╪»╪╣┘ê╪¬ ╪¬╪º█î█î╪»╪┤╪»┘ç: ${rewardSummary}`,
+        `╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪½╪¿╪¬ΓÇî╪┤╪»┘ç: ${totalInvites}`,
+        `╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪¬╪º█î█î╪»╪┤╪»┘ç: ${qualifiedInvites}`,
+        `╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ╪¬╪º█î█î╪»: ${pendingInvites}`,
+        `╪¼┘ê╪º█î╪▓ ╪»╪▒█î╪º┘ü╪¬ΓÇî╪┤╪»┘ç: ${rewardCount}`,
+        `╪¬╪º ┘╛╪º╪»╪º╪┤ ╪¿╪╣╪»█î: ${remaining === 0 ? "╪ó╪│╪¬╪º┘å┘ç ╪¬┌⌐┘à█î┘ä ╪┤╪»┘ç" : `${remaining} ┘å┘ü╪▒`}`,
         ""
     ];
-    lines.splice(3, 0, `این پاداش برای هر مضرب کامل از ${settings.threshold} دعوت، دوباره تکرار می‌شود.`);
-    lines.splice(4, 0, "نحوه دریافت جایزه: به صورت خودکار انجام می‌شود و نیازی به Claim دستی نیست.");
-    lines.splice(8, 0, `جوایز در انتظار ادمین: ${rewardStatusSummary.awaitingAdmin}`);
-    lines.splice(9, 0, `جوایز مسدودشده: ${rewardStatusSummary.blocked}`);
+    lines.splice(3, 0, `╪º█î┘å ┘╛╪º╪»╪º╪┤ ╪¿╪▒╪º█î ┘ç╪▒ ┘à╪╢╪▒╪¿ ┌⌐╪º┘à┘ä ╪º╪▓ ${settings.threshold} ╪»╪╣┘ê╪¬╪î ╪»┘ê╪¿╪º╪▒┘ç ╪¬┌⌐╪▒╪º╪▒ ┘à█îΓÇî╪┤┘ê╪».`);
+    lines.splice(4, 0, "┘å╪¡┘ê┘ç ╪»╪▒█î╪º┘ü╪¬ ╪¼╪º█î╪▓┘ç: ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪«┘ê╪»┌⌐╪º╪▒ ╪º┘å╪¼╪º┘à ┘à█îΓÇî╪┤┘ê╪» ┘ê ┘å█î╪º╪▓█î ╪¿┘ç Claim ╪»╪│╪¬█î ┘å█î╪│╪¬.");
+    lines.splice(8, 0, `╪¼┘ê╪º█î╪▓ ╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ╪º╪»┘à█î┘å: ${rewardStatusSummary.awaitingAdmin}`);
+    lines.splice(9, 0, `╪¼┘ê╪º█î╪▓ ┘à╪│╪»┘ê╪»╪┤╪»┘ç: ${rewardStatusSummary.blocked}`);
     if (inviteLink) {
-        lines.push("لینک اختصاصی شما:");
+        lines.push("┘ä█î┘å┌⌐ ╪º╪«╪¬╪╡╪º╪╡█î ╪┤┘à╪º:");
         lines.push(`<code>${escapeHtml(inviteLink)}</code>`);
     }
     else {
-        lines.push("لینک اختصاصی شما فعلاً قابل تولید نیست. کمی بعد دوباره امتحان کنید.");
+        lines.push("┘ä█î┘å┌⌐ ╪º╪«╪¬╪╡╪º╪╡█î ╪┤┘à╪º ┘ü╪╣┘ä╪º┘ï ┘é╪º╪¿┘ä ╪¬┘ê┘ä█î╪» ┘å█î╪│╪¬. ┌⌐┘à█î ╪¿╪╣╪» ╪»┘ê╪¿╪º╪▒┘ç ╪º┘à╪¬╪¡╪º┘å ┌⌐┘å█î╪».");
     }
     const keyboard = [];
     if (inviteLink) {
-        keyboard.push([{ text: "📨 اشتراک‌گذاری لینک", url: buildReferralShareUrl(inviteLink) }]);
+        keyboard.push([{ text: "≡ƒô¿ ╪º╪┤╪¬╪▒╪º┌⌐ΓÇî┌»╪░╪º╪▒█î ┘ä█î┘å┌⌐", url: buildReferralShareUrl(inviteLink) }]);
     }
-    keyboard.push([cb("🧭 راهنمای دریافت جایزه", "referral_claim_help", "primary")]);
-    keyboard.push([cb("👥 فهرست دعوت‌ها", "referral_invitees", "primary"), cb("🧾 تاریخچه جوایز", "referral_rewards_history", "primary")]);
+    keyboard.push([cb("≡ƒº¡ ╪▒╪º┘ç┘å┘à╪º█î ╪»╪▒█î╪º┘ü╪¬ ╪¼╪º█î╪▓┘ç", "referral_claim_help", "primary")]);
+    keyboard.push([cb("≡ƒæÑ ┘ü┘ç╪▒╪│╪¬ ╪»╪╣┘ê╪¬ΓÇî┘ç╪º", "referral_invitees", "primary"), cb("≡ƒº╛ ╪¬╪º╪▒█î╪«┌å┘ç ╪¼┘ê╪º█î╪▓", "referral_rewards_history", "primary")]);
     keyboard.push([homeButton()]);
     await tg("sendMessage", {
         chat_id: chatId,
@@ -2669,17 +2669,17 @@ async function sendReferralMenu(chatId, userId) {
 }
 async function sendReferralClaimHelp(chatId) {
     const settings = await getReferralSettingsSnapshot();
-    const rewardMode = settings.rewardType === "wallet" ? "اعتبار کیف پول" : "سفارش رایگان";
+    const rewardMode = settings.rewardType === "wallet" ? "╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä" : "╪│┘ü╪º╪▒╪┤ ╪▒╪º█î┌»╪º┘å";
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "🧭 راهنمای دریافت جایزه دعوت\n\n" +
-            "1) لینک اختصاصی خودت رو ارسال کن.\n" +
-            "2) وقتی کاربر با لینک تو وارد ربات بشه، لینک به اسم تو قفل میشه و تغییر نمی‌کنه.\n" +
-            "3) کاربر باید عضویت کانال‌ها رو کامل کنه.\n" +
-            "4) بعد از تایید عضویت، دعوت به حالت تاییدشده میره و بهت اعلان میاد.\n" +
-            `5) هر ${settings.threshold} دعوت تاییدشده، جایزه ${rewardMode} به صورت خودکار ثبت میشه.\n\n` +
-            "❌ نیازی به Claim دستی نیست.\n" +
-            "برای پیگیری وضعیت، از «فهرست دعوت‌ها» و «تاریخچه جوایز» استفاده کن.",
+        text: "≡ƒº¡ ╪▒╪º┘ç┘å┘à╪º█î ╪»╪▒█î╪º┘ü╪¬ ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬\n\n" +
+            "1) ┘ä█î┘å┌⌐ ╪º╪«╪¬╪╡╪º╪╡█î ╪«┘ê╪»╪¬ ╪▒┘ê ╪º╪▒╪│╪º┘ä ┌⌐┘å.\n" +
+            "2) ┘ê┘é╪¬█î ┌⌐╪º╪▒╪¿╪▒ ╪¿╪º ┘ä█î┘å┌⌐ ╪¬┘ê ┘ê╪º╪▒╪» ╪▒╪¿╪º╪¬ ╪¿╪┤┘ç╪î ┘ä█î┘å┌⌐ ╪¿┘ç ╪º╪│┘à ╪¬┘ê ┘é┘ü┘ä ┘à█î╪┤┘ç ┘ê ╪¬╪║█î█î╪▒ ┘å┘à█îΓÇî┌⌐┘å┘ç.\n" +
+            "3) ┌⌐╪º╪▒╪¿╪▒ ╪¿╪º█î╪» ╪╣╪╢┘ê█î╪¬ ┌⌐╪º┘å╪º┘äΓÇî┘ç╪º ╪▒┘ê ┌⌐╪º┘à┘ä ┌⌐┘å┘ç.\n" +
+            "4) ╪¿╪╣╪» ╪º╪▓ ╪¬╪º█î█î╪» ╪╣╪╢┘ê█î╪¬╪î ╪»╪╣┘ê╪¬ ╪¿┘ç ╪¡╪º┘ä╪¬ ╪¬╪º█î█î╪»╪┤╪»┘ç ┘à█î╪▒┘ç ┘ê ╪¿┘ç╪¬ ╪º╪╣┘ä╪º┘å ┘à█î╪º╪».\n" +
+            `5) ┘ç╪▒ ${settings.threshold} ╪»╪╣┘ê╪¬ ╪¬╪º█î█î╪»╪┤╪»┘ç╪î ╪¼╪º█î╪▓┘ç ${rewardMode} ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪«┘ê╪»┌⌐╪º╪▒ ╪½╪¿╪¬ ┘à█î╪┤┘ç.\n\n` +
+            "Γ¥î ┘å█î╪º╪▓█î ╪¿┘ç Claim ╪»╪│╪¬█î ┘å█î╪│╪¬.\n" +
+            "╪¿╪▒╪º█î ┘╛█î┌»█î╪▒█î ┘ê╪╢╪╣█î╪¬╪î ╪º╪▓ ┬½┘ü┘ç╪▒╪│╪¬ ╪»╪╣┘ê╪¬ΓÇî┘ç╪º┬╗ ┘ê ┬½╪¬╪º╪▒█î╪«┌å┘ç ╪¼┘ê╪º█î╪▓┬╗ ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å.",
         reply_markup: { inline_keyboard: [[backButton("referral_menu")], [homeButton()]] }
     });
 }
@@ -2691,20 +2691,20 @@ async function showAdminReferralProductPicker(chatId) {
     LIMIT 50;
   `;
     const keyboard = rows.map((row) => {
-        const activeBadge = row.is_active ? "✅" : "⛔";
+        const activeBadge = row.is_active ? "Γ£à" : "Γ¢ö";
         const hasPanel = !!(row.panel_id);
-        const sellModeBadge = hasPanel ? "⚙️پنل" : "📦دستی";
+        const sellModeBadge = hasPanel ? "ΓÜÖ∩╕Å┘╛┘å┘ä" : "≡ƒôª╪»╪│╪¬█î";
         return [cb(`${activeBadge} ${sellModeBadge} ${String(row.name)} (#${Number(row.id)})`, `admin_referral_product_${Number(row.id)}`, "primary")];
     });
-    keyboard.push([cb("🚫 پاک‌کردن محصول انتخاب‌شده", "admin_referral_clear_product", "danger")]);
+    keyboard.push([cb("≡ƒÜ½ ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å ┘à╪¡╪╡┘ê┘ä ╪º┘å╪¬╪«╪º╪¿ΓÇî╪┤╪»┘ç", "admin_referral_clear_product", "danger")]);
     keyboard.push([backButton("admin_referral_settings")]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "🎁 انتخاب محصول جایزه\n\n" +
-            "محصولی را که باید به عنوان جایزه دعوت ثبت شود انتخاب کنید.\n\n" +
-            "⚙️پنل = دارای پنل v2ray (کانفیگ خودکار ساخته می‌شود)\n" +
-            "📦دستی = بدون پنل (ادمین باید کانفیگ را دستی تحویل دهد)\n" +
-            "⛔ = محصول غیرفعال (می‌توان به عنوان جایزه انتخاب کرد)",
+        text: "≡ƒÄü ╪º┘å╪¬╪«╪º╪¿ ┘à╪¡╪╡┘ê┘ä ╪¼╪º█î╪▓┘ç\n\n" +
+            "┘à╪¡╪╡┘ê┘ä█î ╪▒╪º ┌⌐┘ç ╪¿╪º█î╪» ╪¿┘ç ╪╣┘å┘ê╪º┘å ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪½╪¿╪¬ ╪┤┘ê╪» ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪».\n\n" +
+            "ΓÜÖ∩╕Å┘╛┘å┘ä = ╪»╪º╪▒╪º█î ┘╛┘å┘ä v2ray (┌⌐╪º┘å┘ü█î┌» ╪«┘ê╪»┌⌐╪º╪▒ ╪│╪º╪«╪¬┘ç ┘à█îΓÇî╪┤┘ê╪»)\n" +
+            "≡ƒôª╪»╪│╪¬█î = ╪¿╪»┘ê┘å ┘╛┘å┘ä (╪º╪»┘à█î┘å ╪¿╪º█î╪» ┌⌐╪º┘å┘ü█î┌» ╪▒╪º ╪»╪│╪¬█î ╪¬╪¡┘ê█î┘ä ╪»┘ç╪»)\n" +
+            "Γ¢ö = ┘à╪¡╪╡┘ê┘ä ╪║█î╪▒┘ü╪╣╪º┘ä (┘à█îΓÇî╪¬┘ê╪º┘å ╪¿┘ç ╪╣┘å┘ê╪º┘å ╪¼╪º█î╪▓┘ç ╪º┘å╪¬╪«╪º╪¿ ┌⌐╪▒╪»)",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
@@ -2723,9 +2723,9 @@ async function showAdminReferralSettings(chatId) {
   `;
     const rewardRows = await sql `SELECT COUNT(*)::int AS reward_count FROM referral_rewards;`;
     const rewardSummary = describeReferralReward(settings, productName || null);
-    const rewardModeText = settings.rewardType === "config" ? "کانفیگ" : "اعتبار کیف پول";
+    const rewardModeText = settings.rewardType === "config" ? "┌⌐╪º┘å┘ü█î┌»" : "╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä";
     const configDeliveryLine = settings.rewardType === "config"
-        ? `روش تحویل کانفیگ: خودکار (اگر محصول پنل داشته باشد → از پنل، در غیر این صورت → تحویل دستی ادمین)\n`
+        ? `╪▒┘ê╪┤ ╪¬╪¡┘ê█î┘ä ┌⌐╪º┘å┘ü█î┌»: ╪«┘ê╪»┌⌐╪º╪▒ (╪º┌»╪▒ ┘à╪¡╪╡┘ê┘ä ┘╛┘å┘ä ╪»╪º╪┤╪¬┘ç ╪¿╪º╪┤╪» ΓåÆ ╪º╪▓ ┘╛┘å┘ä╪î ╪»╪▒ ╪║█î╪▒ ╪º█î┘å ╪╡┘ê╪▒╪¬ ΓåÆ ╪¬╪¡┘ê█î┘ä ╪»╪│╪¬█î ╪º╪»┘à█î┘å)\n`
         : "";
     const qualifiedLeads = Number(leadRows[0]?.qualified_leads || 0);
     const totalLeads = Number(leadRows[0]?.total_leads || 0);
@@ -2733,32 +2733,32 @@ async function showAdminReferralSettings(chatId) {
     const rewardCount = Number(rewardRows[0]?.reward_count || 0);
     const configurationWarning = settings.rewardType === "wallet"
         ? settings.walletAmount <= 0
-            ? "\nهشدار: مبلغ جایزه کیف پول هنوز تنظیم نشده است."
+            ? "\n┘ç╪┤╪»╪º╪▒: ┘à╪¿┘ä╪║ ╪¼╪º█î╪▓┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ┘ç┘å┘ê╪▓ ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬."
             : ""
         : !settings.productId
-            ? "\nهشدار: محصول جایزه کانفیگ هنوز انتخاب نشده است."
+            ? "\n┘ç╪┤╪»╪º╪▒: ┘à╪¡╪╡┘ê┘ä ╪¼╪º█î╪▓┘ç ┌⌐╪º┘å┘ü█î┌» ┘ç┘å┘ê╪▓ ╪º┘å╪¬╪«╪º╪¿ ┘å╪┤╪»┘ç ╪º╪│╪¬."
             : "";
     const keyboard = [
-        [cb(settings.enabled ? "⛔ غیرفعال‌کردن سیستم دعوت" : "✅ فعال‌کردن سیستم دعوت", "admin_toggle_referral_enabled", settings.enabled ? "danger" : "success")],
-        [cb("🎯 تنظیم آستانه دعوت", "admin_set_referral_threshold", "primary")],
-        [cb(settings.rewardType === "wallet" ? "✅ پاداش: کیف پول" : "کیف پول", "admin_referral_reward_wallet", settings.rewardType === "wallet" ? "success" : "primary"), cb(settings.rewardType === "config" ? "✅ پاداش: کانفیگ" : "کانفیگ", "admin_referral_reward_config", settings.rewardType === "config" ? "success" : "primary")],
-        [cb("💰 مبلغ جایزه کیف پول", "admin_set_referral_wallet_amount", "primary")],
-        [cb("📦 انتخاب محصول جایزه", "admin_referral_pick_product", "primary")]
+        [cb(settings.enabled ? "Γ¢ö ╪║█î╪▒┘ü╪╣╪º┘äΓÇî┌⌐╪▒╪»┘å ╪│█î╪│╪¬┘à ╪»╪╣┘ê╪¬" : "Γ£à ┘ü╪╣╪º┘äΓÇî┌⌐╪▒╪»┘å ╪│█î╪│╪¬┘à ╪»╪╣┘ê╪¬", "admin_toggle_referral_enabled", settings.enabled ? "danger" : "success")],
+        [cb("≡ƒÄ» ╪¬┘å╪╕█î┘à ╪ó╪│╪¬╪º┘å┘ç ╪»╪╣┘ê╪¬", "admin_set_referral_threshold", "primary")],
+        [cb(settings.rewardType === "wallet" ? "Γ£à ┘╛╪º╪»╪º╪┤: ┌⌐█î┘ü ┘╛┘ê┘ä" : "┌⌐█î┘ü ┘╛┘ê┘ä", "admin_referral_reward_wallet", settings.rewardType === "wallet" ? "success" : "primary"), cb(settings.rewardType === "config" ? "Γ£à ┘╛╪º╪»╪º╪┤: ┌⌐╪º┘å┘ü█î┌»" : "┌⌐╪º┘å┘ü█î┌»", "admin_referral_reward_config", settings.rewardType === "config" ? "success" : "primary")],
+        [cb("≡ƒÆ░ ┘à╪¿┘ä╪║ ╪¼╪º█î╪▓┘ç ┌⌐█î┘ü ┘╛┘ê┘ä", "admin_set_referral_wallet_amount", "primary")],
+        [cb("≡ƒôª ╪º┘å╪¬╪«╪º╪¿ ┘à╪¡╪╡┘ê┘ä ╪¼╪º█î╪▓┘ç", "admin_referral_pick_product", "primary")]
     ];
     keyboard.push([backButton("admin_settings")]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `🎁 تنظیمات سیستم دعوت\n\n` +
-            `وضعیت: ${settings.enabled ? "فعال ✅" : "غیرفعال ⛔"}\n` +
-            `آستانه پاداش: هر ${settings.threshold} دعوت تاییدشده\n` +
-            `نوع پاداش: ${rewardModeText}\n` +
+        text: `≡ƒÄü ╪¬┘å╪╕█î┘à╪º╪¬ ╪│█î╪│╪¬┘à ╪»╪╣┘ê╪¬\n\n` +
+            `┘ê╪╢╪╣█î╪¬: ${settings.enabled ? "┘ü╪╣╪º┘ä Γ£à" : "╪║█î╪▒┘ü╪╣╪º┘ä Γ¢ö"}\n` +
+            `╪ó╪│╪¬╪º┘å┘ç ┘╛╪º╪»╪º╪┤: ┘ç╪▒ ${settings.threshold} ╪»╪╣┘ê╪¬ ╪¬╪º█î█î╪»╪┤╪»┘ç\n` +
+            `┘å┘ê╪╣ ┘╛╪º╪»╪º╪┤: ${rewardModeText}\n` +
             configDeliveryLine +
-            `پاداش فعلی: ${rewardSummary}\n\n` +
-            `آمار سریع:\n` +
-            `دعوت‌های ثبت‌شده: ${totalLeads}\n` +
-            `دعوت‌های تاییدشده: ${qualifiedLeads}\n` +
-            `تعداد معرف‌ها: ${inviters}\n` +
-            `جوایز پرداخت‌شده: ${rewardCount}` +
+            `┘╛╪º╪»╪º╪┤ ┘ü╪╣┘ä█î: ${rewardSummary}\n\n` +
+            `╪ó┘à╪º╪▒ ╪│╪▒█î╪╣:\n` +
+            `╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪½╪¿╪¬ΓÇî╪┤╪»┘ç: ${totalLeads}\n` +
+            `╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪¬╪º█î█î╪»╪┤╪»┘ç: ${qualifiedLeads}\n` +
+            `╪¬╪╣╪»╪º╪» ┘à╪╣╪▒┘üΓÇî┘ç╪º: ${inviters}\n` +
+            `╪¼┘ê╪º█î╪▓ ┘╛╪▒╪»╪º╪«╪¬ΓÇî╪┤╪»┘ç: ${rewardCount}` +
             configurationWarning,
         reply_markup: { inline_keyboard: keyboard }
     });
@@ -2799,30 +2799,30 @@ async function isBanned(userId) {
 async function adminHelp(chatId) {
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "راهنمای ادمین:\n" +
-            "/help - نمایش همین راهنما\n" +
-            "/start - منوی اصلی\n" +
-            "/admin - ورود سریع به پنل ادمین\n" +
-            "/cancel - لغو عملیات در حال انجام\n\n" +
-            "مدیریت کامل محصولات، موجودی، تخفیف‌ها، آمار و تنظیمات از پنل ادمین انجام می‌شود."
+        text: "╪▒╪º┘ç┘å┘à╪º█î ╪º╪»┘à█î┘å:\n" +
+            "/help - ┘å┘à╪º█î╪┤ ┘ç┘à█î┘å ╪▒╪º┘ç┘å┘à╪º\n" +
+            "/start - ┘à┘å┘ê█î ╪º╪╡┘ä█î\n" +
+            "/admin - ┘ê╪▒┘ê╪» ╪│╪▒█î╪╣ ╪¿┘ç ┘╛┘å┘ä ╪º╪»┘à█î┘å\n" +
+            "/cancel - ┘ä╪║┘ê ╪╣┘à┘ä█î╪º╪¬ ╪»╪▒ ╪¡╪º┘ä ╪º┘å╪¼╪º┘à\n\n" +
+            "┘à╪»█î╪▒█î╪¬ ┌⌐╪º┘à┘ä ┘à╪¡╪╡┘ê┘ä╪º╪¬╪î ┘à┘ê╪¼┘ê╪»█î╪î ╪¬╪«┘ü█î┘üΓÇî┘ç╪º╪î ╪ó┘à╪º╪▒ ┘ê ╪¬┘å╪╕█î┘à╪º╪¬ ╪º╪▓ ┘╛┘å┘ä ╪º╪»┘à█î┘å ╪º┘å╪¼╪º┘à ┘à█îΓÇî╪┤┘ê╪»."
     });
 }
 async function sendAdminPanel(chatId) {
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "پنل ادمین 👇",
+        text: "┘╛┘å┘ä ╪º╪»┘à█î┘å ≡ƒæç",
         reply_markup: {
             inline_keyboard: [
-                [cb("📦 مدیریت محصولات", "admin_products", "primary")],
-                [cb("🗂 مدیریت موجودی", "admin_inventory", "primary")],
-                [cb("💳 روش‌های پرداخت", "admin_payment_methods", "primary")],
-                [cb("💳 کارت‌ها", "admin_cards", "primary")],
-                [cb("🎟 کد تخفیف", "admin_discounts", "primary")],
-                [cb("🌐 پنل‌های V2Ray", "admin_panels", "primary")],
-                [cb("👥 مدیریت کاربران", "admin_manage_users", "primary")],
-                [cb("📊 آمار", "admin_stats", "primary")],
-                [cb("🧰 ابزار ادمین", "admin_tools", "primary")],
-                [cb("⚙️ تنظیمات", "admin_settings", "primary")],
+                [cb("≡ƒôª ┘à╪»█î╪▒█î╪¬ ┘à╪¡╪╡┘ê┘ä╪º╪¬", "admin_products", "primary")],
+                [cb("≡ƒùé ┘à╪»█î╪▒█î╪¬ ┘à┘ê╪¼┘ê╪»█î", "admin_inventory", "primary")],
+                [cb("≡ƒÆ│ ╪▒┘ê╪┤ΓÇî┘ç╪º█î ┘╛╪▒╪»╪º╪«╪¬", "admin_payment_methods", "primary")],
+                [cb("≡ƒÆ│ ┌⌐╪º╪▒╪¬ΓÇî┘ç╪º", "admin_cards", "primary")],
+                [cb("≡ƒÄƒ ┌⌐╪» ╪¬╪«┘ü█î┘ü", "admin_discounts", "primary")],
+                [cb("≡ƒîÉ ┘╛┘å┘äΓÇî┘ç╪º█î V2Ray", "admin_panels", "primary")],
+                [cb("≡ƒæÑ ┘à╪»█î╪▒█î╪¬ ┌⌐╪º╪▒╪¿╪▒╪º┘å", "admin_manage_users", "primary")],
+                [cb("≡ƒôè ╪ó┘à╪º╪▒", "admin_stats", "primary")],
+                [cb("≡ƒº░ ╪º╪¿╪▓╪º╪▒ ╪º╪»┘à█î┘å", "admin_tools", "primary")],
+                [cb("ΓÜÖ∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬", "admin_settings", "primary")],
                 [homeButton()]
             ]
         }
@@ -2861,11 +2861,11 @@ async function showPanelAdminMenu(chatId, notice) {
     if (!rows.length) {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "هنوز هیچ پنلی ثبت نشده است.",
+            text: "┘ç┘å┘ê╪▓ ┘ç█î┌å ┘╛┘å┘ä█î ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬.",
             reply_markup: {
                 inline_keyboard: [
-                    [cb("➕ افزودن پنل", "admin_panel_add", "success")],
-                    [cb("📥 صف انتقال‌ها", "admin_migrations", "primary")],
+                    [cb("Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ┘╛┘å┘ä", "admin_panel_add", "success")],
+                    [cb("≡ƒôÑ ╪╡┘ü ╪º┘å╪¬┘é╪º┘äΓÇî┘ç╪º", "admin_migrations", "primary")],
                     [backButton("admin_panel")]
                 ]
             }
@@ -2875,33 +2875,33 @@ async function showPanelAdminMenu(chatId, notice) {
     const keyboard = rows.flatMap((p) => [
         [
             {
-                text: `${p.name} | ${String(p.panel_type).toUpperCase()} | ${p.active ? "فعال" : "غیرفعال"}\n` +
-                    `مهاجرت کاربر: ${p.allow_customer_migration ? "روشن" : "خاموش"} | فروش جدید: ${p.allow_new_sales ? "روشن" : "خاموش"}\n` +
-                    `آخرین تست: ${panelResultLabel(p.last_check_ok)}${p.last_check_message ? ` | ${String(p.last_check_message).slice(0, 40)}` : ""}`,
+                text: `${p.name} | ${String(p.panel_type).toUpperCase()} | ${p.active ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"}\n` +
+                    `┘à┘ç╪º╪¼╪▒╪¬ ┌⌐╪º╪▒╪¿╪▒: ${p.allow_customer_migration ? "╪▒┘ê╪┤┘å" : "╪«╪º┘à┘ê╪┤"} | ┘ü╪▒┘ê╪┤ ╪¼╪»█î╪»: ${p.allow_new_sales ? "╪▒┘ê╪┤┘å" : "╪«╪º┘à┘ê╪┤"}\n` +
+                    `╪ó╪«╪▒█î┘å ╪¬╪│╪¬: ${panelResultLabel(p.last_check_ok)}${p.last_check_message ? ` | ${String(p.last_check_message).slice(0, 40)}` : ""}`,
                 callback_data: `admin_panel_open_${p.id}`
             }
         ],
         [
-            cb("ویرایش", `admin_panel_edit_${p.id}`, "primary"),
-            cb(p.active ? "غیرفعال" : "فعال", `admin_panel_toggle_${p.id}`, p.active ? "danger" : "success"),
-            cb(p.allow_customer_migration ? "قفل مهاجرت" : "آزاد مهاجرت", `admin_panel_toggle_move_${p.id}`, "primary")
+            cb("┘ê█î╪▒╪º█î╪┤", `admin_panel_edit_${p.id}`, "primary"),
+            cb(p.active ? "╪║█î╪▒┘ü╪╣╪º┘ä" : "┘ü╪╣╪º┘ä", `admin_panel_toggle_${p.id}`, p.active ? "danger" : "success"),
+            cb(p.allow_customer_migration ? "┘é┘ü┘ä ┘à┘ç╪º╪¼╪▒╪¬" : "╪ó╪▓╪º╪» ┘à┘ç╪º╪¼╪▒╪¬", `admin_panel_toggle_move_${p.id}`, "primary")
         ],
         [
-            cb(p.allow_new_sales ? "بستن فروش جدید" : "بازکردن فروش جدید", `admin_panel_toggle_sales_${p.id}`, p.allow_new_sales ? "danger" : "success"),
-            cb("تست اتصال", `admin_panel_test_${p.id}`, "primary")
+            cb(p.allow_new_sales ? "╪¿╪│╪¬┘å ┘ü╪▒┘ê╪┤ ╪¼╪»█î╪»" : "╪¿╪º╪▓┌⌐╪▒╪»┘å ┘ü╪▒┘ê╪┤ ╪¼╪»█î╪»", `admin_panel_toggle_sales_${p.id}`, p.allow_new_sales ? "danger" : "success"),
+            cb("╪¬╪│╪¬ ╪º╪¬╪╡╪º┘ä", `admin_panel_test_${p.id}`, "primary")
         ],
         [
-            cb("وضعیت کش", `admin_panel_cache_${p.id}`, "primary"),
-            cb("🗑 حذف", `admin_panel_remove_${p.id}`, "danger")
+            cb("┘ê╪╢╪╣█î╪¬ ┌⌐╪┤", `admin_panel_cache_${p.id}`, "primary"),
+            cb("≡ƒùæ ╪¡╪░┘ü", `admin_panel_remove_${p.id}`, "danger")
         ]
     ]);
-    keyboard.push([cb("🧪 تست همه پنل‌ها", "admin_panel_test_all", "primary")]);
-    keyboard.push([cb("➕ افزودن پنل", "admin_panel_add", "success")]);
-    keyboard.push([cb("📥 صف انتقال‌ها", "admin_migrations", "primary")]);
+    keyboard.push([cb("≡ƒº¬ ╪¬╪│╪¬ ┘ç┘à┘ç ┘╛┘å┘äΓÇî┘ç╪º", "admin_panel_test_all", "primary")]);
+    keyboard.push([cb("Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ┘╛┘å┘ä", "admin_panel_add", "success")]);
+    keyboard.push([cb("≡ƒôÑ ╪╡┘ü ╪º┘å╪¬┘é╪º┘äΓÇî┘ç╪º", "admin_migrations", "primary")]);
     keyboard.push([backButton("admin_panel")]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `${notice ? `${notice}\n\n` : ""}مدیریت پنل‌های V2Ray:\nبرای دیدن جزئیات هر پنل، روی ردیف بالایی آن بزنید.`,
+        text: `${notice ? `${notice}\n\n` : ""}┘à╪»█î╪▒█î╪¬ ┘╛┘å┘äΓÇî┘ç╪º█î V2Ray:\n╪¿╪▒╪º█î ╪»█î╪»┘å ╪¼╪▓╪ª█î╪º╪¬ ┘ç╪▒ ┘╛┘å┘ä╪î ╪▒┘ê█î ╪▒╪»█î┘ü ╪¿╪º┘ä╪º█î█î ╪ó┘å ╪¿╪▓┘å█î╪».`,
         reply_markup: { inline_keyboard: keyboard }
     });
 }
@@ -2922,7 +2922,7 @@ export async function loginMarzbanPanel(panel) {
 }
 /**
  * Fetch available inbounds from a Marzban/PasarGuard panel.
- * Returns a map of protocol → array of inbound tag names.
+ * Returns a map of protocol ΓåÆ array of inbound tag names.
  * e.g. { "vless": ["Iran", "Germany"], "trojan": ["Iran-Trojan"] }
  */
 export async function getMarzbanInbounds(baseUrl, token) {
@@ -2960,7 +2960,7 @@ export async function getMarzbanInbounds(baseUrl, token) {
  * Fetch available groups from a PasarGuard panel.
  * PasarGuard uses groups (not inbounds) to assign proxy access to users.
  * Returns an array of { id, name } for all non-disabled groups.
- * Endpoint: GET /api/groups  →  { groups: [{id, name, inbound_tags, is_disabled}], total }
+ * Endpoint: GET /api/groups  ΓåÆ  { groups: [{id, name, inbound_tags, is_disabled}], total }
  */
 export async function getPasarguardGroups(baseUrl, token) {
     try {
@@ -3088,9 +3088,9 @@ async function findSanaeiClientByIdentifier(panel, identifier) {
         }
     }
     catch {
-        // Panel unreachable (network error, timeout, DNS failure) — fall through to backup
+        // Panel unreachable (network error, timeout, DNS failure) ΓÇö fall through to backup
     }
-    // Panel unreachable or auth failed — try stored inbound backup
+    // Panel unreachable or auth failed ΓÇö try stored inbound backup
     if (panelId > 0) {
         const backupJson = await getSetting(`sanaei_inbound_backup_${panelId}`);
         if (backupJson) {
@@ -3309,12 +3309,12 @@ async function performRegenLink(inventoryId, actorUserId, isAdminReq, chatId) {
         LIMIT 1;
       `;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "⚠️ کانفیگ پیدا نشد یا متعلق به شما نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪» █î╪º ┘à╪¬╪╣┘ä┘é ╪¿┘ç ╪┤┘à╪º ┘å█î╪│╪¬." });
         return null;
     }
     // Redirect regen to the new config if this one was already migrated
     if (!isAdminReq && String(rows[0].status) === "migrated" && rows[0].migrated_to_inventory_id) {
-        await tg("sendMessage", { chat_id: chatId, text: "⚡ این کانفیگ به پنل جدید منتقل شده. لینک کانفیگ جدید از لیست کانفیگ‌هایتان قابل دسترس است." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜí ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪¿┘ç ┘╛┘å┘ä ╪¼╪»█î╪» ┘à┘å╪¬┘é┘ä ╪┤╪»┘ç. ┘ä█î┘å┌⌐ ┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪º╪▓ ┘ä█î╪│╪¬ ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î╪¬╪º┘å ┘é╪º╪¿┘ä ╪»╪│╪¬╪▒╪│ ╪º╪│╪¬." });
         return null;
     }
     const row = rows[0];
@@ -3323,7 +3323,7 @@ async function performRegenLink(inventoryId, actorUserId, isAdminReq, chatId) {
     const panelId = Number(row.panel_id || 0);
     const key = String(delivery.metadata?.username || delivery.metadata?.uuid || delivery.metadata?.email || delivery.metadata?.subId || "").trim();
     if (!panelId || !panelType || !key) {
-        await tg("sendMessage", { chat_id: chatId, text: "این کانفیگ پنلی نیست یا شناسه معتبر ندارد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘╛┘å┘ä█î ┘å█î╪│╪¬ █î╪º ╪┤┘å╪º╪│┘ç ┘à╪╣╪¬╪¿╪▒ ┘å╪»╪º╪▒╪»." });
         return null;
     }
     const panelRows = await sql `
@@ -3333,10 +3333,10 @@ async function performRegenLink(inventoryId, actorUserId, isAdminReq, chatId) {
     LIMIT 1;
   `;
     if (!panelRows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "پنل مرتبط پیدا نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à╪▒╪¬╪¿╪╖ ┘╛█î╪»╪º ┘å╪┤╪»." });
         return null;
     }
-    let regenMessage = "عملیات انجام نشد.";
+    let regenMessage = "╪╣┘à┘ä█î╪º╪¬ ╪º┘å╪¼╪º┘à ┘å╪┤╪».";
     let newUuid;
     let newSubIdForMeta;
     let newConfigLinks = [];
@@ -3344,13 +3344,13 @@ async function performRegenLink(inventoryId, actorUserId, isAdminReq, chatId) {
     if (isMarzbanLike(panelType)) {
         const result = await regenerateMarzbanUserLink(panelRows[0], key);
         if (result.ok && result.user) {
-            regenMessage = "تغییر لینک با موفقیت انجام شد ✅";
+            regenMessage = "╪¬╪║█î█î╪▒ ┘ä█î┘å┌⌐ ╪¿╪º ┘à┘ê┘ü┘é█î╪¬ ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à";
             const u = result.user;
             newConfigLinks = Array.isArray(u.links) ? u.links.map((x) => String(x || "").trim()).filter(Boolean) : [];
             newSubscriptionUrl = u.subscription_url ? resolveMarzbanSubUrl(String(panelRows[0].base_url), String(u.subscription_url)) : undefined;
         }
         else {
-            regenMessage = `خطا در تغییر لینک: ${result.message}`;
+            regenMessage = `╪«╪╖╪º ╪»╪▒ ╪¬╪║█î█î╪▒ ┘ä█î┘å┌⌐: ${result.message}`;
             await tg("sendMessage", { chat_id: chatId, text: regenMessage });
             return null;
         }
@@ -3358,7 +3358,7 @@ async function performRegenLink(inventoryId, actorUserId, isAdminReq, chatId) {
     else {
         const result = await regenerateSanaeiClientLink(panelRows[0], key);
         if (result.ok && result.client && result.inbound) {
-            regenMessage = "تغییر لینک با موفقیت انجام شد ✅";
+            regenMessage = "╪¬╪║█î█î╪▒ ┘ä█î┘å┌⌐ ╪¿╪º ┘à┘ê┘ü┘é█î╪¬ ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à";
             newUuid = String(result.client.id || "");
             newSubIdForMeta = String(result.client.subId || "") || undefined;
             const panelConfig = (typeof row.panel_config === "string" ? parseJsonObject(row.panel_config) : row.panel_config) || {};
@@ -3370,7 +3370,7 @@ async function performRegenLink(inventoryId, actorUserId, isAdminReq, chatId) {
                 : undefined;
         }
         else {
-            regenMessage = `خطا در تغییر لینک: ${result.message}`;
+            regenMessage = `╪«╪╖╪º ╪»╪▒ ╪¬╪║█î█î╪▒ ┘ä█î┘å┌⌐: ${result.message}`;
             await tg("sendMessage", { chat_id: chatId, text: regenMessage });
             return null;
         }
@@ -3401,9 +3401,9 @@ async function performRegenLink(inventoryId, actorUserId, isAdminReq, chatId) {
       delivery_payload = ${JSON.stringify(updatedDelivery)}::jsonb
     WHERE id = ${inventoryId};
   `;
-    let msgText = `لینک شما با موفقیت تغییر کرد ✅\n\nلینک جدید:\n${newConfigValue}`;
+    let msgText = `┘ä█î┘å┌⌐ ╪┤┘à╪º ╪¿╪º ┘à┘ê┘ü┘é█î╪¬ ╪¬╪║█î█î╪▒ ┌⌐╪▒╪» Γ£à\n\n┘ä█î┘å┌⌐ ╪¼╪»█î╪»:\n${newConfigValue}`;
     if (newSubscriptionUrl && newConfigLinks.length > 0) {
-        msgText = `لینک شما با موفقیت تغییر کرد ✅\n\n🔗 ساب (پیشنهادی):\n${newSubscriptionUrl}\n\nکانفیگ مستقیم:\n${newConfigLinks[0]}`;
+        msgText = `┘ä█î┘å┌⌐ ╪┤┘à╪º ╪¿╪º ┘à┘ê┘ü┘é█î╪¬ ╪¬╪║█î█î╪▒ ┌⌐╪▒╪» Γ£à\n\n≡ƒöù ╪│╪º╪¿ (┘╛█î╪┤┘å┘ç╪º╪»█î):\n${newSubscriptionUrl}\n\n┌⌐╪º┘å┘ü█î┌» ┘à╪│╪¬┘é█î┘à:\n${newConfigLinks[0]}`;
     }
     await tg("sendMessage", {
         chat_id: chatId,
@@ -3422,7 +3422,7 @@ export async function lookupIdentifierInPanels(raw, opts = {}) {
     const identifier = raw.trim();
     if (!identifier)
         return { ok: false, message: "empty_identifier" };
-    // When includeInactive=true (e.g. admin migration tool), search ALL panels —
+    // When includeInactive=true (e.g. admin migration tool), search ALL panels ΓÇö
     // the source panel is often deactivated before migration starts.
     const panels = opts.includeInactive
         ? await sql `
@@ -3520,35 +3520,35 @@ async function buildInventoryPanelRuntimeDetails(inventoryId, panelIdRaw, delive
         const found = await lookupMarzbanUser(panel, panelKey);
         const label = panelTypeTitle(panelType);
         if (!found.ok || !found.user) {
-            return `🖥 پنل: ${String(panel.name || "-")} (${label})\n📡 جزئیات لحظه‌ای: ناموفق`;
+            return `≡ƒûÑ ┘╛┘å┘ä: ${String(panel.name || "-")} (${label})\n≡ƒôí ╪¼╪▓╪ª█î╪º╪¬ ┘ä╪¡╪╕┘çΓÇî╪º█î: ┘å╪º┘à┘ê┘ü┘é`;
         }
         const user = found.user;
         const totalBytes = Number(user.data_limit || 0);
         const usedBytes = Number(user.used_traffic || user.usedTraffic || user.used_bytes || 0);
         const remainBytes = totalBytes > 0 ? Math.max(0, totalBytes - usedBytes) : 0;
-        return (`🖥 پنل: ${String(panel.name || "-")} (${label})\n` +
-            `🔑 user: ${String(user.username || panelKey)}\n` +
-            `📶 وضعیت: ${String(user.status || "-")}\n` +
-            `📊 مصرف: ${totalBytes > 0 ? `${formatBytesShort(usedBytes)} / ${formatBytesShort(totalBytes)} (باقی‌مانده: ${formatBytesShort(remainBytes)})` : "نامحدود"}\n` +
-            `📅 انقضا: ${formatExpiryLabelFromSeconds(user.expire)}\n` +
-            `🆔 inventory: #${inventoryId}`);
+        return (`≡ƒûÑ ┘╛┘å┘ä: ${String(panel.name || "-")} (${label})\n` +
+            `≡ƒöæ user: ${String(user.username || panelKey)}\n` +
+            `≡ƒô╢ ┘ê╪╢╪╣█î╪¬: ${String(user.status || "-")}\n` +
+            `≡ƒôè ┘à╪╡╪▒┘ü: ${totalBytes > 0 ? `${formatBytesShort(usedBytes)} / ${formatBytesShort(totalBytes)} (╪¿╪º┘é█îΓÇî┘à╪º┘å╪»┘ç: ${formatBytesShort(remainBytes)})` : "┘å╪º┘à╪¡╪»┘ê╪»"}\n` +
+            `≡ƒôà ╪º┘å┘é╪╢╪º: ${formatExpiryLabelFromSeconds(user.expire)}\n` +
+            `≡ƒåö inventory: #${inventoryId}`);
     }
     if (panelType === "sanaei") {
         const found = await findSanaeiClientByIdentifier(panel, panelKey);
         if (!found.ok || !found.client) {
-            return `🖥 پنل: ${String(panel.name || "-")} (3x-ui)\n📡 جزئیات لحظه‌ای: ناموفق`;
+            return `≡ƒûÑ ┘╛┘å┘ä: ${String(panel.name || "-")} (3x-ui)\n≡ƒôí ╪¼╪▓╪ª█î╪º╪¬ ┘ä╪¡╪╕┘çΓÇî╪º█î: ┘å╪º┘à┘ê┘ü┘é`;
         }
         const client = found.client;
         const totalBytes = Number(client.totalGB || 0); // stored in bytes despite the field name
         const usedBytes = Math.max(0, Number(client.up || 0) + Number(client.down || 0));
         const remainBytes = totalBytes > 0 ? Math.max(0, totalBytes - usedBytes) : 0;
-        return (`🖥 پنل: ${String(panel.name || "-")} (3x-ui)\n` +
-            `🔑 email: ${String(client.email || panelKey)}\n` +
-            `📶 وضعیت: ${parseMaybeBoolean(client.enable) === false ? "غیرفعال" : "فعال"}\n` +
-            `📊 مصرف: ${totalBytes > 0 ? `${formatBytesShort(usedBytes)} / ${formatBytesShort(totalBytes)} (باقی‌مانده: ${formatBytesShort(remainBytes)})` : "نامحدود"}\n` +
-            `📅 انقضا: ${formatExpiryLabelFromMilliseconds(client.expiryTime)}\n` +
-            `🧩 inbound: ${Number(found.inboundId || 0) || "-"}\n` +
-            `🆔 inventory: #${inventoryId}`);
+        return (`≡ƒûÑ ┘╛┘å┘ä: ${String(panel.name || "-")} (3x-ui)\n` +
+            `≡ƒöæ email: ${String(client.email || panelKey)}\n` +
+            `≡ƒô╢ ┘ê╪╢╪╣█î╪¬: ${parseMaybeBoolean(client.enable) === false ? "╪║█î╪▒┘ü╪╣╪º┘ä" : "┘ü╪╣╪º┘ä"}\n` +
+            `≡ƒôè ┘à╪╡╪▒┘ü: ${totalBytes > 0 ? `${formatBytesShort(usedBytes)} / ${formatBytesShort(totalBytes)} (╪¿╪º┘é█îΓÇî┘à╪º┘å╪»┘ç: ${formatBytesShort(remainBytes)})` : "┘å╪º┘à╪¡╪»┘ê╪»"}\n` +
+            `≡ƒôà ╪º┘å┘é╪╢╪º: ${formatExpiryLabelFromMilliseconds(client.expiryTime)}\n` +
+            `≡ƒº⌐ inbound: ${Number(found.inboundId || 0) || "-"}\n` +
+            `≡ƒåö inventory: #${inventoryId}`);
     }
     return null;
 }
@@ -3974,7 +3974,7 @@ async function provisionMarzbanSale(panel, order, panelConfig, overridePanelType
     let resolvedInbounds = {};
     let pasarguardGroupIds = [];
     if (isPasarGuard) {
-        // PasarGuard: groups define the user's proxy access — must assign at least one
+        // PasarGuard: groups define the user's proxy access ΓÇö must assign at least one
         const configuredGroupIds = Array.isArray(panelConfig.group_ids) ? panelConfig.group_ids.map(Number).filter(Boolean) : [];
         if (configuredGroupIds.length > 0) {
             pasarguardGroupIds = configuredGroupIds;
@@ -4018,7 +4018,7 @@ async function provisionMarzbanSale(panel, order, panelConfig, overridePanelType
             }
         }
     }
-    // Retry loop: on "duplicate username" the panel rejects — generate a fresh suffix and retry
+    // Retry loop: on "duplicate username" the panel rejects ΓÇö generate a fresh suffix and retry
     let marzRaw = "";
     let marzData = null;
     for (let attempt = 0; attempt < 4; attempt++) {
@@ -4080,13 +4080,13 @@ async function provisionMarzbanSale(panel, order, panelConfig, overridePanelType
         const isDup = marzRaw.toLowerCase().includes("duplicate") || marzRaw.toLowerCase().includes("already exist");
         if (!isDup)
             throw new Error(`Marzban create user failed: ${marzRes.status} ${responseSnippet(marzRaw)}`);
-        // Duplicate username — fall through to next attempt with new suffix
+        // Duplicate username ΓÇö fall through to next attempt with new suffix
     }
     if (!marzData)
         throw new Error(`Marzban create user failed after retries: ${responseSnippet(marzRaw)}`);
     const data = marzData;
     const links = Array.isArray(data.links) ? data.links.map((item) => String(item || "").trim()).filter(Boolean) : [];
-    // Handle relative subscription URLs returned by PasarGuard/Marzban (e.g. "/sub/token" → full URL)
+    // Handle relative subscription URLs returned by PasarGuard/Marzban (e.g. "/sub/token" ΓåÆ full URL)
     let subscriptionUrl = null;
     if (data.subscription_url) {
         const rawSub = String(data.subscription_url).trim();
@@ -4128,7 +4128,7 @@ async function provisionSanaeiSale(panel, order, panelConfig) {
     }
     const inboundId = parseMaybeNumber(panelConfig.inbound_id || panelConfig.inboundId);
     if (!inboundId) {
-        throw new Error("برای فروش از 3x-ui باید inbound_id در تنظیمات محصول ثبت شود.");
+        throw new Error("╪¿╪▒╪º█î ┘ü╪▒┘ê╪┤ ╪º╪▓ 3x-ui ╪¿╪º█î╪» inbound_id ╪»╪▒ ╪¬┘å╪╕█î┘à╪º╪¬ ┘à╪¡╪╡┘ê┘ä ╪½╪¿╪¬ ╪┤┘ê╪».");
     }
     const inbounds = await getSanaeiInbounds(String(panel.base_url), login.cookie);
     if (!inbounds.res.ok || !jsonSuccess(inbounds.data)) {
@@ -4136,7 +4136,7 @@ async function provisionSanaeiSale(panel, order, panelConfig) {
     }
     const inbound = inbounds.items.find((item) => Number(item.id || 0) === inboundId);
     if (!inbound) {
-        throw new Error(`inbound #${inboundId} روی پنل پیدا نشد.`);
+        throw new Error(`inbound #${inboundId} ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪».`);
     }
     const protocol = String(inbound.protocol || "").toLowerCase();
     const sizeMbOverride = parseMaybeNumber(panelConfig.data_limit_mb) || Number(order.size_mb || 0);
@@ -4158,7 +4158,7 @@ async function provisionSanaeiSale(panel, order, panelConfig) {
     let sanaeiClient = {};
     let sanaeiRaw = "";
     let sanaeiOk = false;
-    // Retry loop: on "Duplicate email" the panel rejects — regenerate email + subId and retry
+    // Retry loop: on "Duplicate email" the panel rejects ΓÇö regenerate email + subId and retry
     for (let attempt = 0; attempt < 4; attempt++) {
         if (attempt > 0) {
             const retryRnd = Math.floor(Math.random() * 90000) + 10000;
@@ -4224,7 +4224,7 @@ async function provisionSanaeiSale(panel, order, panelConfig) {
         const isDup = sanaeiRaw.toLowerCase().includes("duplicate") || sanaeiRaw.toLowerCase().includes("already exist");
         if (!isDup)
             throw new Error(`Sanaei create client failed: ${sanaeiRes.status} ${responseSnippet(sanaeiRaw)}`);
-        // Duplicate email — fall through to next attempt with new suffix
+        // Duplicate email ΓÇö fall through to next attempt with new suffix
     }
     if (!sanaeiOk)
         throw new Error(`Sanaei create client failed after retries: ${responseSnippet(sanaeiRaw)}`);
@@ -4260,7 +4260,7 @@ async function testPanelConnection(panelId) {
     LIMIT 1;
   `;
     if (!rows.length)
-        return { ok: false, message: "پنل پیدا نشد." };
+        return { ok: false, message: "┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." };
     const panel = rows[0];
     const panelType = String(panel.panel_type);
     const baseUrl = normalizeBaseUrl(String(panel.base_url));
@@ -4269,13 +4269,13 @@ async function testPanelConnection(panelId) {
     const startedAt = Date.now();
     try {
         if (!username || !password) {
-            const detail = "نام کاربری یا رمز عبور پنل وارد نشده است.";
+            const detail = "┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î █î╪º ╪▒┘à╪▓ ╪╣╪¿┘ê╪▒ ┘╛┘å┘ä ┘ê╪º╪▒╪» ┘å╪┤╪»┘ç ╪º╪│╪¬.";
             await updatePanelCheckState(panelId, false, detail, {
                 last_error: detail,
                 last_check_ms: Date.now() - startedAt
             }, null);
             logInfo("panel_test_failed", { panelId, panelType, detail });
-            return { ok: false, message: `اتصال پنل ناموفق بود.\n${detail}` };
+            return { ok: false, message: `╪º╪¬╪╡╪º┘ä ┘╛┘å┘ä ┘å╪º┘à┘ê┘ü┘é ╪¿┘ê╪».\n${detail}` };
         }
         if (isMarzbanLike(panelType)) {
             const login = await loginMarzbanPanel({
@@ -4291,7 +4291,7 @@ async function testPanelConnection(panelId) {
                     last_status: login.res.status,
                     last_check_ms: Date.now() - startedAt
                 }, null);
-                return { ok: false, message: `اتصال ${label} ناموفق بود.\n${detail}` };
+                return { ok: false, message: `╪º╪¬╪╡╪º┘ä ${label} ┘å╪º┘à┘ê┘ü┘é ╪¿┘ê╪».\n${detail}` };
             }
             // Fetch and cache available inbounds (Marzban) or groups (PasarGuard)
             // so admins can see what's available and provisioning can auto-select them.
@@ -4322,7 +4322,7 @@ async function testPanelConnection(panelId) {
                 };
             }
             await updatePanelCheckState(panelId, true, "ok", checkMeta, login.token);
-            return { ok: true, message: `اتصال ${panelTypeTitle(panelType)} موفق بود ✅` };
+            return { ok: true, message: `╪º╪¬╪╡╪º┘ä ${panelTypeTitle(panelType)} ┘à┘ê┘ü┘é ╪¿┘ê╪» Γ£à` };
         }
         const login = await loginSanaeiPanel({
             base_url: String(panel.base_url),
@@ -4336,7 +4336,7 @@ async function testPanelConnection(panelId) {
                 login_status: login.res.status,
                 last_check_ms: Date.now() - startedAt
             }, null);
-            return { ok: false, message: `ورود به پنل Sanaei ناموفق بود.\n${detail}` };
+            return { ok: false, message: `┘ê╪▒┘ê╪» ╪¿┘ç ┘╛┘å┘ä Sanaei ┘å╪º┘à┘ê┘ü┘é ╪¿┘ê╪».\n${detail}` };
         }
         const inbounds = await getSanaeiInbounds(baseUrl, login.cookie);
         if (!inbounds.res.ok || !jsonSuccess(inbounds.data)) {
@@ -4347,7 +4347,7 @@ async function testPanelConnection(panelId) {
                 last_status: inbounds.res.status,
                 last_check_ms: Date.now() - startedAt
             }, null);
-            return { ok: false, message: `اتصال Sanaei ناموفق بود.\n${detail}` };
+            return { ok: false, message: `╪º╪¬╪╡╪º┘ä Sanaei ┘å╪º┘à┘ê┘ü┘é ╪¿┘ê╪».\n${detail}` };
         }
         await updatePanelCheckState(panelId, true, "ok", {
             login_status: login.res.status,
@@ -4361,7 +4361,7 @@ async function testPanelConnection(panelId) {
             })),
             last_check_ms: Date.now() - startedAt
         }, null);
-        return { ok: true, message: "اتصال Sanaei موفق بود ✅" };
+        return { ok: true, message: "╪º╪¬╪╡╪º┘ä Sanaei ┘à┘ê┘ü┘é ╪¿┘ê╪» Γ£à" };
     }
     catch (error) {
         const message = String(error.message || error);
@@ -4370,7 +4370,7 @@ async function testPanelConnection(panelId) {
             last_check_ms: Date.now() - startedAt
         }, null);
         logError("panel_test_exception", error, { panelId, baseUrl, panelType });
-        return { ok: false, message: `خطا در اتصال به پنل.\n${message}` };
+        return { ok: false, message: `╪«╪╖╪º ╪»╪▒ ╪º╪¬╪╡╪º┘ä ╪¿┘ç ┘╛┘å┘ä.\n${message}` };
     }
 }
 async function showCustomerMigrationTargets(chatId, inventoryId, userId) {
@@ -4381,7 +4381,7 @@ async function showCustomerMigrationTargets(chatId, inventoryId, userId) {
     LIMIT 1;
   `;
     if (!ownRows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "⚠️ این کانفیگ برای شما نیست یا یافت نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪¿╪▒╪º█î ╪┤┘à╪º ┘å█î╪│╪¬ █î╪º █î╪º┘ü╪¬ ┘å╪┤╪»." });
         return null;
     }
     const inv = ownRows[0];
@@ -4389,12 +4389,12 @@ async function showCustomerMigrationTargets(chatId, inventoryId, userId) {
         const newId = inv.migrated_to_inventory_id ? Number(inv.migrated_to_inventory_id) : null;
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `⚡ این کانفیگ قبلاً به پنل جدید منتقل شده است.\n${newId ? `کانفیگ جدید شما در لیست کانفیگ‌ها موجود است (شناسه: ${newId}).` : "کانفیگ جدید را از لیست کانفیگ‌هایتان باز کنید."}`
+            text: `ΓÜí ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘é╪¿┘ä╪º┘ï ╪¿┘ç ┘╛┘å┘ä ╪¼╪»█î╪» ┘à┘å╪¬┘é┘ä ╪┤╪»┘ç ╪º╪│╪¬.\n${newId ? `┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪┤┘à╪º ╪»╪▒ ┘ä█î╪│╪¬ ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º ┘à┘ê╪¼┘ê╪» ╪º╪│╪¬ (╪┤┘å╪º╪│┘ç: ${newId}).` : "┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪▒╪º ╪º╪▓ ┘ä█î╪│╪¬ ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î╪¬╪º┘å ╪¿╪º╪▓ ┌⌐┘å█î╪»."}`
         });
         return null;
     }
     if (String(inv.status) !== "sold") {
-        await tg("sendMessage", { chat_id: chatId, text: "⚠️ وضعیت این کانفیگ معتبر نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ┘ê╪╢╪╣█î╪¬ ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
         return null;
     }
     // Rate-limit: max 3 customer-initiated migrations per 24 hours per user
@@ -4406,7 +4406,7 @@ async function showCustomerMigrationTargets(chatId, inventoryId, userId) {
       AND created_at > NOW() - INTERVAL '24 hours';
   `;
     if (Number(recentMigrations[0]?.cnt ?? 0) >= 100) {
-        await tg("sendMessage", { chat_id: chatId, text: "سقف مهاجرت روزانه (یعنی 10 بار) پر شده است. ۲۴ ساعت دیگر امتحان کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪│┘é┘ü ┘à┘ç╪º╪¼╪▒╪¬ ╪▒┘ê╪▓╪º┘å┘ç (█î╪╣┘å█î 10 ╪¿╪º╪▒) ┘╛╪▒ ╪┤╪»┘ç ╪º╪│╪¬. █▓█┤ ╪│╪º╪╣╪¬ ╪»█î┌»╪▒ ╪º┘à╪¬╪¡╪º┘å ┌⌐┘å█î╪»." });
         return null;
     }
     const rows = await sql `
@@ -4416,7 +4416,7 @@ async function showCustomerMigrationTargets(chatId, inventoryId, userId) {
     ORDER BY priority DESC, id ASC;
   `;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "فعلاً مقصد فعالی برای مهاجرت آزاد نشده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ü╪╣┘ä╪º┘ï ┘à┘é╪╡╪» ┘ü╪╣╪º┘ä█î ╪¿╪▒╪º█î ┘à┘ç╪º╪¼╪▒╪¬ ╪ó╪▓╪º╪» ┘å╪┤╪»┘ç ╪º╪│╪¬." });
         return null;
     }
     const keyboard = rows.map((p) => [
@@ -4425,7 +4425,7 @@ async function showCustomerMigrationTargets(chatId, inventoryId, userId) {
     keyboard.push([homeButton()]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "پنل مقصد را انتخاب کنید:\nانتقال برای شما به‌صورت فوری انجام می‌شود ✅",
+        text: "┘╛┘å┘ä ┘à┘é╪╡╪» ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:\n╪º┘å╪¬┘é╪º┘ä ╪¿╪▒╪º█î ╪┤┘à╪º ╪¿┘çΓÇî╪╡┘ê╪▒╪¬ ┘ü┘ê╪▒█î ╪º┘å╪¼╪º┘à ┘à█îΓÇî╪┤┘ê╪» Γ£à",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
@@ -4446,14 +4446,14 @@ async function createMigrationRequest(chatId, requestedBy, requestedFor, sourceI
       WHERE id = ${sourceInventoryId} AND owner_telegram_id = ${requestedFor}
       LIMIT 1;
     `;
-        let msg = "⚠️ این کانفیگ برای شما نیست یا یافت نشد.";
+        let msg = "ΓÜá∩╕Å ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪¿╪▒╪º█î ╪┤┘à╪º ┘å█î╪│╪¬ █î╪º █î╪º┘ü╪¬ ┘å╪┤╪».";
         if (stateRow.length) {
             const st = String(stateRow[0].status || "");
             if (st === "migrated" || stateRow[0].migrated_to_inventory_id) {
-                msg = "⚡ این کانفیگ قبلاً به پنل جدید منتقل شده و دیگر قابل انتقال مجدد نیست.";
+                msg = "ΓÜí ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘é╪¿┘ä╪º┘ï ╪¿┘ç ┘╛┘å┘ä ╪¼╪»█î╪» ┘à┘å╪¬┘é┘ä ╪┤╪»┘ç ┘ê ╪»█î┌»╪▒ ┘é╪º╪¿┘ä ╪º┘å╪¬┘é╪º┘ä ┘à╪¼╪»╪» ┘å█î╪│╪¬.";
             }
             else if (st !== "sold") {
-                msg = `⚠️ وضعیت این کانفیگ «${st}» است و قابل انتقال نیست.`;
+                msg = `ΓÜá∩╕Å ┘ê╪╢╪╣█î╪¬ ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┬½${st}┬╗ ╪º╪│╪¬ ┘ê ┘é╪º╪¿┘ä ╪º┘å╪¬┘é╪º┘ä ┘å█î╪│╪¬.`;
             }
         }
         await tg("sendMessage", { chat_id: chatId, text: msg });
@@ -4466,11 +4466,11 @@ async function createMigrationRequest(chatId, requestedBy, requestedFor, sourceI
     LIMIT 1;
   `;
     if (!targetRows.length || !targetRows[0].active) {
-        await tg("sendMessage", { chat_id: chatId, text: "پنل مقصد فعال نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à┘é╪╡╪» ┘ü╪╣╪º┘ä ┘å█î╪│╪¬." });
         return false;
     }
     if (role === "customer" && !targetRows[0].allow_customer_migration) {
-        await tg("sendMessage", { chat_id: chatId, text: "ادمین مهاجرت به این پنل را برای کاربران باز نکرده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪º╪»┘à█î┘å ┘à┘ç╪º╪¼╪▒╪¬ ╪¿┘ç ╪º█î┘å ┘╛┘å┘ä ╪▒╪º ╪¿╪▒╪º█î ┌⌐╪º╪▒╪¿╪▒╪º┘å ╪¿╪º╪▓ ┘å┌⌐╪▒╪»┘ç ╪º╪│╪¬." });
         return false;
     }
     // Rate-limit customer migrations: max 3 per 24 hours
@@ -4483,13 +4483,13 @@ async function createMigrationRequest(chatId, requestedBy, requestedFor, sourceI
         AND created_at > NOW() - INTERVAL '24 hours';
     `;
         if (Number(recentCount[0]?.cnt ?? 0) >= 100) {
-            await tg("sendMessage", { chat_id: chatId, text: "سقف مهاجرت روزانه (یعنی 10 بار) پر شده است. ۲۴ ساعت دیگر امتحان کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘é┘ü ┘à┘ç╪º╪¼╪▒╪¬ ╪▒┘ê╪▓╪º┘å┘ç (█î╪╣┘å█î 10 ╪¿╪º╪▒) ┘╛╪▒ ╪┤╪»┘ç ╪º╪│╪¬. █▓█┤ ╪│╪º╪╣╪¬ ╪»█î┌»╪▒ ╪º┘à╪¬╪¡╪º┘å ┌⌐┘å█î╪»." });
             return false;
         }
     }
     const sourcePanelId = sourceRows[0].panel_id === null ? null : Number(sourceRows[0].panel_id);
     if (sourcePanelId !== null && sourcePanelId === targetPanelId) {
-        await tg("sendMessage", { chat_id: chatId, text: "کانفیگ شما همین الان روی همین پنل است." });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ╪┤┘à╪º ┘ç┘à█î┘å ╪º┘ä╪º┘å ╪▒┘ê█î ┘ç┘à█î┘å ┘╛┘å┘ä ╪º╪│╪¬." });
         return false;
     }
     const exists = await sql `
@@ -4501,7 +4501,7 @@ async function createMigrationRequest(chatId, requestedBy, requestedFor, sourceI
     LIMIT 1;
   `;
     if (exists.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "برای این مقصد قبلاً درخواست ثبت شده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ╪º█î┘å ┘à┘é╪╡╪» ┘é╪¿┘ä╪º┘ï ╪»╪▒╪«┘ê╪º╪│╪¬ ╪½╪¿╪¬ ╪┤╪»┘ç ╪º╪│╪¬." });
         return false;
     }
     const inserted = await sql `
@@ -4536,29 +4536,29 @@ async function createMigrationRequest(chatId, requestedBy, requestedFor, sourceI
             // Map internal reason codes to user-facing Persian messages
             const reason = String(result.reason || "");
             const reasonMessages = {
-                no_traffic_data_client_not_found: "⛔ انتقال انجام نشد.\nاطلاعات مصرف کانفیگ قدیمی پیدا نشد.\nلطفاً از ادمین بخواهید بکاپ اینباند پنل قدیمی را آپلود کند، سپس دوباره امتحان کنید.",
-                no_traffic_data_unlimited_source: "⛔ انتقال انجام نشد.\nکانفیگ قدیمی شما حجم نامحدود دارد و نمی‌توان آن را خودکار منتقل کرد.\nبا پشتیبانی تماس بگیرید.",
-                migration_not_found: "⛔ درخواست مهاجرت یافت نشد. دوباره تلاش کنید.",
-                target_config_empty: "⛔ انتقال انجام نشد — مقدار کانفیگ جدید خالی است.\nبا پشتیبانی تماس بگیرید.",
+                no_traffic_data_client_not_found: "Γ¢ö ╪º┘å╪¬┘é╪º┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n╪º╪╖┘ä╪º╪╣╪º╪¬ ┘à╪╡╪▒┘ü ┌⌐╪º┘å┘ü█î┌» ┘é╪»█î┘à█î ┘╛█î╪»╪º ┘å╪┤╪».\n┘ä╪╖┘ü╪º┘ï ╪º╪▓ ╪º╪»┘à█î┘å ╪¿╪«┘ê╪º┘ç█î╪» ╪¿┌⌐╪º┘╛ ╪º█î┘å╪¿╪º┘å╪» ┘╛┘å┘ä ┘é╪»█î┘à█î ╪▒╪º ╪ó┘╛┘ä┘ê╪» ┌⌐┘å╪»╪î ╪│┘╛╪│ ╪»┘ê╪¿╪º╪▒┘ç ╪º┘à╪¬╪¡╪º┘å ┌⌐┘å█î╪».",
+                no_traffic_data_unlimited_source: "Γ¢ö ╪º┘å╪¬┘é╪º┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n┌⌐╪º┘å┘ü█î┌» ┘é╪»█î┘à█î ╪┤┘à╪º ╪¡╪¼┘à ┘å╪º┘à╪¡╪»┘ê╪» ╪»╪º╪▒╪» ┘ê ┘å┘à█îΓÇî╪¬┘ê╪º┘å ╪ó┘å ╪▒╪º ╪«┘ê╪»┌⌐╪º╪▒ ┘à┘å╪¬┘é┘ä ┌⌐╪▒╪».\n╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪».",
+                migration_not_found: "Γ¢ö ╪»╪▒╪«┘ê╪º╪│╪¬ ┘à┘ç╪º╪¼╪▒╪¬ █î╪º┘ü╪¬ ┘å╪┤╪». ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪».",
+                target_config_empty: "Γ¢ö ╪º┘å╪¬┘é╪º┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪» ΓÇö ┘à┘é╪»╪º╪▒ ┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪«╪º┘ä█î ╪º╪│╪¬.\n╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪».",
             };
-            // auto_provision_failed has a dynamic prefix — match by startsWith
+            // auto_provision_failed has a dynamic prefix ΓÇö match by startsWith
             const userMsg = reasonMessages[reason]
                 ?? (reason.startsWith("auto_provision_failed")
-                    ? "⛔ انتقال انجام نشد — خطا در ساخت کانفیگ روی پنل مقصد.\nبا پشتیبانی تماس بگیرید."
-                    : "⛔ انتقال انجام نشد. با پشتیبانی تماس بگیرید.");
+                    ? "Γ¢ö ╪º┘å╪¬┘é╪º┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪» ΓÇö ╪«╪╖╪º ╪»╪▒ ╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪▒┘ê█î ┘╛┘å┘ä ┘à┘é╪╡╪».\n╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪»."
+                    : "Γ¢ö ╪º┘å╪¬┘é╪º┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪». ╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪».");
             await tg("sendMessage", { chat_id: chatId, text: userMsg });
-            await notifyAdmins(`⚠️ انتقال فوری ناموفق\nکد: ${inserted[0].id}\nکاربر: ${requestedFor}\nعلت: ${result.reason}`);
+            await notifyAdmins(`ΓÜá∩╕Å ╪º┘å╪¬┘é╪º┘ä ┘ü┘ê╪▒█î ┘å╪º┘à┘ê┘ü┘é\n┌⌐╪»: ${inserted[0].id}\n┌⌐╪º╪▒╪¿╪▒: ${requestedFor}\n╪╣┘ä╪¬: ${result.reason}`);
             return false;
         }
         const isFromManualStock = sourceRows[0].panel_id === null && sourceRows[0].migration_parent_inventory_id === null;
         if (isFromManualStock) {
-            await notifyAdmins(`🔔 انتقال فوری انجام شد (منبع دستی)\nکد: ${inserted[0].id}\nکاربر: ${requestedFor}\nکانفیگ: ${sourceInventoryId}`);
+            await notifyAdmins(`≡ƒöö ╪º┘å╪¬┘é╪º┘ä ┘ü┘ê╪▒█î ╪º┘å╪¼╪º┘à ╪┤╪» (┘à┘å╪¿╪╣ ╪»╪│╪¬█î)\n┌⌐╪»: ${inserted[0].id}\n┌⌐╪º╪▒╪¿╪▒: ${requestedFor}\n┌⌐╪º┘å┘ü█î┌»: ${sourceInventoryId}`);
         }
         return true;
     }
-    await tg("sendMessage", { chat_id: chatId, text: `درخواست انتقال ثبت شد ✅\nکد درخواست: ${inserted[0].id}` });
-    await notifyAdmins(`📥 درخواست انتقال جدید\nکد: ${inserted[0].id}\nکاربر: ${requestedFor}\nکانفیگ: ${sourceInventoryId}`, {
-        inline_keyboard: [[{ text: "بازکردن درخواست", callback_data: `admin_migration_open_${inserted[0].id}` }]]
+    await tg("sendMessage", { chat_id: chatId, text: `╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘å╪¬┘é╪º┘ä ╪½╪¿╪¬ ╪┤╪» Γ£à\n┌⌐╪» ╪»╪▒╪«┘ê╪º╪│╪¬: ${inserted[0].id}` });
+    await notifyAdmins(`≡ƒôÑ ╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘å╪¬┘é╪º┘ä ╪¼╪»█î╪»\n┌⌐╪»: ${inserted[0].id}\n┌⌐╪º╪▒╪¿╪▒: ${requestedFor}\n┌⌐╪º┘å┘ü█î┌»: ${sourceInventoryId}`, {
+        inline_keyboard: [[{ text: "╪¿╪º╪▓┌⌐╪▒╪»┘å ╪»╪▒╪«┘ê╪º╪│╪¬", callback_data: `admin_migration_open_${inserted[0].id}` }]]
     });
     return true;
 }
@@ -4576,28 +4576,28 @@ async function showMyMigrations(chatId, userId) {
     ORDER BY m.id DESC
     LIMIT 20;
   `;
-    const lines = rows.map((r) => `#${r.id} | کانفیگ ${r.source_inventory_id} → ${r.panel_name} | ${r.status} | ${r.created_at}`);
+    const lines = rows.map((r) => `#${r.id} | ┌⌐╪º┘å┘ü█î┌» ${r.source_inventory_id} ΓåÆ ${r.panel_name} | ${r.status} | ${r.created_at}`);
     const keyboard = [
-        [{ text: "🔗 انتقال با لینک سابسکریپشن", callback_data: "sublink_migrate_start" }],
+        [{ text: "≡ƒöù ╪º┘å╪¬┘é╪º┘ä ╪¿╪º ┘ä█î┘å┌⌐ ╪│╪º╪¿╪│┌⌐╪▒█î┘╛╪┤┘å", callback_data: "sublink_migrate_start" }],
     ];
     keyboard.push([homeButton()]);
     await tg("sendMessage", {
         chat_id: chatId,
         text: rows.length
-            ? `📜 آخرین درخواست‌های انتقال شما:\n\n${lines.join("\n")}`
-            : "هنوز درخواست انتقالی ندارید.\n\nبرای انتقال کانفیگ از پنل قدیمی، از دکمه زیر استفاده کنید:",
+            ? `≡ƒô£ ╪ó╪«╪▒█î┘å ╪»╪▒╪«┘ê╪º╪│╪¬ΓÇî┘ç╪º█î ╪º┘å╪¬┘é╪º┘ä ╪┤┘à╪º:\n\n${lines.join("\n")}`
+            : "┘ç┘å┘ê╪▓ ╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘å╪¬┘é╪º┘ä█î ┘å╪»╪º╪▒█î╪».\n\n╪¿╪▒╪º█î ╪º┘å╪¬┘é╪º┘ä ┌⌐╪º┘å┘ü█î┌» ╪º╪▓ ┘╛┘å┘ä ┘é╪»█î┘à█î╪î ╪º╪▓ ╪»┌⌐┘à┘ç ╪▓█î╪▒ ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å█î╪»:",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
 async function executeSubLinkMigration(chatId, userId, targetPanelId) {
     const state = await getState(userId);
     if (!state || state.state !== "sublink_migration_pending") {
-        await tg("sendMessage", { chat_id: chatId, text: "⚠️ جلسه انتقال منقضی شده. دوباره از ابتدا شروع کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ╪¼┘ä╪│┘ç ╪º┘å╪¬┘é╪º┘ä ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ╪º╪¿╪¬╪»╪º ╪┤╪▒┘ê╪╣ ┌⌐┘å█î╪»." });
         return null;
     }
     const payload = state.payload;
     await clearState(userId);
-    await tg("sendMessage", { chat_id: chatId, text: "⏳ در حال انتقال کانفیگ..." });
+    await tg("sendMessage", { chat_id: chatId, text: "ΓÅ│ ╪»╪▒ ╪¡╪º┘ä ╪º┘å╪¬┘é╪º┘ä ┌⌐╪º┘å┘ü█î┌»..." });
     try {
         // Load target panel
         const targetRows = await sql `
@@ -4605,7 +4605,7 @@ async function executeSubLinkMigration(chatId, userId, targetPanelId) {
     FROM panels WHERE id = ${targetPanelId} AND active = TRUE LIMIT 1;
   `;
         if (!targetRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "⚠️ پنل مقصد پیدا نشد یا غیرفعال است." });
+            await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ┘╛┘å┘ä ┘à┘é╪╡╪» ┘╛█î╪»╪º ┘å╪┤╪» █î╪º ╪║█î╪▒┘ü╪╣╪º┘ä ╪º╪│╪¬." });
             return null;
         }
         const targetPanel = targetRows[0];
@@ -4642,13 +4642,13 @@ async function executeSubLinkMigration(chatId, userId, targetPanelId) {
                 productId = Number(ap[0].id);
         }
         if (!productId) {
-            await tg("sendMessage", { chat_id: chatId, text: "⛔ محصولی برای ثبت کانفیگ جدید پیدا نشد. با پشتیبانی تماس بگیرید." });
+            await tg("sendMessage", { chat_id: chatId, text: "Γ¢ö ┘à╪¡╪╡┘ê┘ä█î ╪¿╪▒╪º█î ╪½╪¿╪¬ ┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ┘╛█î╪»╪º ┘å╪┤╪». ╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪»." });
             return null;
         }
         // Load product/panel-config
         const productRows = await sql `SELECT id, name, panel_config FROM products WHERE id = ${productId} LIMIT 1;`;
         if (!productRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "⛔ اطلاعات محصول یافت نشد. با پشتیبانی تماس بگیرید." });
+            await tg("sendMessage", { chat_id: chatId, text: "Γ¢ö ╪º╪╖┘ä╪º╪╣╪º╪¬ ┘à╪¡╪╡┘ê┘ä █î╪º┘ü╪¬ ┘å╪┤╪». ╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪»." });
             return null;
         }
         const product = productRows[0];
@@ -4659,7 +4659,7 @@ async function executeSubLinkMigration(chatId, userId, targetPanelId) {
         const pseudoOrder = {
             telegram_id: userId,
             product_id: productId,
-            product_name: String(product.name || "انتقال"),
+            product_name: String(product.name || "╪º┘å╪¬┘é╪º┘ä"),
             size_mb: remainingMb,
             purchase_id: purchaseId,
             config_name: payload.sourceUserKey.replace(/[^a-zA-Z0-9_]/g, "_").slice(0, 28),
@@ -4684,12 +4684,12 @@ async function executeSubLinkMigration(chatId, userId, targetPanelId) {
             logError("sublink_migration_provision_failed", err, { userId, targetPanelId });
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `⛔ خطا در ایجاد کانفیگ روی پنل مقصد:\n${String(err?.message || err)}\nبا پشتیبانی تماس بگیرید.`
+                text: `Γ¢ö ╪«╪╖╪º ╪»╪▒ ╪º█î╪¼╪º╪» ┌⌐╪º┘å┘ü█î┌» ╪▒┘ê█î ┘╛┘å┘ä ┘à┘é╪╡╪»:\n${String(err?.message || err)}\n╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪».`
             });
             return null;
         }
         if (!finalConfigValue) {
-            await tg("sendMessage", { chat_id: chatId, text: "⛔ کانفیگ جدید ایجاد نشد. با پشتیبانی تماس بگیرید." });
+            await tg("sendMessage", { chat_id: chatId, text: "Γ¢ö ┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪º█î╪¼╪º╪» ┘å╪┤╪». ╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪»." });
             return null;
         }
         // Insert new inventory record
@@ -4713,16 +4713,16 @@ async function executeSubLinkMigration(chatId, userId, targetPanelId) {
       WHERE id = ${matchingInv[0].id};
     `;
         }
-        await tg("sendMessage", { chat_id: chatId, text: "✅ انتقال موفقیت‌آمیز بود! کانفیگ جدید شما:" });
+        await tg("sendMessage", { chat_id: chatId, text: "Γ£à ╪º┘å╪¬┘é╪º┘ä ┘à┘ê┘ü┘é█î╪¬ΓÇî╪ó┘à█î╪▓ ╪¿┘ê╪»! ┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪┤┘à╪º:" });
         await sendConfigWithQr(userId, purchaseId, finalConfigValue, [[homeButton()]]);
-        await notifyAdmins(`🔗 انتقال با لینک\nکاربر: ${userId}\nپنل مبدا: ${payload.sourcePanelName}\nپنل مقصد: ${String(targetPanel.name)}\nکانفیگ جدید: ${newInventoryId}`);
+        await notifyAdmins(`≡ƒöù ╪º┘å╪¬┘é╪º┘ä ╪¿╪º ┘ä█î┘å┌⌐\n┌⌐╪º╪▒╪¿╪▒: ${userId}\n┘╛┘å┘ä ┘à╪¿╪»╪º: ${payload.sourcePanelName}\n┘╛┘å┘ä ┘à┘é╪╡╪»: ${String(targetPanel.name)}\n┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪»: ${newInventoryId}`);
         return null;
     }
     catch (outerErr) {
         logError("sublink_migration_outer_failed", outerErr, { userId, targetPanelId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `⛔ خطا در انتقال کانفیگ:\n${String(outerErr?.message || outerErr)}\nبا پشتیبانی تماس بگیرید.`
+            text: `Γ¢ö ╪«╪╖╪º ╪»╪▒ ╪º┘å╪¬┘é╪º┘ä ┌⌐╪º┘å┘ü█î┌»:\n${String(outerErr?.message || outerErr)}\n╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪».`
         }).catch(() => { });
         return null;
     }
@@ -4744,17 +4744,17 @@ async function showMyOrders(chatId, userId) {
     LIMIT 20;
   `;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "هنوز سفارشی ثبت نکرده‌ای." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ç┘å┘ê╪▓ ╪│┘ü╪º╪▒╪┤█î ╪½╪¿╪¬ ┘å┌⌐╪▒╪»┘çΓÇî╪º█î." });
         return null;
     }
     const keyboard = rows.map((o) => [
         cb(`${String(o.purchase_id)} | ${String(o.product_name)} | ${formatOrderStatusTitle(o.status)}`, `open_order_${String(o.purchase_id)}`, "primary")
     ]);
-    keyboard.push([cb("🔎 پیگیری با شناسه", "order_lookup", "primary")]);
+    keyboard.push([cb("≡ƒöÄ ┘╛█î┌»█î╪▒█î ╪¿╪º ╪┤┘å╪º╪│┘ç", "order_lookup", "primary")]);
     keyboard.push([homeButton()]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "🧾 سفارش‌های اخیرت 👇",
+        text: "≡ƒº╛ ╪│┘ü╪º╪▒╪┤ΓÇî┘ç╪º█î ╪º╪«█î╪▒╪¬ ≡ƒæç",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
@@ -4779,38 +4779,38 @@ async function showOrderDetails(chatId, userId, purchaseId) {
     LIMIT 1;
   `;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "سفارش پیدا نشد یا متعلق به تو نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ ┘╛█î╪»╪º ┘å╪┤╪» █î╪º ┘à╪¬╪╣┘ä┘é ╪¿┘ç ╪¬┘ê ┘å█î╪│╪¬." });
         return null;
     }
     const o = rows[0];
     const statusTitle = formatOrderStatusTitle(o.status);
     const methodTitle = formatPaymentMethodTitle(o.payment_method);
     const lines = [
-        `🧾 جزئیات سفارش`,
+        `≡ƒº╛ ╪¼╪▓╪ª█î╪º╪¬ ╪│┘ü╪º╪▒╪┤`,
         ``,
-        `شناسه: ${String(o.purchase_id)}`,
-        `محصول: ${String(o.product_name)}`,
-        `مبلغ: ${formatPriceToman(Number(o.final_price))} تومان`,
-        `روش پرداخت: ${methodTitle}`,
-        `وضعیت: ${statusTitle}`,
-        `زمان: ${String(o.created_at)}`
+        `╪┤┘å╪º╪│┘ç: ${String(o.purchase_id)}`,
+        `┘à╪¡╪╡┘ê┘ä: ${String(o.product_name)}`,
+        `┘à╪¿┘ä╪║: ${formatPriceToman(Number(o.final_price))} ╪¬┘ê┘à╪º┘å`,
+        `╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬: ${methodTitle}`,
+        `┘ê╪╢╪╣█î╪¬: ${statusTitle}`,
+        `╪▓┘à╪º┘å: ${String(o.created_at)}`
     ];
     const keyboard = [];
     const paymentUrl = String(o.plisio_invoice_url || o.tronado_payment_url || o.swapwallet_payment_url || "").trim();
     if (paymentUrl && (String(o.status || "").toLowerCase() === "pending")) {
-        keyboard.push([{ text: "💳 پرداخت", url: paymentUrl }]);
+        keyboard.push([{ text: "≡ƒÆ│ ┘╛╪▒╪»╪º╪«╪¬", url: paymentUrl }]);
     }
     if (String(o.payment_method || "").toLowerCase() === "crypto") {
-        keyboard.push([cb("✅ بررسی/ثبت پرداخت", `check_order_${String(o.purchase_id)}`, "success")]);
+        keyboard.push([cb("Γ£à ╪¿╪▒╪▒╪│█î/╪½╪¿╪¬ ┘╛╪▒╪»╪º╪«╪¬", `check_order_${String(o.purchase_id)}`, "success")]);
     }
     if (String(o.payment_method || "").toLowerCase() === "card2card" && String(o.status || "").toLowerCase() === "awaiting_receipt") {
-        keyboard.push([cb("📷 ارسال رسید", `order_send_receipt_${Number(o.id)}`, "success")]);
+        keyboard.push([cb("≡ƒô╖ ╪º╪▒╪│╪º┘ä ╪▒╪│█î╪»", `order_send_receipt_${Number(o.id)}`, "success")]);
     }
     if (o.inventory_id) {
-        keyboard.push([cb("📦 مشاهده کانفیگ", `open_config_${Number(o.inventory_id)}`, "primary")]);
+        keyboard.push([cb("≡ƒôª ┘à╪┤╪º┘ç╪»┘ç ┌⌐╪º┘å┘ü█î┌»", `open_config_${Number(o.inventory_id)}`, "primary")]);
     }
     if (String(o.payment_method || "").toLowerCase() !== "wallet" && ["pending", "awaiting_receipt"].includes(String(o.status || "").toLowerCase())) {
-        keyboard.push([cb("🗑 لغو سفارش", `order_cancel_${String(o.purchase_id)}`, "danger")]);
+        keyboard.push([cb("≡ƒùæ ┘ä╪║┘ê ╪│┘ü╪º╪▒╪┤", `order_cancel_${String(o.purchase_id)}`, "danger")]);
     }
     keyboard.push([backButton("my_orders")]);
     keyboard.push([homeButton()]);
@@ -4875,7 +4875,7 @@ async function completeMigration(migrationId, decidedBy, targetConfigValue) {
                 }
                 // Prevent creating unlimited configs: data_limit=0 on Marzban/PasarGuard = unlimited.
                 // If client data is unavailable, fall back to the product's defined size.
-                // Only block if BOTH are missing — that's the only case that would produce unlimited.
+                // Only block if BOTH are missing ΓÇö that's the only case that would produce unlimited.
                 const sizeMbFallback = Number(product.size_mb || 0);
                 if (oldDataLimitBytes <= 0) {
                     if (sizeMbFallback > 0) {
@@ -4886,11 +4886,11 @@ async function completeMigration(migrationId, decidedBy, targetConfigValue) {
                             ? "no_traffic_data_client_not_found"
                             : "no_traffic_data_unlimited_source";
                         const userMsg = !clientFound
-                            ? "کانفیگ قدیمی در پنل یا بکاپ پیدا نشد و حجم محصول نیز صفر است."
-                            : "کانفیگ قدیمی نامحدود است و حجم محصول نیز صفر است.";
+                            ? "┌⌐╪º┘å┘ü█î┌» ┘é╪»█î┘à█î ╪»╪▒ ┘╛┘å┘ä █î╪º ╪¿┌⌐╪º┘╛ ┘╛█î╪»╪º ┘å╪┤╪» ┘ê ╪¡╪¼┘à ┘à╪¡╪╡┘ê┘ä ┘å█î╪▓ ╪╡┘ü╪▒ ╪º╪│╪¬."
+                            : "┌⌐╪º┘å┘ü█î┌» ┘é╪»█î┘à█î ┘å╪º┘à╪¡╪»┘ê╪» ╪º╪│╪¬ ┘ê ╪¡╪¼┘à ┘à╪¡╪╡┘ê┘ä ┘å█î╪▓ ╪╡┘ü╪▒ ╪º╪│╪¬.";
                         await tg("sendMessage", {
                             chat_id: m.requested_for,
-                            text: `⛔ مهاجرت لغو شد.\n${userMsg}\nبرای جلوگیری از صدور کانفیگ با حجم نامحدود، این مهاجرت متوقف شد.`
+                            text: `Γ¢ö ┘à┘ç╪º╪¼╪▒╪¬ ┘ä╪║┘ê ╪┤╪».\n${userMsg}\n╪¿╪▒╪º█î ╪¼┘ä┘ê┌»█î╪▒█î ╪º╪▓ ╪╡╪»┘ê╪▒ ┌⌐╪º┘å┘ü█î┌» ╪¿╪º ╪¡╪¼┘à ┘å╪º┘à╪¡╪»┘ê╪»╪î ╪º█î┘å ┘à┘ç╪º╪¼╪▒╪¬ ┘à╪¬┘ê┘é┘ü ╪┤╪».`
                         });
                         return { ok: false, reason };
                     }
@@ -4977,7 +4977,7 @@ async function completeMigration(migrationId, decidedBy, targetConfigValue) {
   `;
     await tg("sendMessage", {
         chat_id: Number(m.requested_for),
-        text: `درخواست انتقال #${migrationId} تایید شد ✅\nکانفیگ جدید شما:`,
+        text: `╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘å╪¬┘é╪º┘ä #${migrationId} ╪¬╪º█î█î╪» ╪┤╪» Γ£à\n┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪┤┘à╪º:`,
     });
     await sendConfigWithQr(Number(m.requested_for), `M-${migrationId}`, finalConfigValue, [[homeButton()]]);
     return { ok: true, reason: "done" };
@@ -5001,13 +5001,13 @@ async function showProducts(chatId, forBuy, page = 0, kind = "") {
         if ((v2rayCount > 0 ? 1 : 0) + (accountCount > 0 ? 1 : 0) + (wireguardCount > 0 ? 1 : 0) > 1) {
             const keyboard = [];
             if (v2rayCount > 0)
-                keyboard.push([cb("🌐 کانفیگ (V2Ray)", "buy_cat_v2ray_0", "primary")]);
+                keyboard.push([cb("?? ?????? (V2Ray)", "buy_cat_v2ray_0", "primary")]);
             if (accountCount > 0)
                 keyboard.push([cb("?? ?????", "buy_cat_account_0", "primary")]);
             if (wireguardCount > 0)
                 keyboard.push([cb("?? ???????? (Wireguard)", "buy_cat_wireguard_0", "primary")]);
             keyboard.push([homeButton()]);
-            await tg("sendMessage", { chat_id: chatId, text: "دسته‌بندی مورد نظر خود را انتخاب کنید:", reply_markup: { inline_keyboard: keyboard } });
+            await tg("sendMessage", { chat_id: chatId, text: "????????? ???? ??? ?? ?????? ????:", reply_markup: { inline_keyboard: keyboard } });
             return null;
         }
         else if (accountCount > 0 && v2rayCount === 0 && wireguardCount === 0) {
@@ -5049,7 +5049,7 @@ async function showProducts(chatId, forBuy, page = 0, kind = "") {
     ORDER BY p.id ASC;
   `;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "هیچ محصول فعالی تعریف نشده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å ┘à╪¡╪╡┘ê┘ä ┘ü╪╣╪º┘ä█î ╪¬╪╣╪▒█î┘ü ┘å╪┤╪»┘ç ╪º╪│╪¬." });
         return null;
     }
     const dayPrice = customEnabled ? Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0)) : 0;
@@ -5059,7 +5059,7 @@ async function showProducts(chatId, forBuy, page = 0, kind = "") {
     const minCustomPrice = customEnabled ? Math.max(1, pricePerGb + 30 * dayPrice) : 0;
     const filteredRows = kind ? rows.filter((p) => p.kind === kind) : rows;
     if (!filteredRows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "محصولی یافت نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä█î █î╪º┘ü╪¬ ┘å╪┤╪»." });
         return null;
     }
     const standardRows = customEnabled && customProductId > 0 ? filteredRows.filter((p) => Number(p.id) !== customProductId) : filteredRows;
@@ -5070,27 +5070,27 @@ async function showProducts(chatId, forBuy, page = 0, kind = "") {
     const start = safePage * pageSize;
     const slice = standardRows.slice(start, start + pageSize);
     const keyboard = slice.map((p) => [
-        cb(`${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`, forBuy ? `buy_product_${p.id}` : `admin_inventory_product_${p.id}`, "primary")
+        cb(`${p.name} | ${formatPriceToman(Number(p.price_toman))} ╪¬┘ê┘à╪º┘å`, forBuy ? `buy_product_${p.id}` : `admin_inventory_product_${p.id}`, "primary")
     ]);
     if (forBuy && customRow) {
         keyboard.push([
-            cb(`🎛 سفارشی | از ${formatPriceToman(minCustomPrice)} تومان`, `buy_custom_v2ray_${customProductId}`, "success")
+            cb(`≡ƒÄ¢ ╪│┘ü╪º╪▒╪┤█î | ╪º╪▓ ${formatPriceToman(minCustomPrice)} ╪¬┘ê┘à╪º┘å`, `buy_custom_v2ray_${customProductId}`, "success")
         ]);
     }
     if (totalPages > 1) {
         const navRow = [];
         const pfx = forBuy ? (kind ? `buy_cat_${kind}_` : `buy_cat__`) : `admin_inv_`;
         if (safePage > 0)
-            navRow.push({ text: "◀️ قبلی", callback_data: `${pfx}${safePage - 1}` });
-        navRow.push({ text: `صفحه ${safePage + 1} از ${totalPages}`, callback_data: "noop" });
+            navRow.push({ text: "ΓùÇ∩╕Å ┘é╪¿┘ä█î", callback_data: `${pfx}${safePage - 1}` });
+        navRow.push({ text: `╪╡┘ü╪¡┘ç ${safePage + 1} ╪º╪▓ ${totalPages}`, callback_data: "noop" });
         if (safePage < totalPages - 1)
-            navRow.push({ text: "بعدی ▶️", callback_data: `${pfx}${safePage + 1}` });
+            navRow.push({ text: "╪¿╪╣╪»█î Γû╢∩╕Å", callback_data: `${pfx}${safePage + 1}` });
         keyboard.push(navRow);
     }
     keyboard.push([homeButton()]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: forBuy ? "🛍 محصول موردنظر را انتخاب کنید:" : "محصول برای مدیریت موجودی:",
+        text: forBuy ? "≡ƒ¢ì ┘à╪¡╪╡┘ê┘ä ┘à┘ê╪▒╪»┘å╪╕╪▒ ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:" : "┘à╪¡╪╡┘ê┘ä ╪¿╪▒╪º█î ┘à╪»█î╪▒█î╪¬ ┘à┘ê╪¼┘ê╪»█î:",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
@@ -5122,43 +5122,43 @@ async function listProductsForAdmin(chatId, userId, page = 0) {
     const keyboard = slice.flatMap((p) => [
         [
             {
-                text: `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
+                text: `${p.name} | ${formatPriceToman(Number(p.price_toman))} ╪¬┘ê┘à╪º┘å`,
                 callback_data: `admin_edit_product_${p.id}`
             }
         ],
         [
-            cb("ویرایش", `admin_edit_product_${p.id}`, "primary"),
-            cb(p.is_active ? "غیرفعال‌سازی" : "فعال‌سازی", `admin_toggle_product_${p.id}`, p.is_active ? "danger" : "success"),
-            cb(parseSellMode(String(p.sell_mode || "")) === "panel" ? "فروش دستی" : "فروش از پنل", `admin_toggle_product_sell_mode_${p.id}`, "primary")
+            cb("┘ê█î╪▒╪º█î╪┤", `admin_edit_product_${p.id}`, "primary"),
+            cb(p.is_active ? "╪║█î╪▒┘ü╪╣╪º┘äΓÇî╪│╪º╪▓█î" : "┘ü╪╣╪º┘äΓÇî╪│╪º╪▓█î", `admin_toggle_product_${p.id}`, p.is_active ? "danger" : "success"),
+            cb(parseSellMode(String(p.sell_mode || "")) === "panel" ? "┘ü╪▒┘ê╪┤ ╪»╪│╪¬█î" : "┘ü╪▒┘ê╪┤ ╪º╪▓ ┘╛┘å┘ä", `admin_toggle_product_sell_mode_${p.id}`, "primary")
         ],
         [
-            cb(p.is_infinite ? "حذف ∞" : "∞", `admin_toggle_product_infinite_${p.id}`, "primary"),
-            cb("تنظیم فروش پنل", `admin_configure_product_panel_${p.id}`, "primary"),
-            cb("🗑 حذف", `admin_remove_product_${p.id}`, "danger")
+            cb(p.is_infinite ? "╪¡╪░┘ü Γê₧" : "Γê₧", `admin_toggle_product_infinite_${p.id}`, "primary"),
+            cb("╪¬┘å╪╕█î┘à ┘ü╪▒┘ê╪┤ ┘╛┘å┘ä", `admin_configure_product_panel_${p.id}`, "primary"),
+            cb("≡ƒùæ ╪¡╪░┘ü", `admin_remove_product_${p.id}`, "danger")
         ]
     ]);
     if (totalPages > 1) {
         const navRow = [];
         if (safePage > 0)
-            navRow.push({ text: "◀️ قبلی", callback_data: `admin_products_page_${safePage - 1}` });
-        navRow.push({ text: `صفحه ${safePage + 1} از ${totalPages}`, callback_data: "noop" });
+            navRow.push({ text: "ΓùÇ∩╕Å ┘é╪¿┘ä█î", callback_data: `admin_products_page_${safePage - 1}` });
+        navRow.push({ text: `╪╡┘ü╪¡┘ç ${safePage + 1} ╪º╪▓ ${totalPages}`, callback_data: "noop" });
         if (safePage < totalPages - 1)
-            navRow.push({ text: "بعدی ▶️", callback_data: `admin_products_page_${safePage + 1}` });
+            navRow.push({ text: "╪¿╪╣╪»█î Γû╢∩╕Å", callback_data: `admin_products_page_${safePage + 1}` });
         keyboard.push(navRow);
     }
-    keyboard.push([cb(showArchived ? "📦 مخفی کردن آرشیو" : "📦 نمایش آرشیو", showArchived ? "admin_products_hide_archived" : "admin_products_show_archived", "primary")]);
-    keyboard.push([cb("➕ افزودن محصول", "admin_add_product", "success")]);
+    keyboard.push([cb(showArchived ? "≡ƒôª ┘à╪«┘ü█î ┌⌐╪▒╪»┘å ╪ó╪▒╪┤█î┘ê" : "≡ƒôª ┘å┘à╪º█î╪┤ ╪ó╪▒╪┤█î┘ê", showArchived ? "admin_products_hide_archived" : "admin_products_show_archived", "primary")]);
+    keyboard.push([cb("Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ┘à╪¡╪╡┘ê┘ä", "admin_add_product", "success")]);
     keyboard.push([backButton("admin_panel")]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "مدیریت محصولات:",
+        text: "┘à╪»█î╪▒█î╪¬ ┘à╪¡╪╡┘ê┘ä╪º╪¬:",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
 async function showWalletUsagePrompt(chatId, userId, productId, walletBalance) {
     const productRows = await sql `SELECT price_toman FROM products WHERE id = ${productId} LIMIT 1;`;
     if (!productRows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä █î╪º┘ü╪¬ ┘å╪┤╪»." });
         return null;
     }
     const productPrice = Number(productRows[0].price_toman || 0);
@@ -5168,14 +5168,14 @@ async function showWalletUsagePrompt(chatId, userId, productId, walletBalance) {
         return null;
     }
     const keyboard = [
-        [cb(`✅ استفاده از حداکثر ممکن (${formatPriceToman(maxUsable)} تومان)`, `use_wallet_${productId}_${maxUsable}`, "success")],
-        [cb("✍️ ورود مبلغ دلخواه", `use_wallet_custom_${productId}`, "primary")],
-        [cb("❌ بدون استفاده از کیف پول", `use_wallet_${productId}_0`, "danger")],
+        [cb(`Γ£à ╪º╪│╪¬┘ü╪º╪»┘ç ╪º╪▓ ╪¡╪»╪º┌⌐╪½╪▒ ┘à┘à┌⌐┘å (${formatPriceToman(maxUsable)} ╪¬┘ê┘à╪º┘å)`, `use_wallet_${productId}_${maxUsable}`, "success")],
+        [cb("Γ£ì∩╕Å ┘ê╪▒┘ê╪» ┘à╪¿┘ä╪║ ╪»┘ä╪«┘ê╪º┘ç", `use_wallet_custom_${productId}`, "primary")],
+        [cb("Γ¥î ╪¿╪»┘ê┘å ╪º╪│╪¬┘ü╪º╪»┘ç ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä", `use_wallet_${productId}_0`, "danger")],
         [homeButton()]
     ];
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `شما ${formatPriceToman(walletBalance)} تومان در کیف پول خود دارید.\n\nقیمت محصول: ${formatPriceToman(productPrice)} تومان\nآیا مایلید از موجودی کیف پول خود برای پرداخت بخشی (یا تمام) هزینه استفاده کنید؟`,
+        text: `╪┤┘à╪º ${formatPriceToman(walletBalance)} ╪¬┘ê┘à╪º┘å ╪»╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä ╪«┘ê╪» ╪»╪º╪▒█î╪».\n\n┘é█î┘à╪¬ ┘à╪¡╪╡┘ê┘ä: ${formatPriceToman(productPrice)} ╪¬┘ê┘à╪º┘å\n╪ó█î╪º ┘à╪º█î┘ä█î╪» ╪º╪▓ ┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪«┘ê╪» ╪¿╪▒╪º█î ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪«╪┤█î (█î╪º ╪¬┘à╪º┘à) ┘ç╪▓█î┘å┘ç ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å█î╪»╪ƒ`,
         reply_markup: { inline_keyboard: keyboard }
     });
 }
@@ -5188,7 +5188,7 @@ async function showPaymentMethods(chatId, userId, productId, walletUsed = 0) {
         : 1;
     const productRows = await sql `SELECT price_toman FROM products WHERE id = ${productId} LIMIT 1;`;
     if (!productRows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä █î╪º┘ü╪¬ ┘å╪┤╪»." });
         return null;
     }
     const unitPrice = Number(productRows[0].price_toman || 0);
@@ -5196,7 +5196,7 @@ async function showPaymentMethods(chatId, userId, productId, walletUsed = 0) {
     const finalPayable = Math.max(0, productPrice - walletUsed);
     const rows = await sql `SELECT code, title FROM payment_methods WHERE active = TRUE ORDER BY code ASC;`;
     if (!rows.length && walletBalance < finalPayable) {
-        await tg("sendMessage", { chat_id: chatId, text: "فعلاً هیچ روش پرداخت فعالی وجود ندارد و موجودی کیف پول شما هم کافی نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ü╪╣┘ä╪º┘ï ┘ç█î┌å ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬ ┘ü╪╣╪º┘ä█î ┘ê╪¼┘ê╪» ┘å╪»╪º╪▒╪» ┘ê ┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ┘ç┘à ┌⌐╪º┘ü█î ┘å█î╪│╪¬." });
         return null;
     }
     const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
@@ -5226,8 +5226,8 @@ async function showPaymentMethods(chatId, userId, productId, walletUsed = 0) {
         return true;
     });
     if (!filtered.length && finalPayable > 0) {
-        await tg("sendMessage", { chat_id: chatId, text: "فعلاً هیچ روش پرداختی که درست تنظیم شده باشد در دسترس نیست. لطفاً به پشتیبانی پیام دهید." });
-        await notifyAdmins(`⚠️ هیچ روش پرداختی برای نمایش پیدا نشد\n` +
+        await tg("sendMessage", { chat_id: chatId, text: "┘ü╪╣┘ä╪º┘ï ┘ç█î┌å ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬█î ┌⌐┘ç ╪»╪▒╪│╪¬ ╪¬┘å╪╕█î┘à ╪┤╪»┘ç ╪¿╪º╪┤╪» ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+        await notifyAdmins(`ΓÜá∩╕Å ┘ç█î┌å ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬█î ╪¿╪▒╪º█î ┘å┘à╪º█î╪┤ ┘╛█î╪»╪º ┘å╪┤╪»\n` +
             `user:${userId}\n` +
             `product:${productId}\n` +
             `finalPayable:${finalPayable}\n` +
@@ -5239,12 +5239,12 @@ async function showPaymentMethods(chatId, userId, productId, walletUsed = 0) {
             `swapwalletKey:${hasSwapwalletKey ? "ok" : "missing"}\n` +
             `swapwalletShop:${hasSwapwalletShop ? "ok" : "missing"}\n` +
             `businessWallet:${hasBusinessWallet ? "ok" : "missing"}\n` +
-            `cryptoReady:${hasCrypto ? "ok" : "missing"}`, { inline_keyboard: [[{ text: "⚙️ تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }]] });
+            `cryptoReady:${hasCrypto ? "ok" : "missing"}`, { inline_keyboard: [[{ text: "ΓÜÖ∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬ ╪»╪▒┌»╪º┘çΓÇî┘ç╪º", callback_data: "admin_gateway_settings" }]] });
         return null;
     }
     const keyboard = [];
     if (walletUsed >= productPrice) {
-        keyboard.push([cb(`💰 پرداخت کامل با کیف پول (${formatPriceToman(productPrice)} تومان)`, `select_pay_${productId}_wallet_${walletUsed}`, "success")]);
+        keyboard.push([cb(`≡ƒÆ░ ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪º┘à┘ä ╪¿╪º ┌⌐█î┘ü ┘╛┘ê┘ä (${formatPriceToman(productPrice)} ╪¬┘ê┘à╪º┘å)`, `select_pay_${productId}_wallet_${walletUsed}`, "success")]);
     }
     else {
         for (const m of filtered) {
@@ -5255,13 +5255,13 @@ async function showPaymentMethods(chatId, userId, productId, walletUsed = 0) {
     await tg("sendMessage", {
         chat_id: chatId,
         text: walletUsed > 0 && walletUsed < productPrice
-            ? `مبلغ ${formatPriceToman(walletUsed)} از کیف پول کسر خواهد شد.\nمبلغ باقیمانده برای پرداخت: ${formatPriceToman(finalPayable)} تومان\nلطفاً روش پرداخت باقیمانده را انتخاب کنید:`
-            : "روش پرداخت را انتخاب کنید:",
+            ? `┘à╪¿┘ä╪║ ${formatPriceToman(walletUsed)} ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪│╪▒ ╪«┘ê╪º┘ç╪» ╪┤╪».\n┘à╪¿┘ä╪║ ╪¿╪º┘é█î┘à╪º┘å╪»┘ç ╪¿╪▒╪º█î ┘╛╪▒╪»╪º╪«╪¬: ${formatPriceToman(finalPayable)} ╪¬┘ê┘à╪º┘å\n┘ä╪╖┘ü╪º┘ï ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º┘é█î┘à╪º┘å╪»┘ç ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`
+            : "╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
 async function ensureCustomV2rayProduct() {
-    const name = "سفارشی";
+    const name = "╪│┘ü╪º╪▒╪┤█î";
     const pricePerGb = normalizePricePerGb(await getSetting("product_price_per_gb_toman"), normalizePricePerGb(await getSetting("topup_price_per_gb_toman")));
     const dayPrice = Math.max(0, Math.round((await getNumberSetting("custom_v2ray_extra_day_toman")) || 0));
     const minPrice = Math.max(1, pricePerGb + 30 * dayPrice);
@@ -5315,7 +5315,7 @@ async function startCustomV2rayWizard(chatId, userId, productId) {
     const enabled = await getBoolSetting("custom_v2ray_enabled", false);
     const selectedProductId = Number((await getSetting("custom_v2ray_product_id")) || 0);
     if (!enabled || !selectedProductId || selectedProductId !== productId) {
-        await tg("sendMessage", { chat_id: chatId, text: "محصول سفارشی فعال نیست یا درست تنظیم نشده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ╪│┘ü╪º╪▒╪┤█î ┘ü╪╣╪º┘ä ┘å█î╪│╪¬ █î╪º ╪»╪▒╪│╪¬ ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬." });
         return null;
     }
     const rows = await sql `
@@ -5325,12 +5325,12 @@ async function startCustomV2rayWizard(chatId, userId, productId) {
     LIMIT 1;
   `;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä █î╪º┘ü╪¬ ┘å╪┤╪»." });
         return null;
     }
     const product = rows[0];
     if (getV2rayProductKindFromRow(product) !== "v2ray") {
-        await tg("sendMessage", { chat_id: chatId, text: "این محصول سفارشی نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┘à╪¡╪╡┘ê┘ä ╪│┘ü╪º╪▒╪┤█î ┘å█î╪│╪¬." });
         return null;
     }
     const minGb = Math.max(1, Math.round((await getNumberSetting("custom_v2ray_min_gb")) || 1));
@@ -5375,33 +5375,33 @@ async function renderCustomV2rayWizard(chatId, userId, messageId) {
     const totalPrice = unitPrice * quantity;
     const rows = await sql `SELECT name FROM products WHERE id = ${productId} LIMIT 1;`;
     const productName = rows.length ? String(rows[0].name || "-") : "-";
-    const text = `🎁 فاکتور خرید [${days} روز، ${gb} گیگابایت]\n\n` +
-        `🔸 محصول: ${productName}\n` +
-        `🔸 حجم: ${gb} گیگابایت\n` +
-        `🔸 زمان: ${days} روز\n` +
-        `🔸 تعداد کانفیگ: ${quantity} عدد\n\n` +
-        `💰 مبلغ: ${formatPriceToman(totalPrice)} تومان${quantity > 1 ? ` (${quantity} × ${formatPriceToman(unitPrice)})` : ""}\n\n` +
-        `📌 قیمت‌ها:\n` +
-        `- هر 1GB: ${formatPriceToman(pricePerGb)} تومان\n` +
-        `- هر روز: ${formatPriceToman(dayPrice)} تومان\n\n` +
-        `💡 نکته: بعد از پرداخت، کانفیگ بر اساس همین حجم و زمان ساخته می‌شود.`;
+    const text = `≡ƒÄü ┘ü╪º┌⌐╪¬┘ê╪▒ ╪«╪▒█î╪» [${days} ╪▒┘ê╪▓╪î ${gb} ┌»█î┌»╪º╪¿╪º█î╪¬]\n\n` +
+        `≡ƒö╕ ┘à╪¡╪╡┘ê┘ä: ${productName}\n` +
+        `≡ƒö╕ ╪¡╪¼┘à: ${gb} ┌»█î┌»╪º╪¿╪º█î╪¬\n` +
+        `≡ƒö╕ ╪▓┘à╪º┘å: ${days} ╪▒┘ê╪▓\n` +
+        `≡ƒö╕ ╪¬╪╣╪»╪º╪» ┌⌐╪º┘å┘ü█î┌»: ${quantity} ╪╣╪»╪»\n\n` +
+        `≡ƒÆ░ ┘à╪¿┘ä╪║: ${formatPriceToman(totalPrice)} ╪¬┘ê┘à╪º┘å${quantity > 1 ? ` (${quantity} ├ù ${formatPriceToman(unitPrice)})` : ""}\n\n` +
+        `≡ƒôî ┘é█î┘à╪¬ΓÇî┘ç╪º:\n` +
+        `- ┘ç╪▒ 1GB: ${formatPriceToman(pricePerGb)} ╪¬┘ê┘à╪º┘å\n` +
+        `- ┘ç╪▒ ╪▒┘ê╪▓: ${formatPriceToman(dayPrice)} ╪¬┘ê┘à╪º┘å\n\n` +
+        `≡ƒÆí ┘å┌⌐╪¬┘ç: ╪¿╪╣╪» ╪º╪▓ ┘╛╪▒╪»╪º╪«╪¬╪î ┌⌐╪º┘å┘ü█î┌» ╪¿╪▒ ╪º╪│╪º╪│ ┘ç┘à█î┘å ╪¡╪¼┘à ┘ê ╪▓┘à╪º┘å ╪│╪º╪«╪¬┘ç ┘à█îΓÇî╪┤┘ê╪».`;
     const keyboard = [];
     keyboard.push([
-        cb("کاهش -", "custom_v2ray_dec_data", "primary"),
-        cb(`${gb} گیگابایت`, "noop_custom_gb"),
-        cb("افزایش +", "custom_v2ray_inc_data", "primary")
+        cb("┌⌐╪º┘ç╪┤ -", "custom_v2ray_dec_data", "primary"),
+        cb(`${gb} ┌»█î┌»╪º╪¿╪º█î╪¬`, "noop_custom_gb"),
+        cb("╪º┘ü╪▓╪º█î╪┤ +", "custom_v2ray_inc_data", "primary")
     ]);
     keyboard.push([
-        cb("کاهش -", "custom_v2ray_dec_days", "primary"),
-        cb(`${days} روز`, "noop_custom_days"),
-        cb("افزایش +", "custom_v2ray_inc_days", "primary")
+        cb("┌⌐╪º┘ç╪┤ -", "custom_v2ray_dec_days", "primary"),
+        cb(`${days} ╪▒┘ê╪▓`, "noop_custom_days"),
+        cb("╪º┘ü╪▓╪º█î╪┤ +", "custom_v2ray_inc_days", "primary")
     ]);
     keyboard.push([
-        cb("کاهش -", "custom_v2ray_dec_count", "primary"),
-        cb(`${quantity} عدد`, "noop_custom_count"),
-        cb("افزایش +", "custom_v2ray_inc_count", "primary")
+        cb("┌⌐╪º┘ç╪┤ -", "custom_v2ray_dec_count", "primary"),
+        cb(`${quantity} ╪╣╪»╪»`, "noop_custom_count"),
+        cb("╪º┘ü╪▓╪º█î╪┤ +", "custom_v2ray_inc_count", "primary")
     ]);
-    keyboard.push([confirmButton(`custom_v2ray_confirm`, "✅ تایید و پرداخت")]);
+    keyboard.push([confirmButton(`custom_v2ray_confirm`, "Γ£à ╪¬╪º█î█î╪» ┘ê ┘╛╪▒╪»╪º╪«╪¬")]);
     keyboard.push([backButton("buy_menu")]);
     const targetMessageId = Number(messageId || p.messageId || 0);
     if (targetMessageId > 0) {
@@ -5447,14 +5447,14 @@ async function showCustomWalletUsagePrompt(chatId, userId, totalPrice) {
         return null;
     }
     const keyboard = [
-        [cb(`✅ استفاده از حداکثر ممکن (${formatPriceToman(maxUsable)} تومان)`, `custom_v2ray_use_wallet_${maxUsable}`, "success")],
-        [cb("✍️ ورود مبلغ دلخواه", `custom_v2ray_use_wallet_custom`, "primary")],
-        [cb("❌ بدون استفاده از کیف پول", `custom_v2ray_use_wallet_0`, "danger")],
+        [cb(`Γ£à ╪º╪│╪¬┘ü╪º╪»┘ç ╪º╪▓ ╪¡╪»╪º┌⌐╪½╪▒ ┘à┘à┌⌐┘å (${formatPriceToman(maxUsable)} ╪¬┘ê┘à╪º┘å)`, `custom_v2ray_use_wallet_${maxUsable}`, "success")],
+        [cb("Γ£ì∩╕Å ┘ê╪▒┘ê╪» ┘à╪¿┘ä╪║ ╪»┘ä╪«┘ê╪º┘ç", `custom_v2ray_use_wallet_custom`, "primary")],
+        [cb("Γ¥î ╪¿╪»┘ê┘å ╪º╪│╪¬┘ü╪º╪»┘ç ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä", `custom_v2ray_use_wallet_0`, "danger")],
         [homeButton()]
     ];
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `موجودی کیف پول: ${formatPriceToman(walletBalance)} تومان\nچه مقدار از کیف پول کسر شود؟`,
+        text: `┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä: ${formatPriceToman(walletBalance)} ╪¬┘ê┘à╪º┘å\n┌å┘ç ┘à┘é╪»╪º╪▒ ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪│╪▒ ╪┤┘ê╪»╪ƒ`,
         reply_markup: { inline_keyboard: keyboard }
     });
 }
@@ -5491,8 +5491,8 @@ async function showCustomPaymentMethods(chatId, userId, totalPrice, walletUsed) 
         return true;
     });
     if (!filtered.length && finalPayable > 0) {
-        await tg("sendMessage", { chat_id: chatId, text: "فعلاً هیچ روش پرداختی که درست تنظیم شده باشد در دسترس نیست. لطفاً به پشتیبانی پیام دهید." });
-        await notifyAdmins(`⚠️ هیچ روش پرداختی برای سفارش سفارشی پیدا نشد\n` +
+        await tg("sendMessage", { chat_id: chatId, text: "┘ü╪╣┘ä╪º┘ï ┘ç█î┌å ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬█î ┌⌐┘ç ╪»╪▒╪│╪¬ ╪¬┘å╪╕█î┘à ╪┤╪»┘ç ╪¿╪º╪┤╪» ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+        await notifyAdmins(`ΓÜá∩╕Å ┘ç█î┌å ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬█î ╪¿╪▒╪º█î ╪│┘ü╪º╪▒╪┤ ╪│┘ü╪º╪▒╪┤█î ┘╛█î╪»╪º ┘å╪┤╪»\n` +
             `user:${userId}\n` +
             `finalPayable:${finalPayable}\n` +
             `hasCards:${hasCards}\n` +
@@ -5503,12 +5503,12 @@ async function showCustomPaymentMethods(chatId, userId, totalPrice, walletUsed) 
             `swapwalletKey:${hasSwapwalletKey ? "ok" : "missing"}\n` +
             `swapwalletShop:${hasSwapwalletShop ? "ok" : "missing"}\n` +
             `businessWallet:${hasBusinessWallet ? "ok" : "missing"}\n` +
-            `cryptoReady:${hasCrypto ? "ok" : "missing"}`, { inline_keyboard: [[{ text: "⚙️ تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }]] });
+            `cryptoReady:${hasCrypto ? "ok" : "missing"}`, { inline_keyboard: [[{ text: "ΓÜÖ∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬ ╪»╪▒┌»╪º┘çΓÇî┘ç╪º", callback_data: "admin_gateway_settings" }]] });
         return null;
     }
     const keyboard = [];
     if (safeWalletUsed >= totalPrice) {
-        keyboard.push([cb(`💰 پرداخت کامل با کیف پول (${formatPriceToman(totalPrice)} تومان)`, `custom_v2ray_select_pay_wallet_${safeWalletUsed}`, "success")]);
+        keyboard.push([cb(`≡ƒÆ░ ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪º┘à┘ä ╪¿╪º ┌⌐█î┘ü ┘╛┘ê┘ä (${formatPriceToman(totalPrice)} ╪¬┘ê┘à╪º┘å)`, `custom_v2ray_select_pay_wallet_${safeWalletUsed}`, "success")]);
     }
     else {
         for (const m of filtered) {
@@ -5519,19 +5519,19 @@ async function showCustomPaymentMethods(chatId, userId, totalPrice, walletUsed) 
     await tg("sendMessage", {
         chat_id: chatId,
         text: safeWalletUsed > 0 && safeWalletUsed < totalPrice
-            ? `مبلغ ${formatPriceToman(safeWalletUsed)} از کیف پول کسر خواهد شد.\nمبلغ باقیمانده برای پرداخت: ${formatPriceToman(finalPayable)} تومان\nلطفاً روش پرداخت باقیمانده را انتخاب کنید:`
-            : "روش پرداخت را انتخاب کنید:",
+            ? `┘à╪¿┘ä╪║ ${formatPriceToman(safeWalletUsed)} ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪│╪▒ ╪«┘ê╪º┘ç╪» ╪┤╪».\n┘à╪¿┘ä╪║ ╪¿╪º┘é█î┘à╪º┘å╪»┘ç ╪¿╪▒╪º█î ┘╛╪▒╪»╪º╪«╪¬: ${formatPriceToman(finalPayable)} ╪¬┘ê┘à╪º┘å\n┘ä╪╖┘ü╪º┘ï ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º┘é█î┘à╪º┘å╪»┘ç ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`
+            : "╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
 async function showDiscountChoiceCustom(chatId, productId, paymentMethod, walletUsed) {
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "کد تخفیف دارید؟",
+        text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪»╪º╪▒█î╪»╪ƒ",
         reply_markup: {
             inline_keyboard: [
-                [confirmButton(`custom_discount_yes_${productId}_${paymentMethod}_${walletUsed}`, "✅ بله")],
-                [cb("❌ ندارم", `custom_discount_no_${productId}_${paymentMethod}_${walletUsed}`, "primary")],
+                [confirmButton(`custom_discount_yes_${productId}_${paymentMethod}_${walletUsed}`, "Γ£à ╪¿┘ä┘ç")],
+                [cb("Γ¥î ┘å╪»╪º╪▒┘à", `custom_discount_no_${productId}_${paymentMethod}_${walletUsed}`, "primary")],
                 [homeButton()]
             ]
         }
@@ -5540,11 +5540,11 @@ async function showDiscountChoiceCustom(chatId, productId, paymentMethod, wallet
 async function showDiscountChoice(chatId, productId, paymentMethod, walletUsed = 0) {
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "کد تخفیف دارید؟",
+        text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪»╪º╪▒█î╪»╪ƒ",
         reply_markup: {
             inline_keyboard: [
-                [confirmButton(`discount_yes_${productId}_${paymentMethod}_${walletUsed}`, "✅ بله")],
-                [cb("❌ ندارم", `discount_no_${productId}_${paymentMethod}_${walletUsed}`, "primary")],
+                [confirmButton(`discount_yes_${productId}_${paymentMethod}_${walletUsed}`, "Γ£à ╪¿┘ä┘ç")],
+                [cb("Γ¥î ┘å╪»╪º╪▒┘à", `discount_no_${productId}_${paymentMethod}_${walletUsed}`, "primary")],
                 [homeButton()]
             ]
         }
@@ -5554,21 +5554,21 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     if (state.state === "await_bulk_quantity") {
         const quantity = Number(text.trim());
         if (!Number.isFinite(quantity) || quantity < 1 || quantity > 100) {
-            await tg("sendMessage", { chat_id: chatId, text: "تعداد باید عددی بین 1 تا 100 باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¬╪╣╪»╪º╪» ╪¿╪º█î╪» ╪╣╪»╪»█î ╪¿█î┘å 1 ╪¬╪º 100 ╪¿╪º╪┤╪»." });
             return true;
         }
         const productId = Number(state.payload?.productId || 0);
         await setState(userId, "await_config_name", { productId, quantity });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `برای ${quantity} عدد${quantity > 1 ? " از" : ""} محصول یک نام انتخاب کنید:\n(اگر نام تکراری باشد، عدد تصادفی اضافه می‌شود)\n\nمثال: config1, myVPN, etc`
+            text: `╪¿╪▒╪º█î ${quantity} ╪╣╪»╪»${quantity > 1 ? " ╪º╪▓" : ""} ┘à╪¡╪╡┘ê┘ä █î┌⌐ ┘å╪º┘à ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:\n(╪º┌»╪▒ ┘å╪º┘à ╪¬┌⌐╪▒╪º╪▒█î ╪¿╪º╪┤╪»╪î ╪╣╪»╪» ╪¬╪╡╪º╪»┘ü█î ╪º╪╢╪º┘ü┘ç ┘à█îΓÇî╪┤┘ê╪»)\n\n┘à╪½╪º┘ä: config1, myVPN, etc`
         });
         return true;
     }
     if (state.state === "await_config_name") {
         const configName = text.trim();
         if (!configName || configName.length < 1 || configName.length > 50) {
-            await tg("sendMessage", { chat_id: chatId, text: "نام باید بین 1 تا 50 کاراکتر باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ╪¿╪º█î╪» ╪¿█î┘å 1 ╪¬╪º 50 ┌⌐╪º╪▒╪º┌⌐╪¬╪▒ ╪¿╪º╪┤╪»." });
             return true;
         }
         const productId = Number(state.payload?.productId || 0);
@@ -5590,23 +5590,23 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const productId = Number(state.payload.productId);
         const amount = Number(text.trim());
         if (!Number.isFinite(amount) || amount <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "مبلغ وارد شده معتبر نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ┘ê╪º╪▒╪» ╪┤╪»┘ç ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
             return true;
         }
         const userRows = await sql `SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
         const walletBalance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
         const productRows = await sql `SELECT price_toman FROM products WHERE id = ${productId} LIMIT 1;`;
         if (!productRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return true;
         }
         const productPrice = Number(productRows[0].price_toman || 0);
         if (amount > walletBalance) {
-            await tg("sendMessage", { chat_id: chatId, text: `موجودی شما کافی نیست (موجودی فعلی: ${formatPriceToman(walletBalance)} تومان). لطفاً مبلغ کمتری وارد کنید:` });
+            await tg("sendMessage", { chat_id: chatId, text: `┘à┘ê╪¼┘ê╪»█î ╪┤┘à╪º ┌⌐╪º┘ü█î ┘å█î╪│╪¬ (┘à┘ê╪¼┘ê╪»█î ┘ü╪╣┘ä█î: ${formatPriceToman(walletBalance)} ╪¬┘ê┘à╪º┘å). ┘ä╪╖┘ü╪º┘ï ┘à╪¿┘ä╪║ ┌⌐┘à╪¬╪▒█î ┘ê╪º╪▒╪» ┌⌐┘å█î╪»:` });
             return true;
         }
         if (amount > productPrice) {
-            await tg("sendMessage", { chat_id: chatId, text: `مبلغ وارد شده از قیمت محصول بیشتر است. حداکثر مبلغ قابل استفاده ${formatPriceToman(productPrice)} تومان است. لطفاً مجدداً وارد کنید:` });
+            await tg("sendMessage", { chat_id: chatId, text: `┘à╪¿┘ä╪║ ┘ê╪º╪▒╪» ╪┤╪»┘ç ╪º╪▓ ┘é█î┘à╪¬ ┘à╪¡╪╡┘ê┘ä ╪¿█î╪┤╪¬╪▒ ╪º╪│╪¬. ╪¡╪»╪º┌⌐╪½╪▒ ┘à╪¿┘ä╪║ ┘é╪º╪¿┘ä ╪º╪│╪¬┘ü╪º╪»┘ç ${formatPriceToman(productPrice)} ╪¬┘ê┘à╪º┘å ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ┘à╪¼╪»╪»╪º┘ï ┘ê╪º╪▒╪» ┌⌐┘å█î╪»:` });
             return true;
         }
         await clearState(userId);
@@ -5616,13 +5616,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     if (state.state === "await_custom_v2ray_name") {
         const configName = text.trim();
         if (!configName || configName.length < 1 || configName.length > 50) {
-            await tg("sendMessage", { chat_id: chatId, text: "نام باید بین 1 تا 50 کاراکتر باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ╪¿╪º█î╪» ╪¿█î┘å 1 ╪¬╪º 50 ┌⌐╪º╪▒╪º┌⌐╪¬╪▒ ╪¿╪º╪┤╪»." });
             return true;
         }
         const checkout = sanitizePanelConfig(state.payload.checkout);
         if (!checkout || !checkout.productId) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪│┘ü╪º╪▒╪┤ ╪│┘ü╪º╪▒╪┤█î ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ╪º┘ê┘ä ╪┤╪▒┘ê╪╣ ┌⌐┘å." });
             return true;
         }
         const quantity = Math.max(1, Math.round(Number(checkout.quantity || 1)));
@@ -5641,7 +5641,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     if (state.state === "await_custom_wallet_amount") {
         const amount = Number(text.trim());
         if (!Number.isFinite(amount) || amount < 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "مبلغ وارد شده معتبر نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ┘ê╪º╪▒╪» ╪┤╪»┘ç ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
             return true;
         }
         const checkout = sanitizePanelConfig(state.payload.checkout);
@@ -5649,17 +5649,17 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const productId = Number(checkout.productId || 0);
         if (!Number.isFinite(productId) || productId <= 0) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪│┘ü╪º╪▒╪┤ ╪│┘ü╪º╪▒╪┤█î ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ╪º┘ê┘ä ╪┤╪▒┘ê╪╣ ┌⌐┘å." });
             return true;
         }
         const userRows = await sql `SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
         const walletBalance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
         if (amount > walletBalance) {
-            await tg("sendMessage", { chat_id: chatId, text: `موجودی شما کافی نیست (موجودی فعلی: ${formatPriceToman(walletBalance)} تومان).` });
+            await tg("sendMessage", { chat_id: chatId, text: `┘à┘ê╪¼┘ê╪»█î ╪┤┘à╪º ┌⌐╪º┘ü█î ┘å█î╪│╪¬ (┘à┘ê╪¼┘ê╪»█î ┘ü╪╣┘ä█î: ${formatPriceToman(walletBalance)} ╪¬┘ê┘à╪º┘å).` });
             return true;
         }
         if (amount > totalPrice) {
-            await tg("sendMessage", { chat_id: chatId, text: `مبلغ وارد شده از مبلغ سفارش بیشتر است. حداکثر ${formatPriceToman(totalPrice)} تومان.` });
+            await tg("sendMessage", { chat_id: chatId, text: `┘à╪¿┘ä╪║ ┘ê╪º╪▒╪» ╪┤╪»┘ç ╪º╪▓ ┘à╪¿┘ä╪║ ╪│┘ü╪º╪▒╪┤ ╪¿█î╪┤╪¬╪▒ ╪º╪│╪¬. ╪¡╪»╪º┌⌐╪½╪▒ ${formatPriceToman(totalPrice)} ╪¬┘ê┘à╪º┘å.` });
             return true;
         }
         await clearState(userId);
@@ -5670,7 +5670,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     if (state.state === "await_wallet_charge_amount") {
         const amount = Number(text.trim());
         if (!Number.isFinite(amount) || amount < 10000) {
-            await tg("sendMessage", { chat_id: chatId, text: "مبلغ وارد شده معتبر نیست. حداقل مبلغ 10,000 تومان است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ┘ê╪º╪▒╪» ╪┤╪»┘ç ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬. ╪¡╪»╪º┘é┘ä ┘à╪¿┘ä╪║ 10,000 ╪¬┘ê┘à╪º┘å ╪º╪│╪¬." });
             return true;
         }
         const surcharge = await getPurchaseSurcharge();
@@ -5706,10 +5706,10 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!filtered.length) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فعلاً هیچ روش پرداختی برای شارژ کیف پول در دسترس نیست. لطفاً به پشتیبانی پیام دهید.",
-                reply_markup: { inline_keyboard: [[backButton("wallet_menu", "🔙 بازگشت")]] }
+                text: "┘ü╪╣┘ä╪º┘ï ┘ç█î┌å ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬█î ╪¿╪▒╪º█î ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪».",
+                reply_markup: { inline_keyboard: [[backButton("wallet_menu", "≡ƒöÖ ╪¿╪º╪▓┌»╪┤╪¬")]] }
             });
-            await notifyAdmins(`⚠️ هیچ روش پرداختی برای شارژ کیف پول پیدا نشد\n` +
+            await notifyAdmins(`ΓÜá∩╕Å ┘ç█î┌å ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬█î ╪¿╪▒╪º█î ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪»\n` +
                 `user:${userId}\n` +
                 `amount:${amount}\n` +
                 `hasCards:${hasCards}\n` +
@@ -5720,14 +5720,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 `swapwalletKey:${hasSwapwalletKey ? "ok" : "missing"}\n` +
                 `swapwalletShop:${hasSwapwalletShop ? "ok" : "missing"}\n` +
                 `businessWallet:${hasBusinessWallet ? "ok" : "missing"}\n` +
-                `cryptoReady:${hasCrypto ? "ok" : "missing"}`, { inline_keyboard: [[{ text: "⚙️ تنظیمات درگاه‌ها", callback_data: "admin_gateway_settings" }]] });
+                `cryptoReady:${hasCrypto ? "ok" : "missing"}`, { inline_keyboard: [[{ text: "ΓÜÖ∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬ ╪»╪▒┌»╪º┘çΓÇî┘ç╪º", callback_data: "admin_gateway_settings" }]] });
             return true;
         }
         const buttons = filtered.map((m) => [cb(String(m.title), `wallet_charge_method_${m.code}`, "primary")]);
-        buttons.push([backButton("wallet_menu", "🔙 بازگشت")]);
+        buttons.push([backButton("wallet_menu", "≡ƒöÖ ╪¿╪º╪▓┌»╪┤╪¬")]);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `مبلغ ${formatPriceToman(amount)} تومان.\nلطفاً روش پرداخت را انتخاب کنید:`,
+            text: `┘à╪¿┘ä╪║ ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å.\n┘ä╪╖┘ü╪º┘ï ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
             reply_markup: { inline_keyboard: buttons }
         });
         return true;
@@ -5735,7 +5735,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     if (state.state === "await_order_lookup") {
         const purchaseId = text.trim();
         if (!purchaseId || purchaseId.length < 4) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه سفارش معتبر نیست. دوباره ارسال کن." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ╪│┘ü╪º╪▒╪┤ ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▒╪│╪º┘ä ┌⌐┘å." });
             return true;
         }
         await clearState(userId);
@@ -5745,15 +5745,15 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     if (state.state === "await_migration_sublink") {
         const subLink = text.trim();
         if (!subLink) {
-            await tg("sendMessage", { chat_id: chatId, text: "لطفاً لینک یا نام کاربری کانفیگ را ارسال کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ┘ä█î┘å┌⌐ █î╪º ┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î ┌⌐╪º┘å┘ü█î┌» ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
             return true;
         }
-        await tg("sendMessage", { chat_id: chatId, text: "⏳ در حال جستجو روی پنل‌ها و بکاپ‌ها..." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÅ│ ╪»╪▒ ╪¡╪º┘ä ╪¼╪│╪¬╪¼┘ê ╪▒┘ê█î ┘╛┘å┘äΓÇî┘ç╪º ┘ê ╪¿┌⌐╪º┘╛ΓÇî┘ç╪º..." });
         const hit = await lookupIdentifierInPanels(subLink, { includeInactive: true });
         if (!hit.ok) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "❌ کانفیگی با این لینک/نام کاربری پیدا نشد.\nاگر بکاپ اینباند آپلود نشده، از ادمین بخواهید آپلود کند سپس دوباره امتحان کنید.\n\nیا /cancel برای لغو."
+                text: "Γ¥î ┌⌐╪º┘å┘ü█î┌»█î ╪¿╪º ╪º█î┘å ┘ä█î┘å┌⌐/┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î ┘╛█î╪»╪º ┘å╪┤╪».\n╪º┌»╪▒ ╪¿┌⌐╪º┘╛ ╪º█î┘å╪¿╪º┘å╪» ╪ó┘╛┘ä┘ê╪» ┘å╪┤╪»┘ç╪î ╪º╪▓ ╪º╪»┘à█î┘å ╪¿╪«┘ê╪º┘ç█î╪» ╪ó┘╛┘ä┘ê╪» ┌⌐┘å╪» ╪│┘╛╪│ ╪»┘ê╪¿╪º╪▒┘ç ╪º┘à╪¬╪¡╪º┘å ┌⌐┘å█î╪».\n\n█î╪º /cancel ╪¿╪▒╪º█î ┘ä╪║┘ê."
             });
             return true;
         }
@@ -5775,7 +5775,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (remainingBytes <= 0) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "⚠️ این کانفیگ حجم باقی‌مانده‌ای ندارد یا نامحدود است.\nانتقال مسدود شد تا از ایجاد کانفیگ نامحدود جلوگیری شود."
+                text: "ΓÜá∩╕Å ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪¡╪¼┘à ╪¿╪º┘é█îΓÇî┘à╪º┘å╪»┘çΓÇî╪º█î ┘å╪»╪º╪▒╪» █î╪º ┘å╪º┘à╪¡╪»┘ê╪» ╪º╪│╪¬.\n╪º┘å╪¬┘é╪º┘ä ┘à╪│╪»┘ê╪» ╪┤╪» ╪¬╪º ╪º╪▓ ╪º█î╪¼╪º╪» ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪¡╪»┘ê╪» ╪¼┘ä┘ê┌»█î╪▒█î ╪┤┘ê╪»."
             });
             await clearState(userId);
             return true;
@@ -5800,7 +5800,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!targetPanels.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "⚠️ فعلاً پنل مقصد فعالی برای انتقال وجود ندارد. با پشتیبانی تماس بگیرید." });
+            await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ┘ü╪╣┘ä╪º┘ï ┘╛┘å┘ä ┘à┘é╪╡╪» ┘ü╪╣╪º┘ä█î ╪¿╪▒╪º█î ╪º┘å╪¬┘é╪º┘ä ┘ê╪¼┘ê╪» ┘å╪»╪º╪▒╪». ╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪»." });
             return true;
         }
         const targetKeyboard = targetPanels.map((p) => [
@@ -5809,14 +5809,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         targetKeyboard.push([homeButton()]);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `✅ کانفیگ پیدا شد!\n📍 پنل فعلی: ${hit.panelName}\n💾 حجم باقی‌مانده: ${remainingGb} GB\n📅 انقضا: ${remainingDays > 0 ? remainingDays + " روز" : "منقضی‌شده"}\n\n🎯 پنل مقصد را انتخاب کنید:`,
+            text: `Γ£à ┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ╪┤╪»!\n≡ƒôì ┘╛┘å┘ä ┘ü╪╣┘ä█î: ${hit.panelName}\n≡ƒÆ╛ ╪¡╪¼┘à ╪¿╪º┘é█îΓÇî┘à╪º┘å╪»┘ç: ${remainingGb} GB\n≡ƒôà ╪º┘å┘é╪╢╪º: ${remainingDays > 0 ? remainingDays + " ╪▒┘ê╪▓" : "┘à┘å┘é╪╢█îΓÇî╪┤╪»┘ç"}\n\n≡ƒÄ» ┘╛┘å┘ä ┘à┘é╪╡╪» ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
             reply_markup: { inline_keyboard: targetKeyboard }
         });
         return true;
     }
     if (state.state === "await_crypto_receipt" && state.payload.purchaseId) {
         if (!photoFileId) {
-            await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
             return true;
         }
         const purchaseId = String(state.payload.purchaseId || "").trim();
@@ -5831,11 +5831,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         await clearState(userId);
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد یا قابل بروزرسانی نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪» █î╪º ┘é╪º╪¿┘ä ╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ┘å█î╪│╪¬." });
             return true;
         }
         const orderId = Number(rows[0].id);
-        await tg("sendMessage", { chat_id: chatId, text: "اسکرین‌شات ثبت شد ✅\nبعد از بررسی ادمین، سفارش تکمیل می‌شود." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ╪½╪¿╪¬ ╪┤╪» Γ£à\n╪¿╪╣╪» ╪º╪▓ ╪¿╪▒╪▒╪│█î ╪º╪»┘à█î┘å╪î ╪│┘ü╪º╪▒╪┤ ╪¬┌⌐┘à█î┘ä ┘à█îΓÇî╪┤┘ê╪»." });
         const profileRows = await sql `
       SELECT username, first_name, last_name
       FROM users
@@ -5845,26 +5845,26 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const tgUsername = profileRows.length && profileRows[0].username ? `@${String(profileRows[0].username)}` : "-";
         const tgFullName = [profileRows[0]?.first_name, profileRows[0]?.last_name].filter(Boolean).join(" ").trim() || "-";
         const directCryptoDeliveryLabel = formatDeliveryModeLabel(parseDeliveryMode(String(rows[0].panel_delivery_mode || "")));
-        const caption = `🪙 درخواست تایید پرداخت کریپتو\n` +
-            `سفارش: ${rows[0].purchase_id}\n` +
-            `کاربر: ${userId}\n` +
-            `یوزرنیم: ${tgUsername}\n` +
-            `نام: ${tgFullName}\n` +
-            `محصول: ${rows[0].product_name_snapshot || "-"}\n` +
-            `تحویل: ${directCryptoDeliveryLabel}\n` +
-            `مبلغ: ${formatPriceToman(Number(rows[0].final_price))} تومان\n` +
-            `ارز: ${rows[0].crypto_currency || "-"}\n` +
-            `شبکه: ${rows[0].crypto_network || "-"}\n` +
-            `مقدار: ${rows[0].crypto_amount || "-"}\n` +
-            `آدرس: ${shortAddr(String(rows[0].crypto_address || ""))}`;
+        const caption = `≡ƒ¬Ö ╪»╪▒╪«┘ê╪º╪│╪¬ ╪¬╪º█î█î╪» ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪▒█î┘╛╪¬┘ê\n` +
+            `╪│┘ü╪º╪▒╪┤: ${rows[0].purchase_id}\n` +
+            `┌⌐╪º╪▒╪¿╪▒: ${userId}\n` +
+            `█î┘ê╪▓╪▒┘å█î┘à: ${tgUsername}\n` +
+            `┘å╪º┘à: ${tgFullName}\n` +
+            `┘à╪¡╪╡┘ê┘ä: ${rows[0].product_name_snapshot || "-"}\n` +
+            `╪¬╪¡┘ê█î┘ä: ${directCryptoDeliveryLabel}\n` +
+            `┘à╪¿┘ä╪║: ${formatPriceToman(Number(rows[0].final_price))} ╪¬┘ê┘à╪º┘å\n` +
+            `╪º╪▒╪▓: ${rows[0].crypto_currency || "-"}\n` +
+            `╪┤╪¿┌⌐┘ç: ${rows[0].crypto_network || "-"}\n` +
+            `┘à┘é╪»╪º╪▒: ${rows[0].crypto_amount || "-"}\n` +
+            `╪ó╪»╪▒╪│: ${shortAddr(String(rows[0].crypto_address || ""))}`;
         for (const adminId of await getAdminIds()) {
             await tg("sendPhoto", {
                 photo: photoFileId,
                 caption,
                 reply_markup: {
                     inline_keyboard: [
-                        [confirmButton(`crypto_accept_${orderId}`, "✅ تایید")],
-                        [cancelButton(`crypto_deny_${orderId}`, "❌ رد")]
+                        [confirmButton(`crypto_accept_${orderId}`, "Γ£à ╪¬╪º█î█î╪»")],
+                        [cancelButton(`crypto_deny_${orderId}`, "Γ¥î ╪▒╪»")]
                     ]
                 }
             }).catch(() => { });
@@ -5873,7 +5873,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     }
     if (state.state === "await_wallet_receipt") {
         if (!photoFileId) {
-            await tg("sendMessage", { chat_id: chatId, text: "لطفاً تصویر رسید شارژ را به صورت عکس ارسال کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ╪¬╪╡┘ê█î╪▒ ╪▒╪│█î╪» ╪┤╪º╪▒┌ÿ ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
             return true;
         }
         const topupId = Number(state.payload.topupId);
@@ -5884,7 +5884,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       RETURNING id, amount, payment_method, crypto_network, crypto_address, crypto_amount;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "درخواست شارژ یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪»╪▒╪«┘ê╪º╪│╪¬ ╪┤╪º╪▒┌ÿ █î╪º┘ü╪¬ ┘å╪┤╪»." });
             await clearState(userId);
             return true;
         }
@@ -5900,14 +5900,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const paymentLabel = paymentMethod === "tronado"
             ? "Tronado"
             : paymentMethod === "tetrapay"
-                ? "تتراپی"
+                ? "╪¬╪¬╪▒╪º┘╛█î"
                 : paymentMethod === "plisio"
                     ? "Plisio"
                     : paymentMethod === "crypto"
-                        ? "کریپتو"
+                        ? "┌⌐╪▒█î┘╛╪¬┘ê"
                         : paymentMethod || "-";
         const cryptoDetails = paymentMethod === "crypto"
-            ? `\nشبکه: ${String(rows[0].crypto_network || "-")}\nمقدار: ${String(rows[0].crypto_amount || "-")}\nآدرس: ${shortAddr(String(rows[0].crypto_address || ""))}`
+            ? `\n╪┤╪¿┌⌐┘ç: ${String(rows[0].crypto_network || "-")}\n┘à┘é╪»╪º╪▒: ${String(rows[0].crypto_amount || "-")}\n╪ó╪»╪▒╪│: ${shortAddr(String(rows[0].crypto_address || ""))}`
             : "";
         await clearState(userId);
         for (const adminId of await getAdminIds()) {
@@ -5915,18 +5915,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await tg("sendPhoto", {
                     chat_id: adminId,
                     photo: photoFileId,
-                    caption: `رسید جدید شارژ کیف پول\n` +
-                        `کاربر: ${userId}\n` +
-                        `یوزرنیم: ${username}\n` +
-                        `نام: ${fullName}\n` +
-                        `مبلغ: ${formatPriceToman(Number(rows[0].amount))} تومان\n` +
-                        `روش پرداخت: ${paymentLabel}` +
+                    caption: `╪▒╪│█î╪» ╪¼╪»█î╪» ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä\n` +
+                        `┌⌐╪º╪▒╪¿╪▒: ${userId}\n` +
+                        `█î┘ê╪▓╪▒┘å█î┘à: ${username}\n` +
+                        `┘å╪º┘à: ${fullName}\n` +
+                        `┘à╪¿┘ä╪║: ${formatPriceToman(Number(rows[0].amount))} ╪¬┘ê┘à╪º┘å\n` +
+                        `╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬: ${paymentLabel}` +
                         cryptoDetails,
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                confirmButton(`wallet_accept_${topupId}`, "✅ تایید"),
-                                cancelButton(`wallet_deny_${topupId}`, "❌ رد")
+                                confirmButton(`wallet_accept_${topupId}`, "Γ£à ╪¬╪º█î█î╪»"),
+                                cancelButton(`wallet_deny_${topupId}`, "Γ¥î ╪▒╪»")
                             ]
                         ]
                     }
@@ -5936,7 +5936,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 logError("notify_admin_wallet_receipt_failed", error, { adminId, topupId, userId });
             }
         }
-        await tg("sendMessage", { chat_id: chatId, text: "رسید ارسال شد ✅\nپس از بررسی ادمین کیف پول شما شارژ خواهد شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪▒╪│█î╪» ╪º╪▒╪│╪º┘ä ╪┤╪» Γ£à\n┘╛╪│ ╪º╪▓ ╪¿╪▒╪▒╪│█î ╪º╪»┘à█î┘å ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪┤╪º╪▒┌ÿ ╪«┘ê╪º┘ç╪» ╪┤╪»." });
         return true;
     }
     if (state.state === "await_discount_code") {
@@ -5970,7 +5970,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const overrides = {
             basePriceToman: totalPrice,
             panelConfigPatch: { data_limit_mb: dataMb, expire_days: days, force_awaiting_config: true, ...(quantity > 1 ? { bulk_quantity: quantity, bulk_config_names: configNames } : {}) },
-            productNameSuffix: `(سفارشی ${gb}GB / ${days} روز${quantity > 1 ? ` × ${quantity}` : ""})`,
+            productNameSuffix: `(╪│┘ü╪º╪▒╪┤█î ${gb}GB / ${days} ╪▒┘ê╪▓${quantity > 1 ? ` ├ù ${quantity}` : ""})`,
             configName
         };
         await clearState(userId);
@@ -5979,7 +5979,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     }
     if (state.state === "await_crypto_receipt" && state.payload.orderId) {
         if (!photoFileId) {
-            await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کن." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å." });
             return true;
         }
         const orderId = Number(state.payload.orderId);
@@ -5993,7 +5993,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       RETURNING id;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد یا قابل ثبت رسید نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪» █î╪º ┘é╪º╪¿┘ä ╪½╪¿╪¬ ╪▒╪│█î╪» ┘å█î╪│╪¬." });
             await clearState(userId);
             return true;
         }
@@ -6028,9 +6028,9 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const walletUsed = Number(o.wallet_used || 0);
         const extraLines = [];
         if (method === "tronado") {
-            extraLines.push(`مقدار TRON: ${String(o.tron_amount || "-")}`);
+            extraLines.push(`┘à┘é╪»╪º╪▒ TRON: ${String(o.tron_amount || "-")}`);
             if (o.tronado_payment_url)
-                extraLines.push(`لینک پرداخت: ${String(o.tronado_payment_url)}`);
+                extraLines.push(`┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬: ${String(o.tronado_payment_url)}`);
         }
         else if (method === "plisio") {
             if (o.plisio_txn_id)
@@ -6038,25 +6038,25 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             if (o.plisio_status)
                 extraLines.push(`status: ${String(o.plisio_status)}`);
             if (o.plisio_invoice_url)
-                extraLines.push(`لینک پرداخت: ${String(o.plisio_invoice_url)}`);
+                extraLines.push(`┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬: ${String(o.plisio_invoice_url)}`);
         }
         else if (method === "tetrapay") {
             if (o.tronado_token)
                 extraLines.push(`authority: ${String(o.tronado_token)}`);
             if (o.tronado_payment_url)
-                extraLines.push(`لینک پرداخت: ${String(o.tronado_payment_url)}`);
+                extraLines.push(`┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬: ${String(o.tronado_payment_url)}`);
         }
         const cryptoDeliveryLabel = formatDeliveryModeLabel(parseDeliveryMode(String(o.panel_delivery_mode || "")));
-        const caption = `رسید پرداخت کریپتو ارسال شد\n` +
-            `سفارش: ${String(o.purchase_id || "-")}\n` +
-            `کاربر: ${userId}\n` +
-            `یوزرنیم: ${username}\n` +
-            `نام: ${fullName}\n` +
-            `محصول: ${String(o.product_name || "-")}\n` +
-            `تحویل: ${cryptoDeliveryLabel}\n` +
-            `مبلغ: ${formatPriceToman(Number(o.final_price || 0))} تومان\n` +
-            `روش پرداخت: ${method}` +
-            (walletUsed > 0 ? `\nکسر از کیف پول: ${formatPriceToman(walletUsed)} تومان` : "") +
+        const caption = `╪▒╪│█î╪» ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪▒█î┘╛╪¬┘ê ╪º╪▒╪│╪º┘ä ╪┤╪»\n` +
+            `╪│┘ü╪º╪▒╪┤: ${String(o.purchase_id || "-")}\n` +
+            `┌⌐╪º╪▒╪¿╪▒: ${userId}\n` +
+            `█î┘ê╪▓╪▒┘å█î┘à: ${username}\n` +
+            `┘å╪º┘à: ${fullName}\n` +
+            `┘à╪¡╪╡┘ê┘ä: ${String(o.product_name || "-")}\n` +
+            `╪¬╪¡┘ê█î┘ä: ${cryptoDeliveryLabel}\n` +
+            `┘à╪¿┘ä╪║: ${formatPriceToman(Number(o.final_price || 0))} ╪¬┘ê┘à╪º┘å\n` +
+            `╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬: ${method}` +
+            (walletUsed > 0 ? `\n┌⌐╪│╪▒ ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä: ${formatPriceToman(walletUsed)} ╪¬┘ê┘à╪º┘å` : "") +
             (extraLines.length ? `\n${extraLines.join("\n")}` : "");
         await clearState(userId);
         for (const adminId of await getAdminIds()) {
@@ -6068,9 +6068,9 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                { text: "✅ تایید", callback_data: `crypto_accept_${orderId}` },
-                                { text: "❌ رد", callback_data: `crypto_deny_${orderId}` },
-                                { text: "⛔ بن", callback_data: `crypto_ban_${orderId}_${userId}` }
+                                { text: "Γ£à ╪¬╪º█î█î╪»", callback_data: `crypto_accept_${orderId}` },
+                                { text: "Γ¥î ╪▒╪»", callback_data: `crypto_deny_${orderId}` },
+                                { text: "Γ¢ö ╪¿┘å", callback_data: `crypto_ban_${orderId}_${userId}` }
                             ]
                         ]
                     }
@@ -6080,12 +6080,12 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 logError("notify_admin_crypto_receipt_failed", e, { adminId, orderId, userId });
             }
         }
-        await tg("sendMessage", { chat_id: chatId, text: "اسکرین‌شات ارسال شد ✅\nبعد از بررسی ادمین نتیجه بهت خبر داده میشه." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ╪º╪▒╪│╪º┘ä ╪┤╪» Γ£à\n╪¿╪╣╪» ╪º╪▓ ╪¿╪▒╪▒╪│█î ╪º╪»┘à█î┘å ┘å╪¬█î╪¼┘ç ╪¿┘ç╪¬ ╪«╪¿╪▒ ╪»╪º╪»┘ç ┘à█î╪┤┘ç." });
         return true;
     }
     if (state.state === "await_receipt") {
         if (!photoFileId) {
-            await tg("sendMessage", { chat_id: chatId, text: "لطفاً تصویر رسید را به صورت عکس ارسال کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ╪¬╪╡┘ê█î╪▒ ╪▒╪│█î╪» ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
             return true;
         }
         const orderId = Number(state.payload.orderId);
@@ -6103,11 +6103,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         }
         catch (e) {
             logError("receipt_submit_transaction_failed", e, { orderId });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در ثبت رسید. لطفاً دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪½╪¿╪¬ ╪▒╪│█î╪». ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
             return true;
         }
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد یا امکان ثبت رسید برای آن وجود ندارد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪» █î╪º ╪º┘à┌⌐╪º┘å ╪½╪¿╪¬ ╪▒╪│█î╪» ╪¿╪▒╪º█î ╪ó┘å ┘ê╪¼┘ê╪» ┘å╪»╪º╪▒╪»." });
             await clearState(userId);
             return true;
         }
@@ -6122,7 +6122,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const lastName = profileRows.length && profileRows[0].last_name ? String(profileRows[0].last_name) : "";
         const fullName = [firstName, lastName].filter(Boolean).join(" ").trim() || "-";
         const actualWalletUsed = Number(rows[0].wallet_used || 0);
-        const walletUsedText = actualWalletUsed > 0 ? `\nکسر از کیف پول: ${formatPriceToman(actualWalletUsed)} تومان` : "";
+        const walletUsedText = actualWalletUsed > 0 ? `\n┌⌐╪│╪▒ ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä: ${formatPriceToman(actualWalletUsed)} ╪¬┘ê┘à╪º┘å` : "";
         const cardDeliveryMode = parseDeliveryMode(String(rows[0].panel_delivery_mode || ""));
         const cardDeliveryLabel = formatDeliveryModeLabel(cardDeliveryMode);
         const cardProductSnap = String(rows[0].product_name_snapshot || "").trim();
@@ -6132,20 +6132,20 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await tg("sendPhoto", {
                     chat_id: adminId,
                     photo: photoFileId,
-                    caption: `رسید جدید ارسال شد\n` +
-                        `سفارش: ${rows[0].purchase_id}\n` +
-                        `محصول: ${cardProductSnap || "-"}\n` +
-                        `تحویل: ${cardDeliveryLabel}\n` +
-                        `کاربر: ${userId}\n` +
-                        `یوزرنیم: ${username}\n` +
-                        `نام: ${fullName}\n` +
-                        `مبلغ پرداختی: ${formatPriceToman(Number(rows[0].final_price))} تومان` + walletUsedText,
+                    caption: `╪▒╪│█î╪» ╪¼╪»█î╪» ╪º╪▒╪│╪º┘ä ╪┤╪»\n` +
+                        `╪│┘ü╪º╪▒╪┤: ${rows[0].purchase_id}\n` +
+                        `┘à╪¡╪╡┘ê┘ä: ${cardProductSnap || "-"}\n` +
+                        `╪¬╪¡┘ê█î┘ä: ${cardDeliveryLabel}\n` +
+                        `┌⌐╪º╪▒╪¿╪▒: ${userId}\n` +
+                        `█î┘ê╪▓╪▒┘å█î┘à: ${username}\n` +
+                        `┘å╪º┘à: ${fullName}\n` +
+                        `┘à╪¿┘ä╪║ ┘╛╪▒╪»╪º╪«╪¬█î: ${formatPriceToman(Number(rows[0].final_price))} ╪¬┘ê┘à╪º┘å` + walletUsedText,
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                confirmButton(`receipt_accept_${orderId}`, "✅ تایید"),
-                                cancelButton(`receipt_deny_${orderId}`, "❌ رد"),
-                                cb("⛔ بن", `receipt_ban_${orderId}_${userId}`, "danger")
+                                confirmButton(`receipt_accept_${orderId}`, "Γ£à ╪¬╪º█î█î╪»"),
+                                cancelButton(`receipt_deny_${orderId}`, "Γ¥î ╪▒╪»"),
+                                cb("Γ¢ö ╪¿┘å", `receipt_ban_${orderId}_${userId}`, "danger")
                             ]
                         ]
                     }
@@ -6156,12 +6156,12 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 continue;
             }
         }
-        await tg("sendMessage", { chat_id: chatId, text: "رسید ارسال شد ✅\nپس از بررسی ادمین نتیجه اطلاع داده می‌شود." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪▒╪│█î╪» ╪º╪▒╪│╪º┘ä ╪┤╪» Γ£à\n┘╛╪│ ╪º╪▓ ╪¿╪▒╪▒╪│█î ╪º╪»┘à█î┘å ┘å╪¬█î╪¼┘ç ╪º╪╖┘ä╪º╪╣ ╪»╪º╪»┘ç ┘à█îΓÇî╪┤┘ê╪»." });
         return true;
     }
     if (state.state === "await_topup_receipt") {
         if (!photoFileId) {
-            await tg("sendMessage", { chat_id: chatId, text: "لطفاً تصویر رسید افزایش دیتا را به صورت عکس ارسال کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ╪¬╪╡┘ê█î╪▒ ╪▒╪│█î╪» ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
             return true;
         }
         const topupRequestId = Number(state.payload.topupRequestId);
@@ -6172,7 +6172,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       RETURNING purchase_id, requested_mb, final_price, inventory_id;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "درخواست افزایش دیتا یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º █î╪º┘ü╪¬ ┘å╪┤╪»." });
             await clearState(userId);
             return true;
         }
@@ -6202,22 +6202,22 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await tg("sendPhoto", {
                     chat_id: adminId,
                     photo: photoFileId,
-                    caption: `رسید جدید افزایش دیتا\n` +
-                        `شماره سفارش: ${rows[0].purchase_id}\n` +
-                        `محصول: ${topupProductName || "-"}\n` +
-                        `تحویل (سرویس پایه): ${topupDeliveryLabel}\n` +
-                        `کاربر: ${userId}\n` +
-                        `یوزرنیم: ${username}\n` +
-                        `نام: ${fullName}\n` +
-                        `درخواست: ${rows[0].requested_mb}MB\n` +
-                        `مبلغ: ${formatPriceToman(Number(rows[0].final_price))} تومان\n` +
-                        `کانفیگ:\n${cfgText}`,
+                    caption: `╪▒╪│█î╪» ╪¼╪»█î╪» ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º\n` +
+                        `╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤: ${rows[0].purchase_id}\n` +
+                        `┘à╪¡╪╡┘ê┘ä: ${topupProductName || "-"}\n` +
+                        `╪¬╪¡┘ê█î┘ä (╪│╪▒┘ê█î╪│ ┘╛╪º█î┘ç): ${topupDeliveryLabel}\n` +
+                        `┌⌐╪º╪▒╪¿╪▒: ${userId}\n` +
+                        `█î┘ê╪▓╪▒┘å█î┘à: ${username}\n` +
+                        `┘å╪º┘à: ${fullName}\n` +
+                        `╪»╪▒╪«┘ê╪º╪│╪¬: ${rows[0].requested_mb}MB\n` +
+                        `┘à╪¿┘ä╪║: ${formatPriceToman(Number(rows[0].final_price))} ╪¬┘ê┘à╪º┘å\n` +
+                        `┌⌐╪º┘å┘ü█î┌»:\n${cfgText}`,
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                confirmButton(`topup_accept_${topupRequestId}`, "✅ تایید"),
-                                cancelButton(`topup_deny_${topupRequestId}`, "❌ رد"),
-                                cb("⛔ بن", `topup_ban_${topupRequestId}_${userId}`, "danger")
+                                confirmButton(`topup_accept_${topupRequestId}`, "Γ£à ╪¬╪º█î█î╪»"),
+                                cancelButton(`topup_deny_${topupRequestId}`, "Γ¥î ╪▒╪»"),
+                                cb("Γ¢ö ╪¿┘å", `topup_ban_${topupRequestId}_${userId}`, "danger")
                             ]
                         ]
                     }
@@ -6228,14 +6228,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 continue;
             }
         }
-        await tg("sendMessage", { chat_id: chatId, text: "رسید افزایش دیتا ارسال شد ✅\nپس از بررسی ادمین اطلاع می‌دهیم." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪▒╪│█î╪» ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪º╪▒╪│╪º┘ä ╪┤╪» Γ£à\n┘╛╪│ ╪º╪▓ ╪¿╪▒╪▒╪│█î ╪º╪»┘à█î┘å ╪º╪╖┘ä╪º╪╣ ┘à█îΓÇî╪»┘ç█î┘à." });
         return true;
     }
     if (state.state === "await_topup_custom_amount") {
         const inventoryId = Number(state.payload.inventoryId);
         const mb = parseDataAmountToMb(text);
         if (!Number.isFinite(inventoryId) || !mb || mb <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "فرمت حجم معتبر نیست. مثال: 1536 یا 1.5GB یا 800MB" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ü╪▒┘à╪¬ ╪¡╪¼┘à ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬. ┘à╪½╪º┘ä: 1536 █î╪º 1.5GB █î╪º 800MB" });
             return true;
         }
         await clearState(userId);
@@ -6251,58 +6251,58 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             await setSetting("start_media_kind", "none");
             await setSetting("start_media_value", "");
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "مدیای شروع پاک شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪»█î╪º█î ╪┤╪▒┘ê╪╣ ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
             return true;
         }
         if (kind === "text") {
             if (!raw) {
-                await tg("sendMessage", { chat_id: chatId, text: "متن نمی‌تواند خالی باشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à╪¬┘å ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
                 return true;
             }
             await setSetting("start_media_kind", "text");
             await setSetting("start_media_value", raw);
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "ذخیره شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
             await tg("sendMessage", { chat_id: chatId, text: raw }).catch(() => { });
             return true;
         }
         if (kind === "sticker") {
             if (!stickerFileId) {
-                await tg("sendMessage", { chat_id: chatId, text: "لطفاً استیکر را ارسال کن (نه عکس)." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ╪º╪│╪¬█î┌⌐╪▒ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å (┘å┘ç ╪╣┌⌐╪│)." });
                 return true;
             }
             await setSetting("start_media_kind", "sticker");
             await setSetting("start_media_value", stickerFileId);
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "ذخیره شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
             await tg("sendSticker", { chat_id: chatId, sticker: stickerFileId }).catch(() => { });
             return true;
         }
         if (kind === "animation") {
             if (!animationFileId) {
-                await tg("sendMessage", { chat_id: chatId, text: "لطفاً گیف را ارسال کن." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ┌»█î┘ü ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å." });
                 return true;
             }
             await setSetting("start_media_kind", "animation");
             await setSetting("start_media_value", animationFileId);
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "ذخیره شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
             await tg("sendAnimation", { chat_id: chatId, animation: animationFileId }).catch(() => { });
             return true;
         }
         if (kind === "photo") {
             if (!photoFileId) {
-                await tg("sendMessage", { chat_id: chatId, text: "لطفاً عکس را ارسال کن." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ╪╣┌⌐╪│ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å." });
                 return true;
             }
             await setSetting("start_media_kind", "photo");
             await setSetting("start_media_value", photoFileId);
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "ذخیره شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
             await tg("sendPhoto", { chat_id: chatId, photo: photoFileId }).catch(() => { });
             return true;
         }
-        await tg("sendMessage", { chat_id: chatId, text: "نوع مدیا نامعتبر است. از تنظیمات دوباره شروع کن." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å┘ê╪╣ ┘à╪»█î╪º ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬. ╪º╪▓ ╪¬┘å╪╕█î┘à╪º╪¬ ╪»┘ê╪¿╪º╪▒┘ç ╪┤╪▒┘ê╪╣ ┌⌐┘å." });
         return true;
     }
     if (state.state === "admin_product_wizard") {
@@ -6312,7 +6312,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "name") {
             const name = mode === "edit" && raw === "-" ? String(state.payload.name || "") : raw;
             if (!name) {
-                await tg("sendMessage", { chat_id: chatId, text: "نام محصول نمی‌تواند خالی باشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ┘à╪¡╪╡┘ê┘ä ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
                 return true;
             }
             state.payload.name = name;
@@ -6334,7 +6334,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const sizeMbRaw = mode === "edit" && raw === "-" ? Number(state.payload.sizeMb || 0) : parseDataAmountToMb(raw);
             const sizeMb = Number(sizeMbRaw);
             if (!Number.isFinite(sizeMb) || sizeMb <= 0) {
-                await tg("sendMessage", { chat_id: chatId, text: "حجم معتبر بفرستید. مثال: 2048 یا 2GB یا 800MB" });
+                await tg("sendMessage", { chat_id: chatId, text: "╪¡╪¼┘à ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 2048 █î╪º 2GB █î╪º 800MB" });
                 return true;
             }
             state.payload.sizeMb = Math.round(sizeMb);
@@ -6346,7 +6346,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         else if (step === "price_toman") {
             const priceToman = mode === "edit" && raw === "-" ? Number(state.payload.priceToman || 0) : Number(raw);
             if (!Number.isFinite(priceToman) || priceToman <= 0) {
-                await tg("sendMessage", { chat_id: chatId, text: "قیمت معتبر بفرستید. مثال: 450000" });
+                await tg("sendMessage", { chat_id: chatId, text: "┘é█î┘à╪¬ ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 450000" });
                 return true;
             }
             state.payload.priceToman = Math.round(priceToman);
@@ -6364,7 +6364,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 else {
                     const n = Number(raw);
                     if (!Number.isFinite(n) || n < 0) {
-                        await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 50 یا 0 برای بدون سقف." });
+                        await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 50 █î╪º 0 ╪¿╪▒╪º█î ╪¿╪»┘ê┘å ╪│┘é┘ü." });
                         return true;
                     }
                     panelSellLimit = Math.round(n);
@@ -6385,7 +6385,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await listProductsForAdmin(chatId, userId);
             return true;
         }
-        await tg("sendMessage", { chat_id: chatId, text: "برای این مرحله از دکمه‌های پیام قبلی استفاده کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ╪º█î┘å ┘à╪▒╪¡┘ä┘ç ╪º╪▓ ╪»┌⌐┘à┘çΓÇî┘ç╪º█î ┘╛█î╪º┘à ┘é╪¿┘ä█î ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å█î╪»." });
         return true;
     }
     if (state.state === "admin_card_wizard") {
@@ -6395,7 +6395,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "label") {
             const label = mode === "edit" && raw === "-" ? String(state.payload.label || "") : raw;
             if (!label) {
-                await tg("sendMessage", { chat_id: chatId, text: "عنوان کارت نمی‌تواند خالی باشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪╣┘å┘ê╪º┘å ┌⌐╪º╪▒╪¬ ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
                 return true;
             }
             state.payload.label = label;
@@ -6407,7 +6407,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         else if (step === "card_number") {
             const cardNumber = mode === "edit" && raw === "-" ? String(state.payload.cardNumber || "") : raw;
             if (!cardNumber) {
-                await tg("sendMessage", { chat_id: chatId, text: "شماره کارت نمی‌تواند خالی باشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪┤┘à╪º╪▒┘ç ┌⌐╪º╪▒╪¬ ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
                 return true;
             }
             state.payload.cardNumber = cardNumber;
@@ -6432,7 +6432,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
           VALUES (${String(state.payload.label || "")}, ${String(state.payload.cardNumber || "")}, ${String(state.payload.holderName || "") || null}, ${bankName || null});
         `;
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "کارت ثبت شد ✅" });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¬ ╪½╪¿╪¬ ╪┤╪» Γ£à" });
                 return true;
             }
             const cardId = Number(state.payload.cardId || 0);
@@ -6442,7 +6442,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         WHERE id = ${cardId};
       `;
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "کارت ویرایش شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¬ ┘ê█î╪▒╪º█î╪┤ ╪┤╪» Γ£à" });
             return true;
         }
         return true;
@@ -6454,7 +6454,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "code") {
             const code = raw.toUpperCase();
             if (!code) {
-                await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف نمی‌تواند خالی باشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
                 return true;
             }
             const payload = { ...state.payload, code, step: "type" };
@@ -6465,7 +6465,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "amount") {
             const amount = mode === "edit" && raw === "-" ? Number(state.payload.amount || 0) : Number(raw);
             if (!Number.isFinite(amount) || amount < 0) {
-                await tg("sendMessage", { chat_id: chatId, text: "مقدار معتبر بفرستید." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à┘é╪»╪º╪▒ ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪»." });
                 return true;
             }
             const payload = { ...state.payload, amount: Math.round(amount), step: "usage_limit" };
@@ -6484,7 +6484,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             else {
                 const n = Number(raw);
                 if (!Number.isFinite(n) || n < 0) {
-                    await tg("sendMessage", { chat_id: chatId, text: "سقف مصرف معتبر بفرستید. 0 برای بدون سقف." });
+                    await tg("sendMessage", { chat_id: chatId, text: "╪│┘é┘ü ┘à╪╡╪▒┘ü ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». 0 ╪¿╪▒╪º█î ╪¿╪»┘ê┘å ╪│┘é┘ü." });
                     return true;
                 }
                 usageLimit = Math.round(n);
@@ -6492,13 +6492,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const type = String(state.payload.type || "").toLowerCase();
             const amount = Number(state.payload.amount || 0);
             if (!["percent", "fixed"].includes(type) || !Number.isFinite(amount)) {
-                await tg("sendMessage", { chat_id: chatId, text: "نوع یا مقدار تخفیف نامعتبر است." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘å┘ê╪╣ █î╪º ┘à┘é╪»╪º╪▒ ╪¬╪«┘ü█î┘ü ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
                 return true;
             }
             if (mode === "add") {
                 const code = String(state.payload.code || "").toUpperCase();
                 if (!code) {
-                    await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف نامعتبر است." });
+                    await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
                     return true;
                 }
                 await sql `
@@ -6506,16 +6506,16 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
           VALUES (${code}, ${type}, ${amount}, ${usageLimit});
         `;
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: `کد تخفیف ساخته شد ✅\nکد: ${code}` });
+                await tg("sendMessage", { chat_id: chatId, text: `┌⌐╪» ╪¬╪«┘ü█î┘ü ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n┌⌐╪»: ${code}` });
                 return true;
             }
             const id = Number(state.payload.discountId || 0);
             await sql `UPDATE discounts SET type = ${type}, amount = ${amount}, usage_limit = ${usageLimit} WHERE id = ${id};`;
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "تخفیف ویرایش شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¬╪«┘ü█î┘ü ┘ê█î╪▒╪º█î╪┤ ╪┤╪» Γ£à" });
             return true;
         }
-        await tg("sendMessage", { chat_id: chatId, text: "برای این مرحله از دکمه‌های پیام قبلی استفاده کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ╪º█î┘å ┘à╪▒╪¡┘ä┘ç ╪º╪▓ ╪»┌⌐┘à┘çΓÇî┘ç╪º█î ┘╛█î╪º┘à ┘é╪¿┘ä█î ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å█î╪»." });
         return true;
     }
     if (state.state === "admin_message_user_wizard") {
@@ -6523,14 +6523,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const raw = text.trim();
         if (step === "target") {
             if (!raw) {
-                await tg("sendMessage", { chat_id: chatId, text: "مخاطب معتبر بفرستید." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à╪«╪º╪╖╪¿ ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪»." });
                 return true;
             }
             const payload = { ...state.payload, targetRaw: raw, step: "message" };
             await setState(userId, "admin_message_user_wizard", payload);
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "ارسال پیام - مرحله 2 از 2\nمتن پیام را بفرستید.",
+                text: "╪º╪▒╪│╪º┘ä ┘╛█î╪º┘à - ┘à╪▒╪¡┘ä┘ç 2 ╪º╪▓ 2\n┘à╪¬┘å ┘╛█î╪º┘à ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».",
                 reply_markup: { inline_keyboard: [[cancelButton("admin_message_user_wizard_cancel")]] }
             });
             return true;
@@ -6538,7 +6538,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const targetRaw = String(state.payload.targetRaw || "");
         const messageText = raw;
         if (!messageText) {
-            await tg("sendMessage", { chat_id: chatId, text: "متن پیام نمی‌تواند خالی باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¬┘å ┘╛█î╪º┘à ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
             return true;
         }
         let targetId = Number(targetRaw);
@@ -6552,7 +6552,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         LIMIT 1;
       `;
             if (!rows.length) {
-                await tg("sendMessage", { chat_id: chatId, text: "کاربر یافت نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¿╪▒ █î╪º┘ü╪¬ ┘å╪┤╪»." });
                 return true;
             }
             targetId = Number(rows[0].telegram_id);
@@ -6560,18 +6560,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         try {
             await tg("sendMessage", { chat_id: targetId, text: messageText });
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "پیام ارسال شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛█î╪º┘à ╪º╪▒╪│╪º┘ä ╪┤╪» Γ£à" });
         }
         catch (error) {
             logError("admin_message_user_failed", error, { fromAdminId: userId, targetId });
-            await tg("sendMessage", { chat_id: chatId, text: "ارسال پیام انجام نشد. کاربر ممکن است ربات را بلاک کرده باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º╪▒╪│╪º┘ä ┘╛█î╪º┘à ╪º┘å╪¼╪º┘à ┘å╪┤╪». ┌⌐╪º╪▒╪¿╪▒ ┘à┘à┌⌐┘å ╪º╪│╪¬ ╪▒╪¿╪º╪¬ ╪▒╪º ╪¿┘ä╪º┌⌐ ┌⌐╪▒╪»┘ç ╪¿╪º╪┤╪»." });
         }
         return true;
     }
     if (state.state === "admin_broadcast_message_wizard") {
         const messageText = text.trim();
         if (!messageText) {
-            await tg("sendMessage", { chat_id: chatId, text: "متن پیام نمی‌تواند خالی باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¬┘å ┘╛█î╪º┘à ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
             return true;
         }
         // Get all users
@@ -6579,7 +6579,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const totalUsers = users.length;
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `در حال ارسال پیام به ${totalUsers} کاربر...`
+            text: `╪»╪▒ ╪¡╪º┘ä ╪º╪▒╪│╪º┘ä ┘╛█î╪º┘à ╪¿┘ç ${totalUsers} ┌⌐╪º╪▒╪¿╪▒...`
         });
         let successCount = 0;
         let failCount = 0;
@@ -6597,7 +6597,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         await clearState(userId);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `✅ پیام همگانی ارسال شد\n\n✅ موفق: ${successCount}\n❌ ناموفق: ${failCount}\n📊 کل: ${totalUsers}`
+            text: `Γ£à ┘╛█î╪º┘à ┘ç┘à┌»╪º┘å█î ╪º╪▒╪│╪º┘ä ╪┤╪»\n\nΓ£à ┘à┘ê┘ü┘é: ${successCount}\nΓ¥î ┘å╪º┘à┘ê┘ü┘é: ${failCount}\n≡ƒôè ┌⌐┘ä: ${totalUsers}`
         });
         return true;
     }
@@ -6607,7 +6607,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "source_inventory_id") {
             const sourceInventoryId = Number(raw);
             if (!Number.isFinite(sourceInventoryId) || sourceInventoryId <= 0) {
-                await tg("sendMessage", { chat_id: chatId, text: "شناسه inventory معتبر نیست." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç inventory ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
                 return true;
             }
             const payload = { ...state.payload, sourceInventoryId, step: "target_panel_id" };
@@ -6618,14 +6618,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "user_telegram_id") {
             const requestedFor = Number(raw);
             if (!Number.isFinite(requestedFor) || requestedFor <= 0) {
-                await tg("sendMessage", { chat_id: chatId, text: "telegram id معتبر نیست." });
+                await tg("sendMessage", { chat_id: chatId, text: "telegram id ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
                 return true;
             }
             const payload = { ...state.payload, requestedFor, step: "config" };
             await setState(userId, "admin_direct_migrate_wizard", payload);
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "انتقال مستقیم - مرحله 4 از 4\nاگر کانفیگ جدید دارید بفرستید. برای انتقال با کانفیگ قبلی، - بفرستید.",
+                text: "╪º┘å╪¬┘é╪º┘ä ┘à╪│╪¬┘é█î┘à - ┘à╪▒╪¡┘ä┘ç 4 ╪º╪▓ 4\n╪º┌»╪▒ ┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪»╪º╪▒█î╪» ╪¿┘ü╪▒╪│╪¬█î╪». ╪¿╪▒╪º█î ╪º┘å╪¬┘é╪º┘ä ╪¿╪º ┌⌐╪º┘å┘ü█î┌» ┘é╪¿┘ä█î╪î - ╪¿┘ü╪▒╪│╪¬█î╪».",
                 reply_markup: { inline_keyboard: [[cancelButton("admin_direct_migrate_wizard_cancel")]] }
             });
             return true;
@@ -6635,7 +6635,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const targetPanelId = Number(state.payload.targetPanelId || 0);
             const requestedFor = Number(state.payload.requestedFor || 0);
             if (!Number.isFinite(sourceInventoryId) || !Number.isFinite(targetPanelId) || !Number.isFinite(requestedFor)) {
-                await tg("sendMessage", { chat_id: chatId, text: "اطلاعات انتقال کامل نیست. دوباره تلاش کنید." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪º╪╖┘ä╪º╪╣╪º╪¬ ╪º┘å╪¬┘é╪º┘ä ┌⌐╪º┘à┘ä ┘å█î╪│╪¬. ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
                 return true;
             }
             const config = raw === "-" ? "" : raw;
@@ -6655,13 +6655,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         `;
                 if (row.length) {
                     const complete = await completeMigration(Number(row[0].id), userId, config);
-                    await tg("sendMessage", { chat_id: chatId, text: complete.ok ? "انتقال فوری انجام شد ✅" : `خطا: ${complete.reason}` });
+                    await tg("sendMessage", { chat_id: chatId, text: complete.ok ? "╪º┘å╪¬┘é╪º┘ä ┘ü┘ê╪▒█î ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à" : `╪«╪╖╪º: ${complete.reason}` });
                 }
             }
             await clearState(userId);
             return true;
         }
-        await tg("sendMessage", { chat_id: chatId, text: "برای این مرحله از دکمه‌های پیام قبلی استفاده کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ╪º█î┘å ┘à╪▒╪¡┘ä┘ç ╪º╪▓ ╪»┌⌐┘à┘çΓÇî┘ç╪º█î ┘╛█î╪º┘à ┘é╪¿┘ä█î ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å█î╪»." });
         return true;
     }
     if (state.state === "admin_manage_users") {
@@ -6691,7 +6691,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       `;
         }
         if (!userRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کاربر در ربات یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¿╪▒ ╪»╪▒ ╪▒╪¿╪º╪¬ █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return true;
         }
         const u = userRows[0];
@@ -6703,13 +6703,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         await clearState(userId);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `👤 *اطلاعات کاربر*\n\nآیدی: \`${u.telegram_id}\`\nیوزرنیم: ${escapeMd(username)}\nنام: ${escapeMd(fullName)}\n\nموجودی کیف پول: ${formatPriceToman(balance)} تومان`,
+            text: `≡ƒæñ *╪º╪╖┘ä╪º╪╣╪º╪¬ ┌⌐╪º╪▒╪¿╪▒*\n\n╪ó█î╪»█î: \`${u.telegram_id}\`\n█î┘ê╪▓╪▒┘å█î┘à: ${escapeMd(username)}\n┘å╪º┘à: ${escapeMd(fullName)}\n\n┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä: ${formatPriceToman(balance)} ╪¬┘ê┘à╪º┘å`,
             parse_mode: "MarkdownV2",
             reply_markup: {
                 inline_keyboard: [
                     [
-                        cb("➕ افزایش موجودی", `admin_wallet_add_${u.telegram_id}`, "success"),
-                        cb("➖ کسر موجودی", `admin_wallet_sub_${u.telegram_id}`, "danger")
+                        cb("Γ₧ò ╪º┘ü╪▓╪º█î╪┤ ┘à┘ê╪¼┘ê╪»█î", `admin_wallet_add_${u.telegram_id}`, "success"),
+                        cb("Γ₧û ┌⌐╪│╪▒ ┘à┘ê╪¼┘ê╪»█î", `admin_wallet_sub_${u.telegram_id}`, "danger")
                     ],
                     [backButton("admin_panel")]
                 ]
@@ -6721,7 +6721,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const amount = Number(text.trim());
         const targetUserId = Number(state.payload.targetUserId);
         if (!Number.isFinite(amount) || amount <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "مبلغ نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return true;
         }
         await sql `
@@ -6731,14 +6731,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         await sql `
       INSERT INTO wallet_transactions (telegram_id, amount, type, description)
-      VALUES (${targetUserId}, ${amount}, 'admin_add', 'افزایش موجودی توسط مدیریت');
+      VALUES (${targetUserId}, ${amount}, 'admin_add', '╪º┘ü╪▓╪º█î╪┤ ┘à┘ê╪¼┘ê╪»█î ╪¬┘ê╪│╪╖ ┘à╪»█î╪▒█î╪¬');
     `;
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `مبلغ ${formatPriceToman(amount)} تومان با موفقیت به کیف پول کاربر اضافه شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘à╪¿┘ä╪║ ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å ╪¿╪º ┘à┘ê┘ü┘é█î╪¬ ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪º╪▒╪¿╪▒ ╪º╪╢╪º┘ü┘ç ╪┤╪» Γ£à` });
         try {
             await tg("sendMessage", {
                 chat_id: targetUserId,
-                text: `💰 مبلغ ${formatPriceToman(amount)} تومان توسط مدیریت به کیف پول شما اضافه شد.`
+                text: `≡ƒÆ░ ┘à╪¿┘ä╪║ ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å ╪¬┘ê╪│╪╖ ┘à╪»█î╪▒█î╪¬ ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪º╪╢╪º┘ü┘ç ╪┤╪».`
             });
         }
         catch (e) {
@@ -6750,7 +6750,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const amount = Number(text.trim());
         const targetUserId = Number(state.payload.targetUserId);
         if (!Number.isFinite(amount) || amount <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "مبلغ نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return true;
         }
         const deducted = await sql `
@@ -6762,15 +6762,15 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (deducted.length) {
             await sql `
         INSERT INTO wallet_transactions (telegram_id, amount, type, description)
-        VALUES (${targetUserId}, ${-amount}, 'admin_sub', 'کسر موجودی توسط مدیریت');
+        VALUES (${targetUserId}, ${-amount}, 'admin_sub', '┌⌐╪│╪▒ ┘à┘ê╪¼┘ê╪»█î ╪¬┘ê╪│╪╖ ┘à╪»█î╪▒█î╪¬');
       `;
         }
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `مبلغ ${formatPriceToman(amount)} تومان با موفقیت از کیف پول کاربر کسر شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘à╪¿┘ä╪║ ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å ╪¿╪º ┘à┘ê┘ü┘é█î╪¬ ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪º╪▒╪¿╪▒ ┌⌐╪│╪▒ ╪┤╪» Γ£à` });
         try {
             await tg("sendMessage", {
                 chat_id: targetUserId,
-                text: `💸 مبلغ ${formatPriceToman(amount)} تومان توسط مدیریت از کیف پول شما کسر شد.`
+                text: `≡ƒÆ╕ ┘à╪¿┘ä╪║ ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å ╪¬┘ê╪│╪╖ ┘à╪»█î╪▒█î╪¬ ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ┌⌐╪│╪▒ ╪┤╪».`
             });
         }
         catch (e) {
@@ -6785,14 +6785,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!parsed.name || !Number.isFinite(parsed.sizeMb) || !Number.isFinite(price) || price <= 0) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فرمت محصول معتبر نیست.\n" +
-                    "قدیمی: نام|حجمMB|قیمت\n" +
-                    "جدید:\nname: 2GB ویژه\nsize_mb: 2048\nprice_toman: auto\nsell_mode: panel\npanel_id: 1\npanel_sell_limit: 100\npanel_delivery_mode: both\npanel_config: {\"inbound_id\":1,\"protocol\":\"vless\"}"
+                text: "┘ü╪▒┘à╪¬ ┘à╪¡╪╡┘ê┘ä ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬.\n" +
+                    "┘é╪»█î┘à█î: ┘å╪º┘à|╪¡╪¼┘àMB|┘é█î┘à╪¬\n" +
+                    "╪¼╪»█î╪»:\nname: 2GB ┘ê█î┌ÿ┘ç\nsize_mb: 2048\nprice_toman: auto\nsell_mode: panel\npanel_id: 1\npanel_sell_limit: 100\npanel_delivery_mode: both\npanel_config: {\"inbound_id\":1,\"protocol\":\"vless\"}"
             });
             return true;
         }
         if (parsed.sellMode === "panel" && !parsed.panelId) {
-            await tg("sendMessage", { chat_id: chatId, text: "برای sell_mode: panel باید panel_id مشخص باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î sell_mode: panel ╪¿╪º█î╪» panel_id ┘à╪┤╪«╪╡ ╪¿╪º╪┤╪»." });
             return true;
         }
         await sql `
@@ -6822,10 +6822,10 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         await clearState(userId);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ذخیره شد ✅\n` +
-                `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice ? "خودکار" : "دلخواه"})\n` +
-                `حالت فروش: ${parsed.sellMode === "panel" ? "از پنل" : "دستی"}\n` +
-                `تحویل: ${parsed.panelDeliveryMode}`
+            text: `┘à╪¡╪╡┘ê┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n` +
+                `┘é█î┘à╪¬: ${formatPriceToman(price)} ╪¬┘ê┘à╪º┘å (${useAutoPrice ? "╪«┘ê╪»┌⌐╪º╪▒" : "╪»┘ä╪«┘ê╪º┘ç"})\n` +
+                `╪¡╪º┘ä╪¬ ┘ü╪▒┘ê╪┤: ${parsed.sellMode === "panel" ? "╪º╪▓ ┘╛┘å┘ä" : "╪»╪│╪¬█î"}\n` +
+                `╪¬╪¡┘ê█î┘ä: ${parsed.panelDeliveryMode}`
         });
         return true;
     }
@@ -6838,7 +6838,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       LIMIT 1;
     `;
         if (!currentRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const parsed = parseProductInput(text, currentRows[0]);
@@ -6847,13 +6847,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!parsed.name || !Number.isFinite(parsed.sizeMb) || !Number.isFinite(price) || price <= 0) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فرمت محصول معتبر نیست.\n" +
-                    "نمونه:\nname: 2GB ویژه\nsize_mb: 2048\nprice_toman: auto\nsell_mode: panel\npanel_id: 1\npanel_delivery_mode: both"
+                text: "┘ü╪▒┘à╪¬ ┘à╪¡╪╡┘ê┘ä ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬.\n" +
+                    "┘å┘à┘ê┘å┘ç:\nname: 2GB ┘ê█î┌ÿ┘ç\nsize_mb: 2048\nprice_toman: auto\nsell_mode: panel\npanel_id: 1\npanel_delivery_mode: both"
             });
             return true;
         }
         if (parsed.sellMode === "panel" && !parsed.panelId) {
-            await tg("sendMessage", { chat_id: chatId, text: "برای sell_mode: panel باید panel_id مشخص باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î sell_mode: panel ╪¿╪º█î╪» panel_id ┘à╪┤╪«╪╡ ╪¿╪º╪┤╪»." });
             return true;
         }
         await sql `
@@ -6873,10 +6873,10 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         await clearState(userId);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ویرایش شد ✅\n` +
-                `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice ? "خودکار" : "دلخواه"})\n` +
-                `حالت فروش: ${parsed.sellMode === "panel" ? "از پنل" : "دستی"}\n` +
-                `تحویل: ${parsed.panelDeliveryMode}`
+            text: `┘à╪¡╪╡┘ê┘ä ┘ê█î╪▒╪º█î╪┤ ╪┤╪» Γ£à\n` +
+                `┘é█î┘à╪¬: ${formatPriceToman(price)} ╪¬┘ê┘à╪º┘å (${useAutoPrice ? "╪«┘ê╪»┌⌐╪º╪▒" : "╪»┘ä╪«┘ê╪º┘ç"})\n` +
+                `╪¡╪º┘ä╪¬ ┘ü╪▒┘ê╪┤: ${parsed.sellMode === "panel" ? "╪º╪▓ ┘╛┘å┘ä" : "╪»╪│╪¬█î"}\n` +
+                `╪¬╪¡┘ê█î┘ä: ${parsed.panelDeliveryMode}`
         });
         return true;
     }
@@ -6894,7 +6894,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 else {
                     const n = Number(raw);
                     if (!Number.isFinite(n) || n < 0) {
-                        await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثلا 50 یا 0 برای بدون سقف." });
+                        await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½┘ä╪º 50 █î╪º 0 ╪¿╪▒╪º█î ╪¿╪»┘ê┘å ╪│┘é┘ü." });
                         return true;
                     }
                     panelSellLimit = Math.round(n);
@@ -6910,7 +6910,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             if (raw !== "-") {
                 const n = Number(raw);
                 if (!Number.isFinite(n) || n <= 0) {
-                    await tg("sendMessage", { chat_id: chatId, text: "inbound_id باید عدد معتبر و بزرگ‌تر از صفر باشد." });
+                    await tg("sendMessage", { chat_id: chatId, text: "inbound_id ╪¿╪º█î╪» ╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ┘ê ╪¿╪▓╪▒┌»ΓÇî╪¬╪▒ ╪º╪▓ ╪╡┘ü╪▒ ╪¿╪º╪┤╪»." });
                     return true;
                 }
                 inboundId = Math.round(n);
@@ -6923,7 +6923,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "protocol") {
             const protocol = raw === "-" ? String(state.payload.protocol || "vless").trim() : raw.trim().toLowerCase();
             if (!protocol) {
-                await tg("sendMessage", { chat_id: chatId, text: "پروتکل نمی‌تواند خالی باشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘╛╪▒┘ê╪¬┌⌐┘ä ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
                 return true;
             }
             const payload = { ...state.payload, protocol, step: "expire_days" };
@@ -6936,7 +6936,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             if (raw !== "-") {
                 const n = Number(raw);
                 if (!Number.isFinite(n) || n < 0) {
-                    await tg("sendMessage", { chat_id: chatId, text: "expire_days باید عدد معتبر و صفر یا بیشتر باشد." });
+                    await tg("sendMessage", { chat_id: chatId, text: "expire_days ╪¿╪º█î╪» ╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ┘ê ╪╡┘ü╪▒ █î╪º ╪¿█î╪┤╪¬╪▒ ╪¿╪º╪┤╪»." });
                     return true;
                 }
                 expireDays = Math.round(n);
@@ -6951,7 +6951,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             if (raw !== "-") {
                 const mb = parseDataAmountToMb(raw);
                 if (!mb || mb <= 0) {
-                    await tg("sendMessage", { chat_id: chatId, text: "حجم معتبر بفرستید. مثال: 3072 یا 3GB یا 800MB" });
+                    await tg("sendMessage", { chat_id: chatId, text: "╪¡╪¼┘à ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 3072 █î╪º 3GB █î╪º 800MB" });
                     return true;
                 }
                 dataLimitMb = Math.round(mb);
@@ -6965,37 +6965,40 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             }
             return true;
         }
-        await tg("sendMessage", { chat_id: chatId, text: "برای این مرحله از دکمه‌های پیام قبلی استفاده کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ╪º█î┘å ┘à╪▒╪¡┘ä┘ç ╪º╪▓ ╪»┌⌐┘à┘çΓÇî┘ç╪º█î ┘╛█î╪º┘à ┘é╪¿┘ä█î ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å█î╪»." });
         return true;
     }
     if (state.state === "admin_add_stock") {
         const productId = Number(state.payload.productId);
         const lines = text.split("\n").map((x) => x.trim()).filter(Boolean);
         if (!lines.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "هیچ کانفیگی ارسال نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å ┌⌐╪º┘å┘ü█î┌»█î ╪º╪▒╪│╪º┘ä ┘å╪┤╪»." });
             return true;
         }
         const deduped = Array.from(new Set(lines));
         let insertedCount = 0;
         let skippedCount = 0;
-        const allExisting = await sql `SELECT config_value FROM inventory WHERE product_id = ${productId};`;
-        const existingSet = new Set(allExisting.map(r => r.config_value));
-        const toInsert = deduped.filter(line => !existingSet.has(line));
-        skippedCount = deduped.length - toInsert.length;
-        // Insert in chunks of 50 to avoid connection pooling limits on serverless
-        const chunkSize = 50;
-        for (let i = 0; i < toInsert.length; i += chunkSize) {
-            const chunk = toInsert.slice(i, i + chunkSize);
-            const insertPromises = chunk.map(line => sql `INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`);
-            await Promise.all(insertPromises);
-            insertedCount += chunk.length;
+        for (const line of deduped) {
+            const exists = await sql `
+        SELECT id
+        FROM inventory
+        WHERE product_id = ${productId}
+          AND config_value = ${line}
+        LIMIT 1;
+      `;
+            if (exists.length) {
+                skippedCount += 1;
+                continue;
+            }
+            await sql `INSERT INTO inventory (product_id, config_value) VALUES (${productId}, ${line});`;
+            insertedCount += 1;
         }
         await clearState(userId);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `افزودن به انبار انجام شد ✅\n` +
-                `اضافه شد: ${insertedCount}\n` +
-                `تکراری/اسکیپ: ${skippedCount}`
+            text: `╪º┘ü╪▓┘ê╪»┘å ╪¿┘ç ╪º┘å╪¿╪º╪▒ ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à\n` +
+                `╪º╪╢╪º┘ü┘ç ╪┤╪»: ${insertedCount}\n` +
+                `╪¬┌⌐╪▒╪º╪▒█î/╪º╪│┌⌐█î┘╛: ${skippedCount}`
         });
         return true;
     }
@@ -7004,7 +7007,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!parsed.label || !parsed.cardNumber) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فرمت کارت معتبر نیست.\nقدیمی: کارت 1|6037...|علی رضایی|ملی\nجدید:\nlabel: کارت 1\ncard_number: 6037...\nholder_name: علی رضایی\nbank_name: ملی"
+                text: "┘ü╪▒┘à╪¬ ┌⌐╪º╪▒╪¬ ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬.\n┘é╪»█î┘à█î: ┌⌐╪º╪▒╪¬ 1|6037...|╪╣┘ä█î ╪▒╪╢╪º█î█î|┘à┘ä█î\n╪¼╪»█î╪»:\nlabel: ┌⌐╪º╪▒╪¬ 1\ncard_number: 6037...\nholder_name: ╪╣┘ä█î ╪▒╪╢╪º█î█î\nbank_name: ┘à┘ä█î"
             });
             return true;
         }
@@ -7013,7 +7016,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       VALUES (${parsed.label}, ${parsed.cardNumber}, ${parsed.holderName || null}, ${parsed.bankName || null});
     `;
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "کارت ثبت شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¬ ╪½╪¿╪¬ ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_edit_card") {
@@ -7022,7 +7025,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!parsed.label || !parsed.cardNumber) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فرمت کارت معتبر نیست.\nنمونه:\nlabel: کارت 1\ncard_number: 6037...\nholder_name: علی رضایی\nbank_name: ملی"
+                text: "┘ü╪▒┘à╪¬ ┌⌐╪º╪▒╪¬ ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬.\n┘å┘à┘ê┘å┘ç:\nlabel: ┌⌐╪º╪▒╪¬ 1\ncard_number: 6037...\nholder_name: ╪╣┘ä█î ╪▒╪╢╪º█î█î\nbank_name: ┘à┘ä█î"
             });
             return true;
         }
@@ -7032,7 +7035,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       WHERE id = ${cardId};
     `;
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "کارت ویرایش شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¬ ┘ê█î╪▒╪º█î╪┤ ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_add_discount") {
@@ -7040,9 +7043,9 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!parsed.code || !["percent", "fixed"].includes(parsed.type) || !Number.isFinite(parsed.amount)) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فرمت تخفیف معتبر نیست.\n" +
-                    "قدیمی: RANDOM|percent|10|100\n" +
-                    "جدید:\ncode: RANDOM\ntype: percent\namount: 10\nusage_limit: 100"
+                text: "┘ü╪▒┘à╪¬ ╪¬╪«┘ü█î┘ü ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬.\n" +
+                    "┘é╪»█î┘à█î: RANDOM|percent|10|100\n" +
+                    "╪¼╪»█î╪»:\ncode: RANDOM\ntype: percent\namount: 10\nusage_limit: 100"
             });
             return true;
         }
@@ -7051,7 +7054,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       VALUES (${parsed.code}, ${parsed.type}, ${parsed.amount}, ${parsed.usageLimit});
     `;
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `کد تخفیف ساخته شد ✅\nکد: ${parsed.code}` });
+        await tg("sendMessage", { chat_id: chatId, text: `┌⌐╪» ╪¬╪«┘ü█î┘ü ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n┌⌐╪»: ${parsed.code}` });
         return true;
     }
     if (state.state === "admin_edit_discount") {
@@ -7060,7 +7063,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!["percent", "fixed"].includes(parsed.type) || !Number.isFinite(parsed.amount)) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فرمت تخفیف معتبر نیست.\nنمونه:\ntype: percent\namount: 10\nusage_limit: 100"
+                text: "┘ü╪▒┘à╪¬ ╪¬╪«┘ü█î┘ü ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬.\n┘å┘à┘ê┘å┘ç:\ntype: percent\namount: 10\nusage_limit: 100"
             });
             return true;
         }
@@ -7069,61 +7072,61 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       WHERE id = ${id};
     `;
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "تخفیف ویرایش شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¬╪«┘ü█î┘ü ┘ê█î╪▒╪º█î╪┤ ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_set_mandatory_channels") {
         const raw = text.trim();
-        if (raw.toLowerCase() === "خاموش") {
+        if (raw.toLowerCase() === "╪«╪º┘à┘ê╪┤") {
             await setSetting("mandatory_channels", "");
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "قفل کانال خاموش شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘é┘ü┘ä ┌⌐╪º┘å╪º┘ä ╪«╪º┘à┘ê╪┤ ╪┤╪» Γ£à" });
             return true;
         }
         const channels = raw.split(/[\n,]+/).map(c => c.trim()).filter(Boolean);
         if (!channels.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "لیست نامعتبر است. حداقل یک کانال وارد کنید یا بنویسید 'خاموش'." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä█î╪│╪¬ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬. ╪¡╪»╪º┘é┘ä █î┌⌐ ┌⌐╪º┘å╪º┘ä ┘ê╪º╪▒╪» ┌⌐┘å█î╪» █î╪º ╪¿┘å┘ê█î╪│█î╪» '╪«╪º┘à┘ê╪┤'." });
             return true;
         }
         await setSetting("mandatory_channels", channels.join(","));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `لیست کانال‌های اجباری ذخیره شد ✅\n${channels.join("\n")}` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘ä█î╪│╪¬ ┌⌐╪º┘å╪º┘äΓÇî┘ç╪º█î ╪º╪¼╪¿╪º╪▒█î ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${channels.join("\n")}` });
         return true;
     }
     if (state.state === "admin_set_support") {
         const username = text.replace("@", "").trim();
         await setSetting("support_username", username);
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `یوزرنیم پشتیبانی ثبت شد: @${username}` });
+        await tg("sendMessage", { chat_id: chatId, text: `█î┘ê╪▓╪▒┘å█î┘à ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪½╪¿╪¬ ╪┤╪»: @${username}` });
         return true;
     }
     if (state.state === "admin_set_wallet") {
         const wallet = text.trim();
         await setSetting("business_wallet_address", wallet);
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "آدرس کیف پول مقصد ذخیره شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ┌⌐█î┘ü ┘╛┘ê┘ä ┘à┘é╪╡╪» ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_set_referral_threshold") {
         const threshold = Math.round(Number(text.trim()));
         if (!Number.isFinite(threshold) || threshold <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "یک عدد معتبر بزرگ‌تر از صفر ارسال کنید. مثال: 5" });
+            await tg("sendMessage", { chat_id: chatId, text: "█î┌⌐ ╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿╪▓╪▒┌»ΓÇî╪¬╪▒ ╪º╪▓ ╪╡┘ü╪▒ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». ┘à╪½╪º┘ä: 5" });
             return true;
         }
         await setSetting("referral_invite_threshold", String(threshold));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `آستانه دعوت ذخیره شد ✅\nهر ${threshold} دعوت تاییدشده = یک جایزه` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪ó╪│╪¬╪º┘å┘ç ╪»╪╣┘ê╪¬ ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n┘ç╪▒ ${threshold} ╪»╪╣┘ê╪¬ ╪¬╪º█î█î╪»╪┤╪»┘ç = █î┌⌐ ╪¼╪º█î╪▓┘ç` });
         return true;
     }
     if (state.state === "admin_set_referral_wallet_amount") {
         const amount = Math.round(Number(text.trim()));
         if (!Number.isFinite(amount) || amount < 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "مبلغ معتبر ارسال کنید. مثال: 50000" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ┘à╪╣╪¬╪¿╪▒ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». ┘à╪½╪º┘ä: 50000" });
             return true;
         }
         await setSetting("referral_wallet_amount_toman", String(amount));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `مبلغ جایزه کیف پول ذخیره شد ✅\n${formatPriceToman(amount)} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘à╪¿┘ä╪║ ╪¼╪º█î╪▓┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_reset_all_data") {
@@ -7131,7 +7134,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (confirmation !== "RESET ALL DATA") {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "عبارت تایید درست نیست.\nبرای انجام پاک‌سازی کامل دقیقاً بنویسید:\nRESET ALL DATA"
+                text: "╪╣╪¿╪º╪▒╪¬ ╪¬╪º█î█î╪» ╪»╪▒╪│╪¬ ┘å█î╪│╪¬.\n╪¿╪▒╪º█î ╪º┘å╪¼╪º┘à ┘╛╪º┌⌐ΓÇî╪│╪º╪▓█î ┌⌐╪º┘à┘ä ╪»┘é█î┘é╪º┘ï ╪¿┘å┘ê█î╪│█î╪»:\nRESET ALL DATA"
             });
             return true;
         }
@@ -7140,9 +7143,9 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         await clearState(userId);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "پاک‌سازی کامل انجام شد ✅\nهمه داده‌های عملیاتی حذف شدند و فقط داده‌های کش مثل نرخ ارز حفظ شد."
+            text: "┘╛╪º┌⌐ΓÇî╪│╪º╪▓█î ┌⌐╪º┘à┘ä ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à\n┘ç┘à┘ç ╪»╪º╪»┘çΓÇî┘ç╪º█î ╪╣┘à┘ä█î╪º╪¬█î ╪¡╪░┘ü ╪┤╪»┘å╪» ┘ê ┘ü┘é╪╖ ╪»╪º╪»┘çΓÇî┘ç╪º█î ┌⌐╪┤ ┘à╪½┘ä ┘å╪▒╪« ╪º╪▒╪▓ ╪¡┘ü╪╕ ╪┤╪»."
         });
-        await notifyAdmins(`🧨 پاک‌سازی کامل داده‌های ربات توسط ادمین ${userId} انجام شد.\nداده‌های کش حفظ شدند.`).catch(() => { });
+        await notifyAdmins(`≡ƒº¿ ┘╛╪º┌⌐ΓÇî╪│╪º╪▓█î ┌⌐╪º┘à┘ä ╪»╪º╪»┘çΓÇî┘ç╪º█î ╪▒╪¿╪º╪¬ ╪¬┘ê╪│╪╖ ╪º╪»┘à█î┘å ${userId} ╪º┘å╪¼╪º┘à ╪┤╪».\n╪»╪º╪»┘çΓÇî┘ç╪º█î ┌⌐╪┤ ╪¡┘ü╪╕ ╪┤╪»┘å╪».`).catch(() => { });
         return true;
     }
     if (state.state === "admin_set_public_base_url") {
@@ -7150,51 +7153,51 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (raw === "-") {
             await setSetting("public_base_url", "");
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت پاک شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪│╪º█î╪¬ ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
             return true;
         }
         if (!isValidHttpUrl(raw)) {
-            await tg("sendMessage", { chat_id: chatId, text: "آدرس معتبر نیست. مثال: https://example.com" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬. ┘à╪½╪º┘ä: https://example.com" });
             return true;
         }
         await setSetting("public_base_url", raw);
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت ذخیره شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪│╪º█î╪¬ ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_set_tronado_api_key") {
         const raw = text.trim();
         await setSetting("tronado_api_key", raw === "-" ? "" : raw);
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "کلید Tronado ذخیره شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» Tronado ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_set_tetrapay_api_key") {
         const raw = text.trim();
         await setSetting("tetrapay_api_key", raw === "-" ? "" : raw);
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "کلید TetraPay ذخیره شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» TetraPay ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_set_plisio_api_key") {
         const raw = text.trim();
         await setSetting("plisio_api_key", raw === "-" ? "" : raw);
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio ذخیره شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» Plisio ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_set_swapwallet_api_key") {
         const raw = text.trim();
         await setSetting("swapwallet_api_key", raw === "-" ? "" : raw);
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "کلید SwapWallet ذخیره شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» SwapWallet ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_set_swapwallet_shop_username") {
         const raw = text.trim();
         await setSetting("swapwallet_shop_username", raw === "-" ? "" : raw.replace("@", ""));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "Shop SwapWallet ذخیره شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "Shop SwapWallet ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_set_usdt_toman_rate") {
@@ -7202,34 +7205,34 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (raw === "-") {
             await setSetting("usdt_toman_rate", "");
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "نرخ دستی USDT پاک شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« ╪»╪│╪¬█î USDT ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
             return true;
         }
         const rate = Math.round(Number(raw));
         if (!Number.isFinite(rate) || rate <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 460000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 460000" });
             return true;
         }
         await setSetting("usdt_toman_rate", String(rate));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `نرخ دستی USDT ذخیره شد ✅\n${rate} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘å╪▒╪« ╪»╪│╪¬█î USDT ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${rate} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_crypto_wallet_add_other_currency") {
         const currency = text.trim().toUpperCase();
         if (!currency) {
-            await tg("sendMessage", { chat_id: chatId, text: "نام ارز معتبر نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ╪º╪▒╪▓ ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
             return true;
         }
         await setState(userId, "admin_crypto_wallet_add_other_network", { currency });
-        await tg("sendMessage", { chat_id: chatId, text: "شبکه/بلاکچین را ارسال کنید (مثال: BTC، TRC20، ERC20، TON):" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪┤╪¿┌⌐┘ç/╪¿┘ä╪º┌⌐┌å█î┘å ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪» (┘à╪½╪º┘ä: BTC╪î TRC20╪î ERC20╪î TON):" });
         return true;
     }
     if (state.state === "admin_crypto_wallet_add_other_network") {
         const currency = String(state.payload.currency || "").toUpperCase();
         const network = text.trim().toUpperCase();
         if (!currency || !network) {
-            await tg("sendMessage", { chat_id: chatId, text: "شبکه معتبر نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤╪¿┌⌐┘ç ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
             return true;
         }
         const inserted = await sql `
@@ -7240,7 +7243,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         const walletId = Number(inserted[0].id);
         await setState(userId, "admin_crypto_wallet_set_address", { walletId });
-        await tg("sendMessage", { chat_id: chatId, text: `آدرس کیف پول ${currency} (${network}) را ارسال کنید.\nبرای پاک‌کردن: -` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪ó╪»╪▒╪│ ┌⌐█î┘ü ┘╛┘ê┘ä ${currency} (${network}) ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -` });
         return true;
     }
     if (state.state === "admin_crypto_wallet_set_address") {
@@ -7251,10 +7254,10 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const rows = await sql `SELECT currency, network FROM crypto_wallets WHERE id = ${walletId} LIMIT 1;`;
         await clearState(userId);
         if (rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: `آدرس ذخیره شد ✅\n${String(rows[0].currency)} (${String(rows[0].network)})` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪ó╪»╪▒╪│ ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${String(rows[0].currency)} (${String(rows[0].network)})` });
         }
         else {
-            await tg("sendMessage", { chat_id: chatId, text: "آدرس ذخیره شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
         }
         return true;
     }
@@ -7264,17 +7267,17 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (raw === "-") {
             await sql `UPDATE crypto_wallets SET rate_toman_per_unit = NULL, rate_mode = 'manual' WHERE id = ${walletId};`;
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "نرخ دستی پاک شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« ╪»╪│╪¬█î ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
             return true;
         }
         const rate = Math.round(Number(raw));
         if (!Number.isFinite(rate) || rate <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 65000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 65000" });
             return true;
         }
         await sql `UPDATE crypto_wallets SET rate_toman_per_unit = ${rate}, rate_mode = 'manual' WHERE id = ${walletId};`;
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `نرخ دستی ذخیره شد ✅\n${rate} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘å╪▒╪« ╪»╪│╪¬█î ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${rate} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_crypto_wallet_set_extra") {
@@ -7283,17 +7286,17 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (raw === "-") {
             await sql `UPDATE crypto_wallets SET extra_toman_per_unit = 0 WHERE id = ${walletId};`;
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "حاشیه پاک شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¡╪º╪┤█î┘ç ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
             return true;
         }
         const extra = Math.round(Number(raw));
         if (!Number.isFinite(extra)) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 2000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 2000" });
             return true;
         }
         await sql `UPDATE crypto_wallets SET extra_toman_per_unit = ${extra} WHERE id = ${walletId};`;
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `حاشیه ذخیره شد ✅\n${extra} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪¡╪º╪┤█î┘ç ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${extra} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_set_plisio_extra_toman") {
@@ -7301,17 +7304,17 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (raw === "-") {
             await setSetting("plisio_usdt_extra_toman", "");
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "حاشیه پاک شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¡╪º╪┤█î┘ç ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
             return true;
         }
         const n = Math.round(Number(raw));
         if (!Number.isFinite(n)) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 2000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 2000" });
             return true;
         }
         await setSetting("plisio_usdt_extra_toman", String(n));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `حاشیه ذخیره شد ✅\n${n} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪¡╪º╪┤█î┘ç ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${n} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_set_plisio_fallback_rate") {
@@ -7319,28 +7322,28 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (raw === "-") {
             await setSetting("plisio_usdt_rate_fallback_toman", "");
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "نرخ دستی (fallback) پاک شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« ╪»╪│╪¬█î (fallback) ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
             return true;
         }
         const rate = Math.round(Number(raw));
         if (!Number.isFinite(rate) || rate <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 65000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 65000" });
             return true;
         }
         await setSetting("plisio_usdt_rate_fallback_toman", String(rate));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `نرخ دستی (fallback) ذخیره شد ✅\n${rate} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘å╪▒╪« ╪»╪│╪¬█î (fallback) ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${rate} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_pingchi_set_key") {
         const raw = text.trim();
         if (raw.length < 10) {
-            await tg("sendMessage", { chat_id: chatId, text: "کلید نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return true;
         }
         await setSetting("pingchi_api_key", raw);
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی با موفقیت تنظیم شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» ╪»╪│╪¬╪▒╪│█î ┘╛█î┘å┌»┌å█î ╪¿╪º ┘à┘ê┘ü┘é█î╪¬ ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_set_plisio_usd_rate") {
@@ -7348,44 +7351,44 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (raw === "-") {
             await setSetting("plisio_usd_rate_toman", "");
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "نرخ دلار پاک شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« ╪»┘ä╪º╪▒ ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
             return true;
         }
         const rate = Math.round(Number(raw));
         if (!Number.isFinite(rate) || rate <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 60000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 60000" });
             return true;
         }
         await setSetting("plisio_usd_rate_toman", String(rate));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `نرخ دلار Plisio ذخیره شد ✅\n${rate} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘å╪▒╪« ╪»┘ä╪º╪▒ Plisio ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${rate} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_set_topup_price") {
         const pricePerGb = normalizePricePerGb(text.trim());
         if (!Number.isFinite(pricePerGb) || pricePerGb <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 500000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 500000" });
             return true;
         }
         await setSetting("topup_price_per_gb_toman", String(Math.round(pricePerGb)));
         await clearState(userId);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `قیمت افزایش دیتا ثبت شد ✅\nهر 1GB = ${formatPriceToman(Math.round(pricePerGb))} تومان`
+            text: `┘é█î┘à╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪½╪¿╪¬ ╪┤╪» Γ£à\n┘ç╪▒ 1GB = ${formatPriceToman(Math.round(pricePerGb))} ╪¬┘ê┘à╪º┘å`
         });
         return true;
     }
     if (state.state === "admin_set_product_price") {
         const pricePerGb = normalizePricePerGb(text.trim());
         if (!Number.isFinite(pricePerGb) || pricePerGb <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 500000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 500000" });
             return true;
         }
         await setSetting("product_price_per_gb_toman", String(Math.round(pricePerGb)));
         await clearState(userId);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `قیمت پیشفرض محصولات ثبت شد ✅\nهر 1GB = ${formatPriceToman(Math.round(pricePerGb))} تومان`
+            text: `┘é█î┘à╪¬ ┘╛█î╪┤┘ü╪▒╪╢ ┘à╪¡╪╡┘ê┘ä╪º╪¬ ╪½╪¿╪¬ ╪┤╪» Γ£à\n┘ç╪▒ 1GB = ${formatPriceToman(Math.round(pricePerGb))} ╪¬┘ê┘à╪º┘å`
         });
         return true;
     }
@@ -7393,7 +7396,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const raw = text.trim();
         const n = Math.round(Number(raw));
         if (!Number.isFinite(n) || n < 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 10000\nبرای خاموش: 0" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 10000\n╪¿╪▒╪º█î ╪«╪º┘à┘ê╪┤: 0" });
             return true;
         }
         await setSetting("custom_v2ray_extra_day_toman", String(n));
@@ -7407,14 +7410,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             await sql `UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
         }
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nقیمت هر روز: ${formatPriceToman(n)} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n┘é█î┘à╪¬ ┘ç╪▒ ╪▒┘ê╪▓: ${formatPriceToman(n)} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_set_custom_v2ray_min_gb") {
         const raw = text.trim();
         const n = Math.round(Number(raw));
         if (!Number.isFinite(n) || n < 1) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. حداقل ۱ گیگابایت" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ╪¡╪»╪º┘é┘ä █▒ ┌»█î┌»╪º╪¿╪º█î╪¬" });
             return true;
         }
         await setSetting("custom_v2ray_min_gb", String(n));
@@ -7428,14 +7431,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             await sql `UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
         }
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nحداقل حجم کانفیگ دلخواه: ${n}GB` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n╪¡╪»╪º┘é┘ä ╪¡╪¼┘à ┌⌐╪º┘å┘ü█î┌» ╪»┘ä╪«┘ê╪º┘ç: ${n}GB` });
         return true;
     }
     if (state.state === "admin_set_custom_v2ray_min_days") {
         const raw = text.trim();
         const n = Math.round(Number(raw));
         if (!Number.isFinite(n) || n < 1) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. حداقل ۱ روز" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ╪¡╪»╪º┘é┘ä █▒ ╪▒┘ê╪▓" });
             return true;
         }
         await setSetting("custom_v2ray_min_days", String(n));
@@ -7449,57 +7452,57 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             await sql `UPDATE products SET price_toman = ${minPrice} WHERE id = ${productId};`;
         }
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nحداقل زمان کانفیگ دلخواه: ${n} روز` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n╪¡╪»╪º┘é┘ä ╪▓┘à╪º┘å ┌⌐╪º┘å┘ü█î┌» ╪»┘ä╪«┘ê╪º┘ç: ${n} ╪▒┘ê╪▓` });
         return true;
     }
     if (state.state === "admin_set_purchase_bonus_min") {
         const n = Math.round(Number(text.trim()));
         if (!Number.isFinite(n) || n < 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 1000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 1000" });
             return true;
         }
         await setSetting("purchase_bonus_min", String(n));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nحداقل جایزه: ${formatPriceToman(n)} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n╪¡╪»╪º┘é┘ä ╪¼╪º█î╪▓┘ç: ${formatPriceToman(n)} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_set_purchase_bonus_max") {
         const n = Math.round(Number(text.trim()));
         if (!Number.isFinite(n) || n < 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. مثال: 10000" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 10000" });
             return true;
         }
         await setSetting("purchase_bonus_max", String(n));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nحداکثر جایزه: ${formatPriceToman(n)} تومان` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n╪¡╪»╪º┌⌐╪½╪▒ ╪¼╪º█î╪▓┘ç: ${formatPriceToman(n)} ╪¬┘ê┘à╪º┘å` });
         return true;
     }
     if (state.state === "admin_set_test_config_mb") {
         const n = Math.round(Number(text.trim()));
         if (!Number.isFinite(n) || n <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر (بزرگتر از صفر) بفرستید. مثال: 100" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ (╪¿╪▓╪▒┌»╪¬╪▒ ╪º╪▓ ╪╡┘ü╪▒) ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 100" });
             return true;
         }
         await setSetting("test_config_mb", String(n));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nحجم کانفیگ تست: ${n}MB` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n╪¡╪¼┘à ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬: ${n}MB` });
         return true;
     }
     if (state.state === "admin_set_test_config_hours") {
         const n = Math.round(Number(text.trim()));
         if (!Number.isFinite(n) || n <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر (بزرگتر از صفر) بفرستید. مثال: 24" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ (╪¿╪▓╪▒┌»╪¬╪▒ ╪º╪▓ ╪╡┘ü╪▒) ╪¿┘ü╪▒╪│╪¬█î╪». ┘à╪½╪º┘ä: 24" });
             return true;
         }
         await setSetting("test_config_hours", String(n));
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ذخیره شد ✅\nمدت زمان کانفیگ تست: ${n} ساعت` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n┘à╪»╪¬ ╪▓┘à╪º┘å ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬: ${n} ╪│╪º╪╣╪¬` });
         return true;
     }
     if (state.state === "admin_add_admin") {
         const newAdminId = Number(text.trim());
         if (!Number.isFinite(newAdminId) || newAdminId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "لطفاً یک آیدی عددی معتبر ارسال کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï █î┌⌐ ╪ó█î╪»█î ╪╣╪»╪»█î ┘à╪╣╪¬╪¿╪▒ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
             return true;
         }
         // Check if user exists
@@ -7507,7 +7510,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!userRows.length) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "⚠️ این کاربر هنوز با ربات تعاملی نداشته است.\nآیا مطمئنید می‌خواهید ادمین کنید؟ برای تایید، دوباره همین آیدی را بفرستید."
+                text: "ΓÜá∩╕Å ╪º█î┘å ┌⌐╪º╪▒╪¿╪▒ ┘ç┘å┘ê╪▓ ╪¿╪º ╪▒╪¿╪º╪¬ ╪¬╪╣╪º┘à┘ä█î ┘å╪»╪º╪┤╪¬┘ç ╪º╪│╪¬.\n╪ó█î╪º ┘à╪╖┘à╪ª┘å█î╪» ┘à█îΓÇî╪«┘ê╪º┘ç█î╪» ╪º╪»┘à█î┘å ┌⌐┘å█î╪»╪ƒ ╪¿╪▒╪º█î ╪¬╪º█î█î╪»╪î ╪»┘ê╪¿╪º╪▒┘ç ┘ç┘à█î┘å ╪ó█î╪»█î ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪»."
             });
             // Store pending admin add
             await setState(userId, "admin_confirm_add_admin", { pendingAdminId: newAdminId });
@@ -7524,7 +7527,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             await setSetting("admin_ids", currentIds.join(","));
         }
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ادمین ${newAdminId} اضافه شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪º╪»┘à█î┘å ${newAdminId} ╪º╪╢╪º┘ü┘ç ╪┤╪» Γ£à` });
         return true;
     }
     if (state.state === "admin_confirm_add_admin") {
@@ -7532,7 +7535,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const pendingId = Number(state.payload?.pendingAdminId || 0);
         if (newAdminId !== pendingId) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "آیدی با آیدی قبلی مطابقت ندارد. عملیات لغو شد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪ó█î╪»█î ╪¿╪º ╪ó█î╪»█î ┘é╪¿┘ä█î ┘à╪╖╪º╪¿┘é╪¬ ┘å╪»╪º╪▒╪». ╪╣┘à┘ä█î╪º╪¬ ┘ä╪║┘ê ╪┤╪»." });
             return true;
         }
         // Add to admin_ids in settings
@@ -7546,13 +7549,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             await setSetting("admin_ids", currentIds.join(","));
         }
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `ادمین ${newAdminId} اضافه شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪º╪»┘à█î┘å ${newAdminId} ╪º╪╢╪º┘ü┘ç ╪┤╪» Γ£à` });
         return true;
     }
     if (state.state === "admin_ban_username") {
         const username = text.replace("@", "").trim().toLowerCase();
         if (!username) {
-            await tg("sendMessage", { chat_id: chatId, text: "یوزرنیم معتبر بفرستید." });
+            await tg("sendMessage", { chat_id: chatId, text: "█î┘ê╪▓╪▒┘å█î┘à ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪»." });
             return true;
         }
         const rows = await sql `
@@ -7563,7 +7566,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کاربری با این یوزرنیم پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¿╪▒█î ╪¿╪º ╪º█î┘å █î┘ê╪▓╪▒┘å█î┘à ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         await sql `
@@ -7572,13 +7575,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       ON CONFLICT (telegram_id) DO UPDATE SET reason = EXCLUDED.reason, banned_by = EXCLUDED.banned_by;
     `;
         try {
-            await tg("sendMessage", { chat_id: Number(rows[0].telegram_id), text: "دسترسی شما به دلیل تخلف/سوءاستفاده مسدود شد." });
+            await tg("sendMessage", { chat_id: Number(rows[0].telegram_id), text: "╪»╪│╪¬╪▒╪│█î ╪┤┘à╪º ╪¿┘ç ╪»┘ä█î┘ä ╪¬╪«┘ä┘ü/╪│┘ê╪í╪º╪│╪¬┘ü╪º╪»┘ç ┘à╪│╪»┘ê╪» ╪┤╪»." });
         }
         catch (error) {
             logError("ban_user_notify_failed", error, { targetUserId: Number(rows[0].telegram_id), by: userId, mode: "username" });
         }
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: `کاربر @${username} بن شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┌⌐╪º╪▒╪¿╪▒ @${username} ╪¿┘å ╪┤╪» Γ£à` });
         return true;
     }
     if (state.state === "admin_message_user") {
@@ -7586,12 +7589,12 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!targetRaw || !messageText) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فرمت پیام معتبر نیست.\nقدیمی: telegram_id|متن پیام\nجدید:\ntarget: 123456\nmessage: سلام"
+                text: "┘ü╪▒┘à╪¬ ┘╛█î╪º┘à ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬.\n┘é╪»█î┘à█î: telegram_id|┘à╪¬┘å ┘╛█î╪º┘à\n╪¼╪»█î╪»:\ntarget: 123456\nmessage: ╪│┘ä╪º┘à"
             });
             return true;
         }
         if (!messageText) {
-            await tg("sendMessage", { chat_id: chatId, text: "متن پیام نمی‌تواند خالی باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¬┘å ┘╛█î╪º┘à ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
             return true;
         }
         let targetId = Number(targetRaw);
@@ -7605,7 +7608,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         LIMIT 1;
       `;
             if (!rows.length) {
-                await tg("sendMessage", { chat_id: chatId, text: "کاربر یافت نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¿╪▒ █î╪º┘ü╪¬ ┘å╪┤╪»." });
                 return true;
             }
             targetId = Number(rows[0].telegram_id);
@@ -7613,18 +7616,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         try {
             await tg("sendMessage", { chat_id: targetId, text: messageText });
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "پیام ارسال شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛█î╪º┘à ╪º╪▒╪│╪º┘ä ╪┤╪» Γ£à" });
         }
         catch (error) {
             logError("admin_message_user_failed", error, { fromAdminId: userId, targetId });
-            await tg("sendMessage", { chat_id: chatId, text: "ارسال پیام انجام نشد. کاربر ممکن است ربات را بلاک کرده باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º╪▒╪│╪º┘ä ┘╛█î╪º┘à ╪º┘å╪¼╪º┘à ┘å╪┤╪». ┌⌐╪º╪▒╪¿╪▒ ┘à┘à┌⌐┘å ╪º╪│╪¬ ╪▒╪¿╪º╪¬ ╪▒╪º ╪¿┘ä╪º┌⌐ ┌⌐╪▒╪»┘ç ╪¿╪º╪┤╪»." });
         }
         return true;
     }
     if (state.state === "admin_lookup_purchase") {
         const purchaseId = text.trim();
         if (!purchaseId) {
-            await tg("sendMessage", { chat_id: chatId, text: "شماره سفارش را ارسال کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
             return true;
         }
         await sendPurchaseLookupResult(chatId, purchaseId);
@@ -7634,7 +7637,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     if (state.state === "admin_lookup_config") {
         const raw = text.trim();
         if (!raw) {
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ کامل، UUID، نام کاربر (تلگرام یا پنل) یا نام محصول را ارسال کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┌⌐╪º┘à┘ä╪î UUID╪î ┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒ (╪¬┘ä┌»╪▒╪º┘à █î╪º ┘╛┘å┘ä) █î╪º ┘å╪º┘à ┘à╪¡╪╡┘ê┘ä ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
             return true;
         }
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -7680,13 +7683,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 const fullName = [u.first_name ? String(u.first_name) : "", u.last_name ? String(u.last_name) : ""].filter(Boolean).join(" ").trim() || "-";
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: `✅ پیدا شد\n` +
-                        `👤 کاربر: ${targetUser}\n` +
-                        `🆔 یوزرنیم: ${usernameLine}\n` +
-                        `📛 نام: ${fullName}\n` +
-                        `📦 تعداد مچ: ${matches.length}`,
+                    text: `Γ£à ┘╛█î╪»╪º ╪┤╪»\n` +
+                        `≡ƒæñ ┌⌐╪º╪▒╪¿╪▒: ${targetUser}\n` +
+                        `≡ƒåö █î┘ê╪▓╪▒┘å█î┘à: ${usernameLine}\n` +
+                        `≡ƒô¢ ┘å╪º┘à: ${fullName}\n` +
+                        `≡ƒôª ╪¬╪╣╪»╪º╪» ┘à┌å: ${matches.length}`,
                     reply_markup: {
-                        inline_keyboard: [[{ text: "⛔ بن کاربر", callback_data: `admin_lookup_ban_${targetUser}` }]]
+                        inline_keyboard: [[{ text: "Γ¢ö ╪¿┘å ┌⌐╪º╪▒╪¿╪▒", callback_data: `admin_lookup_ban_${targetUser}` }]]
                     }
                 });
             }
@@ -7698,9 +7701,9 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 });
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: `✅ ${matches.length} نتیجه پیدا شد\n` +
-                        `مالک یکسان نیست یا تعیین نشده:\n\n${lines.join("\n")}\n\n` +
-                        `جزئیات و ابزار هر مورد در پیام‌های بعدی آمده است.`
+                    text: `Γ£à ${matches.length} ┘å╪¬█î╪¼┘ç ┘╛█î╪»╪º ╪┤╪»\n` +
+                        `┘à╪º┘ä┌⌐ █î┌⌐╪│╪º┘å ┘å█î╪│╪¬ █î╪º ╪¬╪╣█î█î┘å ┘å╪┤╪»┘ç:\n\n${lines.join("\n")}\n\n` +
+                        `╪¼╪▓╪ª█î╪º╪¬ ┘ê ╪º╪¿╪▓╪º╪▒ ┘ç╪▒ ┘à┘ê╪▒╪» ╪»╪▒ ┘╛█î╪º┘àΓÇî┘ç╪º█î ╪¿╪╣╪»█î ╪ó┘à╪»┘ç ╪º╪│╪¬.`
                 });
             }
             const panelCache = new Map();
@@ -7740,40 +7743,40 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 const keyboard = [
                     [
                         revoked
-                            ? confirmButton(`admin_lookup_toggle_inv_${row.id}`, "✅ فعال‌سازی")
-                            : cb("🚫 غیرفعال‌سازی", `admin_lookup_toggle_inv_${row.id}`, "danger"),
-                        cb("🗑 حذف کامل", `admin_lookup_delete_inv_${row.id}`, "danger")
+                            ? confirmButton(`admin_lookup_toggle_inv_${row.id}`, "Γ£à ┘ü╪╣╪º┘äΓÇî╪│╪º╪▓█î")
+                            : cb("≡ƒÜ½ ╪║█î╪▒┘ü╪╣╪º┘äΓÇî╪│╪º╪▓█î", `admin_lookup_toggle_inv_${row.id}`, "danger"),
+                        cb("≡ƒùæ ╪¡╪░┘ü ┌⌐╪º┘à┘ä", `admin_lookup_delete_inv_${row.id}`, "danger")
                     ],
                     [
-                        cb("🔄 بازسازی لینک", `admin_lookup_regen_link_${row.id}`, "primary")
+                        cb("≡ƒöä ╪¿╪º╪▓╪│╪º╪▓█î ┘ä█î┘å┌⌐", `admin_lookup_regen_link_${row.id}`, "primary")
                     ]
                 ];
                 if (isPanelConfig) {
                     keyboard.push([
-                        cb("➕ افزودن دیتا", `admin_lookup_add_data_${row.id}`, "primary"),
-                        cb("✏️ تنظیم سقف دیتا", `admin_lookup_set_data_${row.id}`, "primary")
+                        cb("Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ╪»█î╪¬╪º", `admin_lookup_add_data_${row.id}`, "primary"),
+                        cb("Γ£Å∩╕Å ╪¬┘å╪╕█î┘à ╪│┘é┘ü ╪»█î╪¬╪º", `admin_lookup_set_data_${row.id}`, "primary")
                     ]);
                     keyboard.push([
-                        cb("♻️ ریست مصرف", `admin_lookup_reset_data_${row.id}`, "primary"),
-                        cb("🔗 لینک‌های مستقیم", `admin_lookup_direct_links_${row.id}`, "primary")
+                        cb("ΓÖ╗∩╕Å ╪▒█î╪│╪¬ ┘à╪╡╪▒┘ü", `admin_lookup_reset_data_${row.id}`, "primary"),
+                        cb("≡ƒöù ┘ä█î┘å┌⌐ΓÇî┘ç╪º█î ┘à╪│╪¬┘é█î┘à", `admin_lookup_direct_links_${row.id}`, "primary")
                     ]);
                     keyboard.push([
-                        cb("📅 تنظیم انقضا", `admin_lookup_set_expiry_${row.id}`, "primary"),
-                        cb("♾️ بدون انقضا", `admin_lookup_set_expiry_${row.id}_0`, "primary")
+                        cb("≡ƒôà ╪¬┘å╪╕█î┘à ╪º┘å┘é╪╢╪º", `admin_lookup_set_expiry_${row.id}`, "primary"),
+                        cb("ΓÖ╛∩╕Å ╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º", `admin_lookup_set_expiry_${row.id}_0`, "primary")
                     ]);
                 }
                 let prevConfigsText = "";
                 if (payload.previousConfigs && payload.previousConfigs.length > 0) {
-                    prevConfigsText = `\n\n🕒 کانفیگ‌های قبلی:\n${payload.previousConfigs.map((c) => escapeHtml(responseSnippet(c, 100))).join("\n")}`;
+                    prevConfigsText = `\n\n≡ƒòÆ ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î ┘é╪¿┘ä█î:\n${payload.previousConfigs.map((c) => escapeHtml(responseSnippet(c, 100))).join("\n")}`;
                 }
                 await tg("sendMessage", {
                     chat_id: chatId,
                     parse_mode: "HTML",
-                    text: `🧾 #${row.id} | ${row.product_name || "-"} | order:${row.purchase_id || "-"}${revoked ? " | 🚫" : ""}\n` +
-                        `👤 owner: ${ownerLabel} | وضعیت: ${row.status || "-"}\n` +
-                        `${panelDetails ? `${escapeHtml(panelDetails)}\n` : "🖥 پنل: نامشخص\n"}` +
+                    text: `≡ƒº╛ #${row.id} | ${row.product_name || "-"} | order:${row.purchase_id || "-"}${revoked ? " | ≡ƒÜ½" : ""}\n` +
+                        `≡ƒæñ owner: ${ownerLabel} | ┘ê╪╢╪╣█î╪¬: ${row.status || "-"}\n` +
+                        `${panelDetails ? `${escapeHtml(panelDetails)}\n` : "≡ƒûÑ ┘╛┘å┘ä: ┘å╪º┘à╪┤╪«╪╡\n"}` +
                         `\n${isPanelConfig
-                            ? `🔗 ساب:\n${payload.subscriptionUrl ? escapeHtml(String(payload.subscriptionUrl)) : "-"}`
+                            ? `≡ƒöù ╪│╪º╪¿:\n${payload.subscriptionUrl ? escapeHtml(String(payload.subscriptionUrl)) : "-"}`
                             : escapeHtml(responseSnippet(String(row.config_value || ""), 220))}${prevConfigsText}`,
                     reply_markup: {
                         inline_keyboard: keyboard
@@ -7808,16 +7811,16 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const lines = forensicMatches.map((m) => {
                 const owner = Number(m.owner_telegram_id || 0) || "-";
                 const dateStr = m.created_at ? new Date(m.created_at).toLocaleDateString("fa-IR") : "-";
-                return `🔹 رویداد: ${m.event_type} | مالک: ${owner} | تاریخ: ${dateStr}`;
+                return `≡ƒö╣ ╪▒┘ê█î╪»╪º╪»: ${m.event_type} | ┘à╪º┘ä┌⌐: ${owner} | ╪¬╪º╪▒█î╪«: ${dateStr}`;
             });
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `🔎 سوابق یافت شده در آرشیو:\n\n${lines.join("\n")}\n\n⏳ در حال استعلام مستقیم از پنل...`
+                text: `≡ƒöÄ ╪│┘ê╪º╪¿┘é █î╪º┘ü╪¬ ╪┤╪»┘ç ╪»╪▒ ╪ó╪▒╪┤█î┘ê:\n\n${lines.join("\n")}\n\nΓÅ│ ╪»╪▒ ╪¡╪º┘ä ╪º╪│╪¬╪╣┘ä╪º┘à ┘à╪│╪¬┘é█î┘à ╪º╪▓ ┘╛┘å┘ä...`
             });
         }
         const panelMatch = await lookupIdentifierInPanels(raw);
         if (!panelMatch.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: "هیچ موردی در لیست فروش، آرشیو یا پنل پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å ┘à┘ê╪▒╪»█î ╪»╪▒ ┘ä█î╪│╪¬ ┘ü╪▒┘ê╪┤╪î ╪ó╪▒╪┤█î┘ê █î╪º ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
             await clearState(userId);
             return true;
         }
@@ -7840,8 +7843,8 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             metadata: { panelName: panelMatch.panelName || "", actorAdmin: userId }
         });
         const banBtn = targetUser && Number.isFinite(targetUser)
-            ? [{ text: "⛔ بن کاربر", callback_data: `admin_lookup_ban_${targetUser}` }]
-            : [{ text: "ℹ️ شناسه کاربر نامشخص", callback_data: "noop_lookup_user_unknown" }];
+            ? [{ text: "Γ¢ö ╪¿┘å ┌⌐╪º╪▒╪¿╪▒", callback_data: `admin_lookup_ban_${targetUser}` }]
+            : [{ text: "Γä╣∩╕Å ╪┤┘å╪º╪│┘ç ┌⌐╪º╪▒╪¿╪▒ ┘å╪º┘à╪┤╪«╪╡", callback_data: "noop_lookup_user_unknown" }];
         const panelKey = encodeURIComponent(String(panelMatch.panelUserKey || ""));
         const panelUser = toJsonObject(panelMatch.panelUser) || {};
         const panelSubscriptionUrl = String(panelUser.subscription_url || panelUser.subscriptionUrl || "").trim() ||
@@ -7853,44 +7856,44 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 })
                 : "");
         const panelRuntimeLine = isMarzbanLike(String(panelMatch.panelType || ""))
-            ? `📊 مصرف: ${Number(panelUser.data_limit || 0) > 0
+            ? `≡ƒôè ┘à╪╡╪▒┘ü: ${Number(panelUser.data_limit || 0) > 0
                 ? `${formatBytesShort(panelUser.used_traffic || panelUser.usedTraffic || 0)} / ${formatBytesShort(panelUser.data_limit)}`
-                : "نامحدود"}\n📅 انقضا: ${formatExpiryLabelFromSeconds(panelUser.expire)}`
-            : `📊 مصرف: ${Number(panelUser.totalGB || 0) > 0
+                : "┘å╪º┘à╪¡╪»┘ê╪»"}\n≡ƒôà ╪º┘å┘é╪╢╪º: ${formatExpiryLabelFromSeconds(panelUser.expire)}`
+            : `≡ƒôè ┘à╪╡╪▒┘ü: ${Number(panelUser.totalGB || 0) > 0
                 ? `${formatBytesShort((Number(panelUser.up || 0) + Number(panelUser.down || 0)) || 0)} / ${formatBytesShort(panelUser.totalGB)}`
-                : "نامحدود"}\n📅 انقضا: ${formatExpiryLabelFromMilliseconds(panelUser.expiryTime)}`;
+                : "┘å╪º┘à╪¡╪»┘ê╪»"}\n≡ƒôà ╪º┘å┘é╪╢╪º: ${formatExpiryLabelFromMilliseconds(panelUser.expiryTime)}`;
         const panelRevoked = (isMarzbanLike(String(panelMatch.panelType || "")) && panelUser.status === "disabled") ||
             (String(panelMatch.panelType || "") === "sanaei" && panelUser.enable === false);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `✅ پیدا شد (Panel Fallback)\n` +
-                `🖥 پنل: ${String(panelMatch.panelName || "-")} (${String(panelMatch.panelType || "-")})\n` +
-                `🔑 کلید کاربر پنل: ${String(panelMatch.panelUserKey || "-")}\n` +
-                `🔗 ساب: ${panelSubscriptionUrl || "-"}\n` +
+            text: `Γ£à ┘╛█î╪»╪º ╪┤╪» (Panel Fallback)\n` +
+                `≡ƒûÑ ┘╛┘å┘ä: ${String(panelMatch.panelName || "-")} (${String(panelMatch.panelType || "-")})\n` +
+                `≡ƒöæ ┌⌐┘ä█î╪» ┌⌐╪º╪▒╪¿╪▒ ┘╛┘å┘ä: ${String(panelMatch.panelUserKey || "-")}\n` +
+                `≡ƒöù ╪│╪º╪¿: ${panelSubscriptionUrl || "-"}\n` +
                 `${panelRuntimeLine}\n` +
-                `👤 تلگرام: ${targetUser || "-"}\n` +
-                `🆔 یوزرنیم: ${u.username ? `@${String(u.username)}` : "-"}\n` +
-                `📛 نام: ${[u.first_name ? String(u.first_name) : "", u.last_name ? String(u.last_name) : ""].filter(Boolean).join(" ").trim() || "-"}`,
+                `≡ƒæñ ╪¬┘ä┌»╪▒╪º┘à: ${targetUser || "-"}\n` +
+                `≡ƒåö █î┘ê╪▓╪▒┘å█î┘à: ${u.username ? `@${String(u.username)}` : "-"}\n` +
+                `≡ƒô¢ ┘å╪º┘à: ${[u.first_name ? String(u.first_name) : "", u.last_name ? String(u.last_name) : ""].filter(Boolean).join(" ").trim() || "-"}`,
             reply_markup: {
                 inline_keyboard: [
                     banBtn,
                     [
                         panelRevoked
-                            ? confirmButton(`admin_panel_toggle_${panelMatch.panelId}_${panelKey}`, "✅ فعال‌سازی")
-                            : cb("🚫 غیرفعال‌سازی", `admin_panel_toggle_${panelMatch.panelId}_${panelKey}`, "danger"),
-                        cb("🗑 حذف کامل از پنل", `admin_panel_del_${panelMatch.panelId}_${panelKey}`, "danger")
+                            ? confirmButton(`admin_panel_toggle_${panelMatch.panelId}_${panelKey}`, "Γ£à ┘ü╪╣╪º┘äΓÇî╪│╪º╪▓█î")
+                            : cb("≡ƒÜ½ ╪║█î╪▒┘ü╪╣╪º┘äΓÇî╪│╪º╪▓█î", `admin_panel_toggle_${panelMatch.panelId}_${panelKey}`, "danger"),
+                        cb("≡ƒùæ ╪¡╪░┘ü ┌⌐╪º┘à┘ä ╪º╪▓ ┘╛┘å┘ä", `admin_panel_del_${panelMatch.panelId}_${panelKey}`, "danger")
                     ],
                     [
-                        cb("🔄 بازسازی لینک", `admin_panel_rv_${panelMatch.panelId}_${panelKey}`, "primary")
+                        cb("≡ƒöä ╪¿╪º╪▓╪│╪º╪▓█î ┘ä█î┘å┌⌐", `admin_panel_rv_${panelMatch.panelId}_${panelKey}`, "primary")
                     ],
                     [
-                        cb("➕ افزودن دیتا", `admin_panel_add_data_${panelMatch.panelId}_${panelKey}`, "primary"),
-                        cb("✏️ تنظیم سقف دیتا", `admin_panel_set_data_${panelMatch.panelId}_${panelKey}`, "primary")
+                        cb("Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ╪»█î╪¬╪º", `admin_panel_add_data_${panelMatch.panelId}_${panelKey}`, "primary"),
+                        cb("Γ£Å∩╕Å ╪¬┘å╪╕█î┘à ╪│┘é┘ü ╪»█î╪¬╪º", `admin_panel_set_data_${panelMatch.panelId}_${panelKey}`, "primary")
                     ],
-                    [cb("♻️ ریست مصرف", `admin_panel_reset_data_${panelMatch.panelId}_${panelKey}`, "primary")],
+                    [cb("ΓÖ╗∩╕Å ╪▒█î╪│╪¬ ┘à╪╡╪▒┘ü", `admin_panel_reset_data_${panelMatch.panelId}_${panelKey}`, "primary")],
                     [
-                        cb("📅 تنظیم انقضا", `admin_panel_set_expiry_${panelMatch.panelId}_${panelKey}`, "primary"),
-                        cb("♾️ بدون انقضا", `admin_panel_set_expiry_${panelMatch.panelId}_${panelKey}_days_0`, "primary")
+                        cb("≡ƒôà ╪¬┘å╪╕█î┘à ╪º┘å┘é╪╢╪º", `admin_panel_set_expiry_${panelMatch.panelId}_${panelKey}`, "primary"),
+                        cb("ΓÖ╛∩╕Å ╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º", `admin_panel_set_expiry_${panelMatch.panelId}_${panelKey}_days_0`, "primary")
                     ]
                 ]
             }
@@ -7903,11 +7906,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const addMb = parseDataAmountToMb(text);
         if (!Number.isFinite(inventoryId) || inventoryId <= 0) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر شد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪┤╪»." });
             return true;
         }
         if (!addMb || addMb <= 0 || addMb > 1000000) {
-            await tg("sendMessage", { chat_id: chatId, text: "مقدار معتبر ارسال کنید. (حداکثر ۱۰۰۰ گیگابایت)" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à┘é╪»╪º╪▒ ┘à╪╣╪¬╪¿╪▒ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». (╪¡╪»╪º┌⌐╪½╪▒ █▒█░█░█░ ┌»█î┌»╪º╪¿╪º█î╪¬)" });
             return true;
         }
         const rows = await sql `
@@ -7918,7 +7921,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!rows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const row = rows[0];
@@ -7927,7 +7930,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const panelId = Number(row.panel_id || 0);
         if (!panelId || !panelType) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "این کانفیگ پنلی نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘╛┘å┘ä█î ┘å█î╪│╪¬." });
             return true;
         }
         const panelRows = await sql `
@@ -7938,16 +7941,16 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!panelRows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "پنل مرتبط پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à╪▒╪¬╪¿╪╖ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const addBytes = Math.max(0, Math.round(addMb * 1024 * 1024));
-        let result = { ok: false, message: "پنل پشتیبانی نمی‌شود." };
+        let result = { ok: false, message: "┘╛┘å┘ä ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘å┘à█îΓÇî╪┤┘ê╪»." };
         if (isMarzbanLike(panelType)) {
             const username = String(delivery.metadata?.username || "").trim();
             if (!username) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "username پنل در متادیتا پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "username ┘╛┘å┘ä ╪»╪▒ ┘à╪¬╪º╪»█î╪¬╪º ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             result = await applyTopupOnMarzban(panelRows[0], username, addBytes);
@@ -7957,18 +7960,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const email = String(delivery.metadata?.email || "").trim();
             if (!inboundId || !email) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "inbound/email در متادیتا کانفیگ ناقص است." });
+                await tg("sendMessage", { chat_id: chatId, text: "inbound/email ╪»╪▒ ┘à╪¬╪º╪»█î╪¬╪º ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘é╪╡ ╪º╪│╪¬." });
                 return true;
             }
             result = await applyTopupOnSanaei(panelRows[0], inboundId, email, addBytes);
         }
         await clearState(userId);
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `افزایش دیتا انجام نشد.\n${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${result.message}` });
             return true;
         }
         await recordInventoryForensicEvent(inventoryId, "admin_lookup_add_data", { adminId: userId, addMb, panelResult: result.message });
-        await tg("sendMessage", { chat_id: chatId, text: `افزایش دیتا انجام شد ✅\nمقدار: ${addMb}MB\n${result.message}` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à\n┘à┘é╪»╪º╪▒: ${addMb}MB\n${result.message}` });
         return true;
     }
     if (state.state === "admin_lookup_set_data") {
@@ -7978,11 +7981,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const targetMb = isInfinite ? 0 : parseDataAmountToMb(raw);
         if (!Number.isFinite(inventoryId) || inventoryId <= 0) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر شد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪┤╪»." });
             return true;
         }
         if (!isInfinite && (!targetMb || targetMb <= 0 || targetMb > 1000000)) {
-            await tg("sendMessage", { chat_id: chatId, text: "حجم جدید معتبر نیست. (حداکثر ۱۰۰۰ گیگابایت یا unlimited)" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¡╪¼┘à ╪¼╪»█î╪» ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬. (╪¡╪»╪º┌⌐╪½╪▒ █▒█░█░█░ ┌»█î┌»╪º╪¿╪º█î╪¬ █î╪º unlimited)" });
             return true;
         }
         const rows = await sql `
@@ -7993,7 +7996,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!rows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const row = rows[0];
@@ -8002,7 +8005,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const panelId = Number(row.panel_id || 0);
         if (!panelId || !panelType) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "این کانفیگ پنلی نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘╛┘å┘ä█î ┘å█î╪│╪¬." });
             return true;
         }
         const panelRows = await sql `
@@ -8013,16 +8016,16 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!panelRows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "پنل مرتبط پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à╪▒╪¬╪¿╪╖ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const targetBytes = isInfinite ? 0 : Math.max(0, Math.round(Number(targetMb || 0) * 1024 * 1024));
-        let result = { ok: false, message: "پنل پشتیبانی نمی‌شود." };
+        let result = { ok: false, message: "┘╛┘å┘ä ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘å┘à█îΓÇî╪┤┘ê╪»." };
         if (isMarzbanLike(panelType)) {
             const username = String(delivery.metadata?.username || "").trim();
             if (!username) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "username پنل در متادیتا پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "username ┘╛┘å┘ä ╪»╪▒ ┘à╪¬╪º╪»█î╪¬╪º ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             result = await applyAdminSetLimitOnlyOnMarzban(panelRows[0], username, targetBytes);
@@ -8032,14 +8035,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const email = String(delivery.metadata?.email || "").trim();
             if (!inboundId || !email) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "inbound/email در متادیتا کانفیگ ناقص است." });
+                await tg("sendMessage", { chat_id: chatId, text: "inbound/email ╪»╪▒ ┘à╪¬╪º╪»█î╪¬╪º ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘é╪╡ ╪º╪│╪¬." });
                 return true;
             }
             result = await applyAdminSetLimitOnlyOnSanaei(panelRows[0], inboundId, email, targetBytes);
         }
         await clearState(userId);
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `تنظیم سقف دیتا انجام نشد.\n${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪¬┘å╪╕█î┘à ╪│┘é┘ü ╪»█î╪¬╪º ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${result.message}` });
             return true;
         }
         await recordInventoryForensicEvent(inventoryId, "admin_lookup_set_data_limit", {
@@ -8050,7 +8053,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `سقف دیتای کانفیگ تنظیم شد ✅\nسقف جدید: ${isInfinite ? "نامحدود" : `${targetMb}MB`}\n${result.message}`
+            text: `╪│┘é┘ü ╪»█î╪¬╪º█î ┌⌐╪º┘å┘ü█î┌» ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à\n╪│┘é┘ü ╪¼╪»█î╪»: ${isInfinite ? "┘å╪º┘à╪¡╪»┘ê╪»" : `${targetMb}MB`}\n${result.message}`
         });
         return true;
     }
@@ -8059,11 +8062,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const days = Math.round(Number(text.trim()));
         if (!Number.isFinite(inventoryId) || inventoryId <= 0) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر شد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪┤╪»." });
             return true;
         }
         if (!Number.isFinite(days) || days < 0 || days > 3650) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. (۰ برای بدون انقضا، حداکثر ۳۶۵۰ روز)" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». (█░ ╪¿╪▒╪º█î ╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º╪î ╪¡╪»╪º┌⌐╪½╪▒ █│█╢█╡█░ ╪▒┘ê╪▓)" });
             return true;
         }
         const rows = await sql `
@@ -8074,7 +8077,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!rows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const row = rows[0];
@@ -8083,7 +8086,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const panelId = Number(row.panel_id || 0);
         if (!panelId || !panelType) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "این کانفیگ پنلی نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘╛┘å┘ä█î ┘å█î╪│╪¬." });
             return true;
         }
         const panelRows = await sql `
@@ -8094,16 +8097,16 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!panelRows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "پنل مرتبط پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à╪▒╪¬╪¿╪╖ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const expiryTimeMs = days > 0 ? Date.now() + days * 24 * 60 * 60 * 1000 : 0;
-        let result = { ok: false, message: "پنل پشتیبانی نمی‌شود." };
+        let result = { ok: false, message: "┘╛┘å┘ä ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘å┘à█îΓÇî╪┤┘ê╪»." };
         if (isMarzbanLike(panelType)) {
             const username = String(delivery.metadata?.username || "").trim();
             if (!username) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "username پنل در متادیتا پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "username ┘╛┘å┘ä ╪»╪▒ ┘à╪¬╪º╪»█î╪¬╪º ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             result = await applyAdminSetExpiryOnMarzban(panelRows[0], username, expiryTimeMs);
@@ -8113,18 +8116,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const email = String(delivery.metadata?.email || "").trim();
             if (!inboundId || !email) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "inbound/email در متادیتا کانفیگ ناقص است." });
+                await tg("sendMessage", { chat_id: chatId, text: "inbound/email ╪»╪▒ ┘à╪¬╪º╪»█î╪¬╪º ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘é╪╡ ╪º╪│╪¬." });
                 return true;
             }
             result = await applyAdminSetExpiryOnSanaei(panelRows[0], inboundId, email, expiryTimeMs);
         }
         await clearState(userId);
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `تنظیم انقضا انجام نشد.\n${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪¬┘å╪╕█î┘à ╪º┘å┘é╪╢╪º ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${result.message}` });
             return true;
         }
         await recordInventoryForensicEvent(inventoryId, "admin_lookup_set_expiry", { adminId: userId, days, panelResult: result.message });
-        await tg("sendMessage", { chat_id: chatId, text: days > 0 ? `انقضا روی ${days} روز تنظیم شد ✅` : "انقضا حذف شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: days > 0 ? `╪º┘å┘é╪╢╪º ╪▒┘ê█î ${days} ╪▒┘ê╪▓ ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à` : "╪º┘å┘é╪╢╪º ╪¡╪░┘ü ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_panel_add_data") {
@@ -8133,11 +8136,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const addMb = parseDataAmountToMb(text);
         if (!Number.isFinite(panelId) || panelId <= 0 || !panelKey) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "اطلاعات پنل نامعتبر شد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º╪╖┘ä╪º╪╣╪º╪¬ ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪┤╪»." });
             return true;
         }
         if (!addMb || addMb <= 0 || addMb > 1000000) {
-            await tg("sendMessage", { chat_id: chatId, text: "مقدار معتبر ارسال کنید. (حداکثر ۱۰۰۰ گیگابایت)" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à┘é╪»╪º╪▒ ┘à╪╣╪¬╪¿╪▒ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». (╪¡╪»╪º┌⌐╪½╪▒ █▒█░█░█░ ┌»█î┌»╪º╪¿╪º█î╪¬)" });
             return true;
         }
         const panelRows = await sql `
@@ -8148,18 +8151,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!panelRows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "پنل مرتبط پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à╪▒╪¬╪¿╪╖ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const panel = panelRows[0];
         const panelType = String(panel.panel_type || "");
         const addBytes = Math.max(0, Math.round(addMb * 1024 * 1024));
-        let result = { ok: false, message: "پنل پشتیبانی نمی‌شود." };
+        let result = { ok: false, message: "┘╛┘å┘ä ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘å┘à█îΓÇî╪┤┘ê╪»." };
         if (isMarzbanLike(panelType)) {
             const found = await lookupMarzbanUser(panel, panelKey);
             if (!found.ok || !found.user) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "کاربر روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¿╪▒ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             const username = String(found.user.username || panelKey).trim();
@@ -8169,20 +8172,20 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const found = await findSanaeiClientByIdentifier(panel, panelKey);
             if (!found.ok || !found.client || !found.inboundId) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "کلاینت روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä╪º█î┘å╪¬ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             const email = String(found.client.email || "").trim();
             if (!email) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "email کلاینت روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "email ┌⌐┘ä╪º█î┘å╪¬ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             result = await applyTopupOnSanaei(panel, Number(found.inboundId), email, addBytes);
         }
         await clearState(userId);
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `افزایش دیتا انجام نشد.\n${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${result.message}` });
             return true;
         }
         await recordForensicEvent({
@@ -8198,7 +8201,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             configValue: null,
             metadata: { adminId: userId, addMb, panelResult: result.message }
         });
-        await tg("sendMessage", { chat_id: chatId, text: `افزایش دیتا انجام شد ✅\nمقدار: ${addMb}MB` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à\n┘à┘é╪»╪º╪▒: ${addMb}MB` });
         return true;
     }
     if (state.state === "admin_panel_set_data") {
@@ -8209,11 +8212,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const targetMb = isInfinite ? 0 : parseDataAmountToMb(raw);
         if (!Number.isFinite(panelId) || panelId <= 0 || !panelKey) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "اطلاعات پنل نامعتبر شد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º╪╖┘ä╪º╪╣╪º╪¬ ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪┤╪»." });
             return true;
         }
         if (!isInfinite && (!targetMb || targetMb <= 0 || targetMb > 1000000)) {
-            await tg("sendMessage", { chat_id: chatId, text: "حجم جدید معتبر نیست. (حداکثر ۱۰۰۰ گیگابایت یا unlimited)" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¡╪¼┘à ╪¼╪»█î╪» ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬. (╪¡╪»╪º┌⌐╪½╪▒ █▒█░█░█░ ┌»█î┌»╪º╪¿╪º█î╪¬ █î╪º unlimited)" });
             return true;
         }
         const panelRows = await sql `
@@ -8224,18 +8227,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!panelRows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "پنل مرتبط پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à╪▒╪¬╪¿╪╖ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const panel = panelRows[0];
         const panelType = String(panel.panel_type || "");
         const targetBytes = isInfinite ? 0 : Math.max(0, Math.round(Number(targetMb || 0) * 1024 * 1024));
-        let result = { ok: false, message: "پنل پشتیبانی نمی‌شود." };
+        let result = { ok: false, message: "┘╛┘å┘ä ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘å┘à█îΓÇî╪┤┘ê╪»." };
         if (isMarzbanLike(panelType)) {
             const found = await lookupMarzbanUser(panel, panelKey);
             if (!found.ok || !found.user) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "کاربر روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¿╪▒ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             const username = String(found.user.username || panelKey).trim();
@@ -8245,20 +8248,20 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const found = await findSanaeiClientByIdentifier(panel, panelKey);
             if (!found.ok || !found.client || !found.inboundId) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "کلاینت روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä╪º█î┘å╪¬ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             const email = String(found.client.email || "").trim();
             if (!email) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "email کلاینت روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "email ┌⌐┘ä╪º█î┘å╪¬ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             result = await applyAdminSetLimitOnlyOnSanaei(panel, Number(found.inboundId), email, targetBytes);
         }
         await clearState(userId);
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `تنظیم سقف دیتا انجام نشد.\n${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪¬┘å╪╕█î┘à ╪│┘é┘ü ╪»█î╪¬╪º ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${result.message}` });
             return true;
         }
         await recordForensicEvent({
@@ -8274,7 +8277,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             configValue: null,
             metadata: { adminId: userId, targetMb: isInfinite ? 0 : targetMb, isInfinite, panelResult: result.message }
         });
-        await tg("sendMessage", { chat_id: chatId, text: `سقف دیتای کاربر تنظیم شد ✅\nس��ف جدید: ${isInfinite ? "نامحدود" : `${targetMb}MB`}` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪│┘é┘ü ╪»█î╪¬╪º█î ┌⌐╪º╪▒╪¿╪▒ ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à\n╪│∩┐╜∩┐╜┘ü ╪¼╪»█î╪»: ${isInfinite ? "┘å╪º┘à╪¡╪»┘ê╪»" : `${targetMb}MB`}` });
         return true;
     }
     if (state.state === "admin_panel_set_expiry") {
@@ -8283,11 +8286,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const days = Math.round(Number(text.trim()));
         if (!Number.isFinite(panelId) || panelId <= 0 || !panelKey) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "اطلاعات پنل نامعتبر شد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º╪╖┘ä╪º╪╣╪º╪¬ ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪┤╪»." });
             return true;
         }
         if (!Number.isFinite(days) || days < 0 || days > 3650) {
-            await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. (۰ برای بدون انقضا، حداکثر ۳۶۵۰ روز)" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». (█░ ╪¿╪▒╪º█î ╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º╪î ╪¡╪»╪º┌⌐╪½╪▒ █│█╢█╡█░ ╪▒┘ê╪▓)" });
             return true;
         }
         const panelRows = await sql `
@@ -8298,18 +8301,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!panelRows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "پنل مرتبط پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à╪▒╪¬╪¿╪╖ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return true;
         }
         const panel = panelRows[0];
         const panelType = String(panel.panel_type || "");
         const expiryTimeMs = days > 0 ? Date.now() + days * 24 * 60 * 60 * 1000 : 0;
-        let result = { ok: false, message: "پنل پشتیبانی نمی‌شود." };
+        let result = { ok: false, message: "┘╛┘å┘ä ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘å┘à█îΓÇî╪┤┘ê╪»." };
         if (isMarzbanLike(panelType)) {
             const found = await lookupMarzbanUser(panel, panelKey);
             if (!found.ok || !found.user) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "کاربر روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¿╪▒ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             const username = String(found.user.username || panelKey).trim();
@@ -8319,20 +8322,20 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const found = await findSanaeiClientByIdentifier(panel, panelKey);
             if (!found.ok || !found.client || !found.inboundId) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "کلاینت روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä╪º█î┘å╪¬ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             const email = String(found.client.email || "").trim();
             if (!email) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "email کلاینت روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "email ┌⌐┘ä╪º█î┘å╪¬ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             result = await applyAdminSetExpiryOnSanaei(panel, Number(found.inboundId), email, expiryTimeMs);
         }
         await clearState(userId);
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `تنظیم انقضا انجام نشد.\n${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪¬┘å╪╕█î┘à ╪º┘å┘é╪╢╪º ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${result.message}` });
             return true;
         }
         await recordForensicEvent({
@@ -8348,7 +8351,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             configValue: null,
             metadata: { adminId: userId, days, panelResult: result.message }
         });
-        await tg("sendMessage", { chat_id: chatId, text: days > 0 ? `انقضا روی ${days} روز تنظیم شد ✅` : "انقضا حذف شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: days > 0 ? `╪º┘å┘é╪╢╪º ╪▒┘ê█î ${days} ╪▒┘ê╪▓ ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à` : "╪º┘å┘é╪╢╪º ╪¡╪░┘ü ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_config_builder_wizard") {
@@ -8379,7 +8382,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             await setState(userId, "admin_config_builder_wizard", payload);
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "ساخت کانفیگ سفارشی - مرحله 4 از 5\nحجم دیتا را بفرستید (مثال: 2GB یا 2048MB).\nبرای نامحدود: unlimited",
+                text: "╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î - ┘à╪▒╪¡┘ä┘ç 4 ╪º╪▓ 5\n╪¡╪¼┘à ╪»█î╪¬╪º ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪» (┘à╪½╪º┘ä: 2GB █î╪º 2048MB).\n╪¿╪▒╪º█î ┘å╪º┘à╪¡╪»┘ê╪»: unlimited",
                 reply_markup: { inline_keyboard: [[cancelButton("admin_config_builder_cancel")]] }
             });
             return true;
@@ -8388,7 +8391,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const isInfinite = parseInfiniteDataFlag(raw);
             const dataMb = isInfinite ? 0 : parseDataAmountToMb(raw);
             if (!isInfinite && (!dataMb || dataMb <= 0 || dataMb > 1000000)) {
-                await tg("sendMessage", { chat_id: chatId, text: "مقدار معتبر ارسال کنید. (حداکثر ۱۰۰۰ گیگابایت یا unlimited)" });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à┘é╪»╪º╪▒ ┘à╪╣╪¬╪¿╪▒ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». (╪¡╪»╪º┌⌐╪½╪▒ █▒█░█░█░ ┌»█î┌»╪º╪¿╪º█î╪¬ █î╪º unlimited)" });
                 return true;
             }
             const payload = {
@@ -8400,7 +8403,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             await setState(userId, "admin_config_builder_wizard", payload);
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "ساخت کانفیگ سفارشی - مرحله 5 از 5\nتعداد روز انقضا را بفرستید.\n0 = بدون انقضا",
+                text: "╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î - ┘à╪▒╪¡┘ä┘ç 5 ╪º╪▓ 5\n╪¬╪╣╪»╪º╪» ╪▒┘ê╪▓ ╪º┘å┘é╪╢╪º ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n0 = ╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º",
                 reply_markup: { inline_keyboard: [[cancelButton("admin_config_builder_cancel")]] }
             });
             return true;
@@ -8413,12 +8416,12 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const isInfinite = Boolean(state.payload.isInfinite);
             const dataMb = Number(state.payload.dataMb || 0);
             if (!Number.isFinite(days) || days < 0 || days > 3650) {
-                await tg("sendMessage", { chat_id: chatId, text: "عدد معتبر بفرستید. (۰ برای بدون انقضا، حداکثر ۳۶۵۰ روز)" });
+                await tg("sendMessage", { chat_id: chatId, text: "╪╣╪»╪» ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪». (█░ ╪¿╪▒╪º█î ╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º╪î ╪¡╪»╪º┌⌐╪½╪▒ █│█╢█╡█░ ╪▒┘ê╪▓)" });
                 return true;
             }
             if (!Number.isFinite(targetUserId) || targetUserId <= 0 || !Number.isFinite(panelId) || panelId <= 0) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "اطلاعات ساخت ناقص است. دوباره از منوی ابزار شروع کنید." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪º╪╖┘ä╪º╪╣╪º╪¬ ╪│╪º╪«╪¬ ┘å╪º┘é╪╡ ╪º╪│╪¬. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ┘à┘å┘ê█î ╪º╪¿╪▓╪º╪▒ ╪┤╪▒┘ê╪╣ ┌⌐┘å█î╪»." });
                 return true;
             }
             const panelRows = await sql `
@@ -8429,7 +8432,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       `;
             if (!panelRows.length) {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "پنل انتخاب‌شده پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ╪º┘å╪¬╪«╪º╪¿ΓÇî╪┤╪»┘ç ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return true;
             }
             const panel = panelRows[0];
@@ -8458,7 +8461,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 purchase_id: purchaseId,
                 telegram_id: targetUserId,
                 product_id: productId,
-                product_name: configName || "کانفیگ سفارشی ادمین",
+                product_name: configName || "┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î ╪º╪»┘à█î┘å",
                 size_mb: effectiveDataMb
             };
             let provision;
@@ -8472,7 +8475,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await clearState(userId);
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: `ساخت کانفیگ روی پنل انجام نشد.\n${String(error.message || error)}`
+                    text: `╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪▒┘ê█î ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${String(error.message || error)}`
                 });
                 return true;
             }
@@ -8504,44 +8507,44 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             });
             await clearState(userId);
             try {
-                await sendDeliveryPackage(targetUserId, purchaseId, provision.configValue, { ...delivery, metadata }, [[homeButton()]], "🎁 یک کانفیگ جدید برای شما صادر شد.");
+                await sendDeliveryPackage(targetUserId, purchaseId, provision.configValue, { ...delivery, metadata }, [[homeButton()]], "≡ƒÄü █î┌⌐ ┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪¿╪▒╪º█î ╪┤┘à╪º ╪╡╪º╪»╪▒ ╪┤╪».");
             }
             catch (error) {
                 logError("admin_custom_config_send_failed", error, { targetUserId, by: userId, inventoryId: Number(inserted[0].id) });
             }
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `کانفیگ سفارشی ساخته شد ✅\n` +
-                    `شناسه inventory: ${inserted[0].id}\n` +
-                    `کاربر: ${targetUserId}\n` +
-                    `پنل: #${panelId}\n` +
-                    `حجم: ${isInfinite ? "نامحدود" : `${effectiveDataMb}MB`}\n` +
-                    `انقضا: ${days > 0 ? `${days} روز` : "بدون انقضا"}`
+                text: `┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+                    `╪┤┘å╪º╪│┘ç inventory: ${inserted[0].id}\n` +
+                    `┌⌐╪º╪▒╪¿╪▒: ${targetUserId}\n` +
+                    `┘╛┘å┘ä: #${panelId}\n` +
+                    `╪¡╪¼┘à: ${isInfinite ? "┘å╪º┘à╪¡╪»┘ê╪»" : `${effectiveDataMb}MB`}\n` +
+                    `╪º┘å┘é╪╢╪º: ${days > 0 ? `${days} ╪▒┘ê╪▓` : "╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º"}`
             });
             return true;
         }
-        await tg("sendMessage", { chat_id: chatId, text: "برای این مرحله از دکمه‌های پیام قبلی استفاده کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ╪º█î┘å ┘à╪▒╪¡┘ä┘ç ╪º╪▓ ╪»┌⌐┘à┘çΓÇî┘ç╪º█î ┘╛█î╪º┘à ┘é╪¿┘ä█î ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å█î╪»." });
         return true;
     }
     if (state.state === "admin_unban_user") {
         const target = Math.round(Number(text.trim()));
         if (!Number.isFinite(target) || target <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "telegram_id معتبر بفرستید." });
+            await tg("sendMessage", { chat_id: chatId, text: "telegram_id ┘à╪╣╪¬╪¿╪▒ ╪¿┘ü╪▒╪│╪¬█î╪»." });
             return true;
         }
         const deleted = await sql `DELETE FROM banned_users WHERE telegram_id = ${target} RETURNING telegram_id;`;
         await clearState(userId);
         if (!deleted.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "این کاربر در لیست بن‌شده‌ها نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌⌐╪º╪▒╪¿╪▒ ╪»╪▒ ┘ä█î╪│╪¬ ╪¿┘åΓÇî╪┤╪»┘çΓÇî┘ç╪º ┘å█î╪│╪¬." });
             return true;
         }
         try {
-            await tg("sendMessage", { chat_id: target, text: "دسترسی شما رفع مسدودیت شد ✅" });
+            await tg("sendMessage", { chat_id: target, text: "╪»╪│╪¬╪▒╪│█î ╪┤┘à╪º ╪▒┘ü╪╣ ┘à╪│╪»┘ê╪»█î╪¬ ╪┤╪» Γ£à" });
         }
         catch (error) {
             logError("unban_user_notify_failed", error, { targetUserId: target, by: userId });
         }
-        await tg("sendMessage", { chat_id: chatId, text: `کاربر ${target} آنبن شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┌⌐╪º╪▒╪¿╪▒ ${target} ╪ó┘å╪¿┘å ╪┤╪» Γ£à` });
         return true;
     }
     if (state.state === "admin_inv_rename") {
@@ -8549,7 +8552,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const name = text.trim();
         if (!Number.isFinite(inventoryId) || inventoryId <= 0) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر شد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪┤╪»." });
             return true;
         }
         const label = name === "-" ? "" : name;
@@ -8564,7 +8567,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       WHERE id = ${inventoryId};
     `;
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "نام ذخیره شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_provide_config") {
@@ -8581,7 +8584,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
     `;
         if (!orderRows.length) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return true;
         }
         const order = orderRows[0];
@@ -8611,21 +8614,21 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             telegramFullName: profile.fullName,
             productName,
             deliveryPayload: {}
-        }), { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
-        await tg("sendMessage", { chat_id: chatId, text: "کانفیگ برای کاربر ارسال شد ✅" });
+        }), { inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ╪¿╪▒╪º█î ┌⌐╪º╪▒╪¿╪▒ ╪º╪▒╪│╪º┘ä ╪┤╪» Γ£à" });
         return true;
     }
     if (state.state === "admin_panel_subport_edit") {
         const panelId = Number(state.payload.panelId || 0);
         if (!Number.isFinite(panelId) || panelId <= 0) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return true;
         }
         const raw = text.trim();
         if (raw === "-") {
             await clearState(userId);
-            await showPanelDetails(chatId, panelId, "تغییر پورت ساب لغو شد.");
+            await showPanelDetails(chatId, panelId, "╪¬╪║█î█î╪▒ ┘╛┘ê╪▒╪¬ ╪│╪º╪¿ ┘ä╪║┘ê ╪┤╪».");
             return true;
         }
         const lt = raw.toLowerCase();
@@ -8635,26 +8638,26 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         else {
             const n = parseMaybeNumber(raw);
             if (n === null || n < 1 || n > 65535) {
-                await tg("sendMessage", { chat_id: chatId, text: "پورت نامعتبر است. عدد ۱ تا ۶۵۵۳۵، یا 0/auto برای خودکار." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘╛┘ê╪▒╪¬ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬. ╪╣╪»╪» █▒ ╪¬╪º █╢█╡█╡█│█╡╪î █î╪º 0/auto ╪¿╪▒╪º█î ╪«┘ê╪»┌⌐╪º╪▒." });
                 return true;
             }
             await sql `UPDATE panels SET subscription_public_port = ${n} WHERE id = ${panelId}`;
         }
         await clearState(userId);
-        await showPanelDetails(chatId, panelId, "پورت لینک ساب ذخیره شد ✅");
+        await showPanelDetails(chatId, panelId, "┘╛┘ê╪▒╪¬ ┘ä█î┘å┌⌐ ╪│╪º╪¿ ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à");
         return true;
     }
     if (state.state === "admin_panel_suburl_host_edit") {
         const panelId = Number(state.payload.panelId || 0);
         if (!Number.isFinite(panelId) || panelId <= 0) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return true;
         }
         const raw = text.trim();
         if (raw === "-") {
             await clearState(userId);
-            await showPanelDetails(chatId, panelId, "تنظیم دامنه لینک ساب لغو شد.");
+            await showPanelDetails(chatId, panelId, "╪¬┘å╪╕█î┘à ╪»╪º┘à┘å┘ç ┘ä█î┘å┌⌐ ╪│╪º╪¿ ┘ä╪║┘ê ╪┤╪».");
             return true;
         }
         const protoRaw = state.payload.subscriptionLinkProtocol;
@@ -8666,7 +8669,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             if (!h) {
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: "نام میزبان معتبر نیست. مثال: sub.example.com\nیا https://sub.example.com\n0 یا auto = همان میزبان آدرس پنل"
+                    text: "┘å╪º┘à ┘à█î╪▓╪¿╪º┘å ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬. ┘à╪½╪º┘ä: sub.example.com\n█î╪º https://sub.example.com\n0 █î╪º auto = ┘ç┘à╪º┘å ┘à█î╪▓╪¿╪º┘å ╪ó╪»╪▒╪│ ┘╛┘å┘ä"
                 });
                 return true;
             }
@@ -8679,19 +8682,19 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       WHERE id = ${panelId}
     `;
         await clearState(userId);
-        await showPanelDetails(chatId, panelId, "دامنه و پروتکل لینک ساب ذخیره شد ✅");
+        await showPanelDetails(chatId, panelId, "╪»╪º┘à┘å┘ç ┘ê ┘╛╪▒┘ê╪¬┌⌐┘ä ┘ä█î┘å┌⌐ ╪│╪º╪¿ ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à");
         return true;
     }
     if (state.state === "admin_import_sanaei_backup") {
         const panelId = Number(state.payload.panelId || 0);
         if (!Number.isFinite(panelId) || panelId <= 0) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return true;
         }
         if (text.trim() === "-") {
             await clearState(userId);
-            await showPanelDetails(chatId, panelId, "وارد کردن بکاپ لغو شد.");
+            await showPanelDetails(chatId, panelId, "┘ê╪º╪▒╪» ┌⌐╪▒╪»┘å ╪¿┌⌐╪º┘╛ ┘ä╪║┘ê ╪┤╪».");
             return true;
         }
         let parsed;
@@ -8699,7 +8702,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             parsed = JSON.parse(text.trim());
         }
         catch {
-            await tg("sendMessage", { chat_id: chatId, text: "JSON نامعتبر است. دوباره بفرستید یا - برای انصراف." });
+            await tg("sendMessage", { chat_id: chatId, text: "JSON ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬. ╪»┘ê╪¿╪º╪▒┘ç ╪¿┘ü╪▒╪│╪¬█î╪» █î╪º - ╪¿╪▒╪º█î ╪º┘å╪╡╪▒╪º┘ü." });
             return true;
         }
         let inboundList = [];
@@ -8719,7 +8722,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             }
         }
         if (!inboundList.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "هیچ inbound‌ای در JSON پیدا نشد. دوباره بفرستید یا - برای انصراف." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å inboundΓÇî╪º█î ╪»╪▒ JSON ┘╛█î╪»╪º ┘å╪┤╪». ╪»┘ê╪¿╪º╪▒┘ç ╪¿┘ü╪▒╪│╪¬█î╪» █î╪º - ╪¿╪▒╪º█î ╪º┘å╪╡╪▒╪º┘ü." });
             return true;
         }
         await setSetting(`sanaei_inbound_backup_${panelId}`, JSON.stringify(inboundList));
@@ -8730,20 +8733,20 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const settings = toJsonObject(parseSanaeiNested(ibObj.settings)) || {};
             clientCount += Array.isArray(settings.clients) ? settings.clients.length : 0;
         }
-        await showPanelDetails(chatId, panelId, `بکاپ inbound ذخیره شد ✅\n${inboundList.length} inbound | ${clientCount} کلاینت`);
+        await showPanelDetails(chatId, panelId, `╪¿┌⌐╪º┘╛ inbound ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${inboundList.length} inbound | ${clientCount} ┌⌐┘ä╪º█î┘å╪¬`);
         return true;
     }
     if (state.state === "admin_panel_confighost_edit") {
         const panelId = Number(state.payload.panelId || 0);
         if (!Number.isFinite(panelId) || panelId <= 0) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return true;
         }
         const raw = text.trim();
         if (raw === "-") {
             await clearState(userId);
-            await showPanelDetails(chatId, panelId, "تنظیم دامنه کانفیگ لغو شد.");
+            await showPanelDetails(chatId, panelId, "╪¬┘å╪╕█î┘à ╪»╪º┘à┘å┘ç ┌⌐╪º┘å┘ü█î┌» ┘ä╪║┘ê ╪┤╪».");
             return true;
         }
         const lt = raw.toLowerCase();
@@ -8755,14 +8758,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             if (!h) {
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: "نام میزبان معتبر نیست. مثال: v-panel.example.com\n0 یا auto = تشخیص خودکار\n- = انصراف"
+                    text: "┘å╪º┘à ┘à█î╪▓╪¿╪º┘å ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬. ┘à╪½╪º┘ä: v-panel.example.com\n0 █î╪º auto = ╪¬╪┤╪«█î╪╡ ╪«┘ê╪»┌⌐╪º╪▒\n- = ╪º┘å╪╡╪▒╪º┘ü"
                 });
                 return true;
             }
             await sql `UPDATE panels SET config_public_host = ${h} WHERE id = ${panelId}`;
         }
         await clearState(userId);
-        await showPanelDetails(chatId, panelId, "دامنه نمایش در کانفیگ ذخیره شد ✅");
+        await showPanelDetails(chatId, panelId, "╪»╪º┘à┘å┘ç ┘å┘à╪º█î╪┤ ╪»╪▒ ┌⌐╪º┘å┘ü█î┌» ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à");
         return true;
     }
     if (state.state === "admin_panel_wizard") {
@@ -8776,14 +8779,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const currentPassword = String(state.payload.password || "");
         if (!panelType) {
             await clearState(userId);
-            await tg("sendMessage", { chat_id: chatId, text: "نوع پنل نامعتبر شد. دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å┘ê╪╣ ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪┤╪». ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
             return true;
         }
         const raw = text.trim();
         if (step === "name") {
             const name = mode === "edit" && raw === "-" ? currentName : raw;
             if (!name) {
-                await tg("sendMessage", { chat_id: chatId, text: "نام پنل نمی‌تواند خالی باشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ┘╛┘å┘ä ┘å┘à█îΓÇî╪¬┘ê╪º┘å╪» ╪«╪º┘ä█î ╪¿╪º╪┤╪»." });
                 return true;
             }
             const payload = {
@@ -8798,7 +8801,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "base_url") {
             const baseUrl = mode === "edit" && raw === "-" ? currentBaseUrl : normalizeBaseUrl(raw);
             if (!baseUrl || !isValidHttpUrl(baseUrl)) {
-                await tg("sendMessage", { chat_id: chatId, text: "آدرس پنل معتبر نیست. نمونه: https://panel.example.com" });
+                await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ┘╛┘å┘ä ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬. ┘å┘à┘ê┘å┘ç: https://panel.example.com" });
                 return true;
             }
             const payload = {
@@ -8813,7 +8816,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "username") {
             const username = mode === "edit" && raw === "-" ? currentUsername : raw;
             if (!username) {
-                await tg("sendMessage", { chat_id: chatId, text: "نام کاربری پنل الزامی است." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î ┘╛┘å┘ä ╪º┘ä╪▓╪º┘à█î ╪º╪│╪¬." });
                 return true;
             }
             const payload = {
@@ -8831,7 +8834,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             const baseUrl = String(state.payload.baseUrl || "");
             const username = String(state.payload.username || "");
             if (!password) {
-                await tg("sendMessage", { chat_id: chatId, text: "رمز عبور پنل الزامی است." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪▒┘à╪▓ ╪╣╪¿┘ê╪▒ ┘╛┘å┘ä ╪º┘ä╪▓╪º┘à█î ╪º╪│╪¬." });
                 return true;
             }
             if (panelType === "sanaei") {
@@ -8858,18 +8861,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                     const idRows = await sql `SELECT id FROM panels WHERE name = ${name} LIMIT 1;`;
                     await clearState(userId);
                     if (!idRows.length) {
-                        await tg("sendMessage", { chat_id: chatId, text: "پنل ذخیره شد ✅" });
+                        await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
                         return true;
                     }
                     const savedPanelId = Number(idRows[0].id);
                     const test = await testPanelConnection(savedPanelId);
                     logInfo("panel_saved", { panelId: savedPanelId, panelType, name, baseUrl, testOk: test.ok });
-                    await showPanelDetails(chatId, savedPanelId, `پنل ذخیره شد ✅\n${test.message}`);
+                    await showPanelDetails(chatId, savedPanelId, `┘╛┘å┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${test.message}`);
                     return true;
                 }
                 if (!Number.isFinite(panelId) || panelId <= 0) {
                     await clearState(userId);
-                    await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل معتبر نیست." });
+                    await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
                     return true;
                 }
                 await sql `
@@ -8880,7 +8883,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await clearState(userId);
                 const test = await testPanelConnection(panelId);
                 logInfo("panel_updated", { panelId, panelType, name, baseUrl, testOk: test.ok });
-                await showPanelDetails(chatId, panelId, `اطلاعات پنل بروزرسانی شد ✅\n${test.message}`);
+                await showPanelDetails(chatId, panelId, `╪º╪╖┘ä╪º╪╣╪º╪¬ ┘╛┘å┘ä ╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ╪┤╪» Γ£à\n${test.message}`);
                 return true;
             }
             catch (error) {
@@ -8889,14 +8892,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                     logError("panel_save_failed", error, { panelType, name, baseUrl, userId });
                     await tg("sendMessage", {
                         chat_id: chatId,
-                        text: `ذخیره پنل انجام نشد.\n${String(error.message || error)}`
+                        text: `╪░╪«█î╪▒┘ç ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${String(error.message || error)}`
                     });
                     return true;
                 }
                 logError("panel_update_failed", error, { panelId, panelType, name, baseUrl, userId });
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: `بروزرسانی پنل انجام نشد.\n${String(error.message || error)}`
+                    text: `╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${String(error.message || error)}`
                 });
                 return true;
             }
@@ -8904,7 +8907,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (step === "sub_port") {
             if (panelType !== "sanaei") {
                 await clearState(userId);
-                await tg("sendMessage", { chat_id: chatId, text: "مرحله پورت ساب فقط برای Sanaei معتبر است." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à╪▒╪¡┘ä┘ç ┘╛┘ê╪▒╪¬ ╪│╪º╪¿ ┘ü┘é╪╖ ╪¿╪▒╪º█î Sanaei ┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
                 return true;
             }
             const name = String(state.payload.name || "");
@@ -8922,7 +8925,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             else {
                 const n = parseMaybeNumber(raw);
                 if (n === null || n < 1 || n > 65535) {
-                    await tg("sendMessage", { chat_id: chatId, text: "پورت نامعتبر است. عدد ۱ تا ۶۵۵۳۵، یا 0/auto برای خودکار." });
+                    await tg("sendMessage", { chat_id: chatId, text: "┘╛┘ê╪▒╪¬ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬. ╪╣╪»╪» █▒ ╪¬╪º █╢█╡█╡█│█╡╪î █î╪º 0/auto ╪¿╪▒╪º█î ╪«┘ê╪»┌⌐╪º╪▒." });
                     return true;
                 }
                 subscriptionPublicPort = n;
@@ -8945,18 +8948,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                     const idRows = await sql `SELECT id FROM panels WHERE name = ${name} LIMIT 1;`;
                     await clearState(userId);
                     if (!idRows.length) {
-                        await tg("sendMessage", { chat_id: chatId, text: "پنل ذخیره شد ✅" });
+                        await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
                         return true;
                     }
                     const savedPanelId = Number(idRows[0].id);
                     const test = await testPanelConnection(savedPanelId);
                     logInfo("panel_saved", { panelId: savedPanelId, panelType, name, baseUrl, testOk: test.ok });
-                    await showPanelDetails(chatId, savedPanelId, `پنل ذخیره شد ✅\n${test.message}`);
+                    await showPanelDetails(chatId, savedPanelId, `┘╛┘å┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${test.message}`);
                     return true;
                 }
                 if (!Number.isFinite(panelId) || panelId <= 0) {
                     await clearState(userId);
-                    await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل معتبر نیست." });
+                    await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
                     return true;
                 }
                 await sql `
@@ -8973,7 +8976,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 await clearState(userId);
                 const test = await testPanelConnection(panelId);
                 logInfo("panel_updated", { panelId, panelType, name, baseUrl, testOk: test.ok });
-                await showPanelDetails(chatId, panelId, `اطلاعات پنل بروزرسانی شد ✅\n${test.message}`);
+                await showPanelDetails(chatId, panelId, `╪º╪╖┘ä╪º╪╣╪º╪¬ ┘╛┘å┘ä ╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ╪┤╪» Γ£à\n${test.message}`);
                 return true;
             }
             catch (error) {
@@ -8982,14 +8985,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                     logError("panel_save_failed", error, { panelType, name, baseUrl, userId });
                     await tg("sendMessage", {
                         chat_id: chatId,
-                        text: `ذخیره پنل انجام نشد.\n${String(error.message || error)}`
+                        text: `╪░╪«█î╪▒┘ç ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${String(error.message || error)}`
                     });
                     return true;
                 }
                 logError("panel_update_failed", error, { panelId, panelType, name, baseUrl, userId });
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: `بروزرسانی پنل انجام نشد.\n${String(error.message || error)}`
+                    text: `╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${String(error.message || error)}`
                 });
                 return true;
             }
@@ -9006,14 +9009,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!panelType || !name || !baseUrl || !isValidHttpUrl(baseUrl)) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فرمت صحیح نیست. نمونه:\nmarzban|Main Panel|https://panel.example.com|admin|pass"
+                text: "┘ü╪▒┘à╪¬ ╪╡╪¡█î╪¡ ┘å█î╪│╪¬. ┘å┘à┘ê┘å┘ç:\nmarzban|Main Panel|https://panel.example.com|admin|pass"
             });
             return true;
         }
         if (!username || !password) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "برای افزودن پنل، نام کاربری و رمز عبور الزامی است."
+                text: "╪¿╪▒╪º█î ╪º┘ü╪▓┘ê╪»┘å ┘╛┘å┘ä╪î ┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î ┘ê ╪▒┘à╪▓ ╪╣╪¿┘ê╪▒ ╪º┘ä╪▓╪º┘à█î ╪º╪│╪¬."
             });
             return true;
         }
@@ -9029,18 +9032,18 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             if (idRows.length) {
                 const panelId = Number(idRows[0].id);
                 const test = await testPanelConnection(panelId);
-                await tg("sendMessage", { chat_id: chatId, text: `پنل ذخیره شد ✅\n${test.message}` });
+                await tg("sendMessage", { chat_id: chatId, text: `┘╛┘å┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à\n${test.message}` });
                 logInfo("panel_saved", { panelId, panelType, name, baseUrl, testOk: test.ok });
                 return true;
             }
-            await tg("sendMessage", { chat_id: chatId, text: "پنل ذخیره شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ╪░╪«█î╪▒┘ç ╪┤╪» Γ£à" });
             return true;
         }
         catch (error) {
             logError("panel_save_failed", error, { panelType, name, baseUrl, userId });
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `ذخیره پنل انجام نشد.\n${String(error.message || error)}`
+                text: `╪░╪«█î╪▒┘ç ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${String(error.message || error)}`
             });
             return true;
         }
@@ -9053,11 +9056,11 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const username = usernameRaw || "";
         const password = passwordRaw || "";
         if (!Number.isFinite(panelId) || panelId <= 0 || !name || !baseUrl || !isValidHttpUrl(baseUrl)) {
-            await tg("sendMessage", { chat_id: chatId, text: "فرمت صحیح: نام|base_url|username|password" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ü╪▒┘à╪¬ ╪╡╪¡█î╪¡: ┘å╪º┘à|base_url|username|password" });
             return true;
         }
         if (!username || !password) {
-            await tg("sendMessage", { chat_id: chatId, text: "نام کاربری و رمز عبور پنل الزامی است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î ┘ê ╪▒┘à╪▓ ╪╣╪¿┘ê╪▒ ┘╛┘å┘ä ╪º┘ä╪▓╪º┘à█î ╪º╪│╪¬." });
             return true;
         }
         try {
@@ -9068,7 +9071,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       `;
             await clearState(userId);
             const test = await testPanelConnection(panelId);
-            await tg("sendMessage", { chat_id: chatId, text: `اطلاعات پنل بروزرسانی شد ✅\n${test.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪º╪╖┘ä╪º╪╣╪º╪¬ ┘╛┘å┘ä ╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ╪┤╪» Γ£à\n${test.message}` });
             logInfo("panel_updated", { panelId, name, baseUrl, testOk: test.ok });
             return true;
         }
@@ -9076,7 +9079,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
             logError("panel_update_failed", error, { panelId, name, baseUrl, userId });
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `بروزرسانی پنل انجام نشد.\n${String(error.message || error)}`
+                text: `╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${String(error.message || error)}`
             });
             return true;
         }
@@ -9085,7 +9088,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const migrationId = Number(state.payload.migrationId);
         const result = await completeMigration(migrationId, userId, text.trim());
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: result.ok ? "انتقال تکمیل شد ✅" : `خطا: ${result.reason}` });
+        await tg("sendMessage", { chat_id: chatId, text: result.ok ? "╪º┘å╪¬┘é╪º┘ä ╪¬┌⌐┘à█î┘ä ╪┤╪» Γ£à" : `╪«╪╖╪º: ${result.reason}` });
         return true;
     }
     if (state.state === "admin_direct_migrate") {
@@ -9093,9 +9096,9 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         if (!Number.isFinite(sourceInventoryId) || !Number.isFinite(targetPanelId) || !Number.isFinite(requestedFor)) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "فرمت مهاجرت مستقیم معتبر نیست.\n" +
-                    "قدیمی: inventory_id|target_panel_id|user_telegram_id|config\n" +
-                    "جدید:\nsource_inventory_id: 12\ntarget_panel_id: 3\nuser_telegram_id: 123456\nconfig: optional"
+                text: "┘ü╪▒┘à╪¬ ┘à┘ç╪º╪¼╪▒╪¬ ┘à╪│╪¬┘é█î┘à ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬.\n" +
+                    "┘é╪»█î┘à█î: inventory_id|target_panel_id|user_telegram_id|config\n" +
+                    "╪¼╪»█î╪»:\nsource_inventory_id: 12\ntarget_panel_id: 3\nuser_telegram_id: 123456\nconfig: optional"
             });
             return true;
         }
@@ -9115,7 +9118,7 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
       `;
             if (row.length) {
                 const complete = await completeMigration(Number(row[0].id), userId, config);
-                await tg("sendMessage", { chat_id: chatId, text: complete.ok ? "انتقال فوری انجام شد ✅" : `خطا: ${complete.reason}` });
+                await tg("sendMessage", { chat_id: chatId, text: complete.ok ? "╪º┘å╪¬┘é╪º┘ä ┘ü┘ê╪▒█î ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à" : `╪«╪╖╪º: ${complete.reason}` });
             }
         }
         await clearState(userId);
@@ -9192,7 +9195,7 @@ async function insertOrderRecord(input) {
     const finalPrice = Math.max(0, Math.round(Number(input.finalPrice || 0)));
     const tronAmount = Number(input.tronAmount || 0);
     const walletDescription = input.walletTransactionDescription ||
-        `خرید محصول ${input.productNameSnapshot} (سفارش ${input.purchaseId})`;
+        `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${input.productNameSnapshot} (╪│┘ü╪º╪▒╪┤ ${input.purchaseId})`;
     if (walletUsed > 0) {
         const rows = await sql `
       WITH deducted AS (
@@ -9296,17 +9299,17 @@ async function grantTestConfig(userId, chatId) {
         getNumberSetting("test_config_hours")
     ]);
     if (!enabled) {
-        await tg("sendMessage", { chat_id: chatId, text: "❌ کانفیگ تست در حال حاضر فعال نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "Γ¥î ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪»╪▒ ╪¡╪º┘ä ╪¡╪º╪╢╪▒ ┘ü╪╣╪º┘ä ┘å█î╪│╪¬." });
         return;
     }
     const productId = Number(productIdRaw || 0);
     if (!productId) {
-        await tg("sendMessage", { chat_id: chatId, text: "❌ کانفیگ تست هنوز پیکربندی نشده. لطفاً بعداً امتحان کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "Γ¥î ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ┘ç┘å┘ê╪▓ ┘╛█î┌⌐╪▒╪¿┘å╪»█î ┘å╪┤╪»┘ç. ┘ä╪╖┘ü╪º┘ï ╪¿╪╣╪»╪º┘ï ╪º┘à╪¬╪¡╪º┘å ┌⌐┘å█î╪»." });
         return;
     }
     const userRows = await sql `SELECT test_config_used_at FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
     if (userRows.length && userRows[0].test_config_used_at) {
-        await tg("sendMessage", { chat_id: chatId, text: "⚠️ شما قبلاً از کانفیگ تست استفاده کرده‌اید.\nهر کاربر فقط یک بار می‌تواند کانفیگ تست دریافت کند." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ╪┤┘à╪º ┘é╪¿┘ä╪º┘ï ╪º╪▓ ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐╪▒╪»┘çΓÇî╪º█î╪».\n┘ç╪▒ ┌⌐╪º╪▒╪¿╪▒ ┘ü┘é╪╖ █î┌⌐ ╪¿╪º╪▒ ┘à█îΓÇî╪¬┘ê╪º┘å╪» ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪»╪▒█î╪º┘ü╪¬ ┌⌐┘å╪»." });
         return;
     }
     const productRows = await sql `
@@ -9318,7 +9321,7 @@ async function grantTestConfig(userId, chatId) {
     LIMIT 1;
   `;
     if (!productRows.length || !productRows[0].panel_id || !productRows[0].panel_active || !productRows[0].panel_allow_new_sales) {
-        await tg("sendMessage", { chat_id: chatId, text: "❌ کانفیگ تست در این لحظه در دسترس نیست. لطفاً بعداً امتحان کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "Γ¥î ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪»╪▒ ╪º█î┘å ┘ä╪¡╪╕┘ç ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿╪╣╪»╪º┘ï ╪º┘à╪¬╪¡╪º┘å ┌⌐┘å█î╪»." });
         return;
     }
     const product = productRows[0];
@@ -9338,7 +9341,7 @@ async function grantTestConfig(userId, chatId) {
             purchaseId,
             telegramId: userId,
             productId: Number(product.id),
-            productNameSnapshot: `کانفیگ تست | ${testMb}MB - ${testHours} ساعت`,
+            productNameSnapshot: `┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ | ${testMb}MB - ${testHours} ╪│╪º╪╣╪¬`,
             sellMode: "panel",
             sourcePanelId: Number(product.panel_id),
             panelDeliveryMode: parseDeliveryMode(String(product.panel_delivery_mode || "")),
@@ -9354,17 +9357,17 @@ async function grantTestConfig(userId, chatId) {
     }
     catch (err) {
         await sql `UPDATE users SET test_config_used_at = NULL WHERE telegram_id = ${userId};`;
-        await tg("sendMessage", { chat_id: chatId, text: "❌ خطا در ثبت سفارش کانفیگ تست." });
+        await tg("sendMessage", { chat_id: chatId, text: "Γ¥î ╪«╪╖╪º ╪»╪▒ ╪½╪¿╪¬ ╪│┘ü╪º╪▒╪┤ ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬." });
         return;
     }
     const result = await finalizeOrder(orderId, null);
     if (!result.ok) {
         await sql `UPDATE users SET test_config_used_at = NULL WHERE telegram_id = ${userId};`;
         await sql `DELETE FROM orders WHERE id = ${orderId} AND payment_method = 'test_config' AND status IN ('pending', 'receipt_submitted');`;
-        await tg("sendMessage", { chat_id: chatId, text: "❌ ساخت کانفیگ تست با خطا مواجه شد. لطفاً بعداً امتحان کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "Γ¥î ╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪». ┘ä╪╖┘ü╪º┘ï ╪¿╪╣╪»╪º┘ï ╪º┘à╪¬╪¡╪º┘å ┌⌐┘å█î╪»." });
         return;
     }
-    await tg("sendMessage", { chat_id: chatId, text: `✅ کانفیگ تست شما آماده شد!\nحجم: ${testMb}MB | مدت: ${testHours} ساعت` }).catch(() => { });
+    await tg("sendMessage", { chat_id: chatId, text: `Γ£à ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪┤┘à╪º ╪ó┘à╪º╪»┘ç ╪┤╪»!\n╪¡╪¼┘à: ${testMb}MB | ┘à╪»╪¬: ${testHours} ╪│╪º╪╣╪¬` }).catch(() => { });
 }
 async function showAdminPurchaseBonusSettings(chatId) {
     const [enabled, minVal, maxVal] = await Promise.all([
@@ -9376,16 +9379,16 @@ async function showAdminPurchaseBonusSettings(chatId) {
     const maxSurcharge = Math.round(maxVal ?? 10000);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `🎲 تنظیمات اضافه‌قیمت تصادفی خرید\n\n` +
-            `وضعیت: ${enabled ? "✅ فعال" : "❌ غیرفعال"}\n` +
-            `حداقل اضافه‌قیمت: ${formatPriceToman(minSurcharge)} تومان\n` +
-            `حداکثر اضافه‌قیمت: ${formatPriceToman(maxSurcharge)} تومان\n\n` +
-            `با فعال بودن این گزینه، در هر خرید یک مبلغ تصادفی بین حداقل و حداکثر به قیمت نهایی کاربر اضافه می‌شود برای جلو گیری از مسدودی کارت ها.`,
+        text: `≡ƒÄ▓ ╪¬┘å╪╕█î┘à╪º╪¬ ╪º╪╢╪º┘ü┘çΓÇî┘é█î┘à╪¬ ╪¬╪╡╪º╪»┘ü█î ╪«╪▒█î╪»\n\n` +
+            `┘ê╪╢╪╣█î╪¬: ${enabled ? "Γ£à ┘ü╪╣╪º┘ä" : "Γ¥î ╪║█î╪▒┘ü╪╣╪º┘ä"}\n` +
+            `╪¡╪»╪º┘é┘ä ╪º╪╢╪º┘ü┘çΓÇî┘é█î┘à╪¬: ${formatPriceToman(minSurcharge)} ╪¬┘ê┘à╪º┘å\n` +
+            `╪¡╪»╪º┌⌐╪½╪▒ ╪º╪╢╪º┘ü┘çΓÇî┘é█î┘à╪¬: ${formatPriceToman(maxSurcharge)} ╪¬┘ê┘à╪º┘å\n\n` +
+            `╪¿╪º ┘ü╪╣╪º┘ä ╪¿┘ê╪»┘å ╪º█î┘å ┌»╪▓█î┘å┘ç╪î ╪»╪▒ ┘ç╪▒ ╪«╪▒█î╪» █î┌⌐ ┘à╪¿┘ä╪║ ╪¬╪╡╪º╪»┘ü█î ╪¿█î┘å ╪¡╪»╪º┘é┘ä ┘ê ╪¡╪»╪º┌⌐╪½╪▒ ╪¿┘ç ┘é█î┘à╪¬ ┘å┘ç╪º█î█î ┌⌐╪º╪▒╪¿╪▒ ╪º╪╢╪º┘ü┘ç ┘à█îΓÇî╪┤┘ê╪» ╪¿╪▒╪º█î ╪¼┘ä┘ê ┌»█î╪▒█î ╪º╪▓ ┘à╪│╪»┘ê╪»█î ┌⌐╪º╪▒╪¬ ┘ç╪º.`,
         reply_markup: {
             inline_keyboard: [
-                [cb(enabled ? "⛔ غیرفعال‌کردن" : "✅ فعال‌کردن", "admin_toggle_purchase_bonus", enabled ? "danger" : "success")],
-                [cb("💰 تنظیم حداقل اضافه‌قیمت", "admin_set_purchase_bonus_min", "primary")],
-                [cb("💰 تنظیم حداکثر اضافه‌قیمت", "admin_set_purchase_bonus_max", "primary")],
+                [cb(enabled ? "Γ¢ö ╪║█î╪▒┘ü╪╣╪º┘äΓÇî┌⌐╪▒╪»┘å" : "Γ£à ┘ü╪╣╪º┘äΓÇî┌⌐╪▒╪»┘å", "admin_toggle_purchase_bonus", enabled ? "danger" : "success")],
+                [cb("≡ƒÆ░ ╪¬┘å╪╕█î┘à ╪¡╪»╪º┘é┘ä ╪º╪╢╪º┘ü┘çΓÇî┘é█î┘à╪¬", "admin_set_purchase_bonus_min", "primary")],
+                [cb("≡ƒÆ░ ╪¬┘å╪╕█î┘à ╪¡╪»╪º┌⌐╪½╪▒ ╪º╪╢╪º┘ü┘çΓÇî┘é█î┘à╪¬", "admin_set_purchase_bonus_max", "primary")],
                 [backButton("admin_settings")]
             ]
         }
@@ -9399,10 +9402,10 @@ async function showAdminTestConfigSettings(chatId) {
         getNumberSetting("test_config_hours")
     ]);
     const productId = Number(productIdRaw || 0);
-    let productName = "انتخاب نشده";
+    let productName = "╪º┘å╪¬╪«╪º╪¿ ┘å╪┤╪»┘ç";
     if (productId) {
         const pRows = await sql `SELECT name FROM products WHERE id = ${productId} LIMIT 1;`;
-        productName = pRows.length ? String(pRows[0].name || "") : "محصول پیدا نشد";
+        productName = pRows.length ? String(pRows[0].name || "") : "┘à╪¡╪╡┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪»";
     }
     const testMb = Math.round(testMbRaw ?? 100);
     const testHours = Math.round(testHoursRaw ?? 24);
@@ -9410,19 +9413,19 @@ async function showAdminTestConfigSettings(chatId) {
     const cnt = Number(usedCount[0]?.cnt || 0);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `🧪 تنظیمات کانفیگ تست\n\n` +
-            `وضعیت: ${enabled ? "✅ فعال" : "❌ غیرفعال"}\n` +
-            `محصول پنل: ${productName}\n` +
-            `حجم تست: ${testMb}MB\n` +
-            `مدت زمان: ${testHours} ساعت\n` +
-            `تعداد کاربران استفاده‌کرده: ${cnt} نفر`,
+        text: `≡ƒº¬ ╪¬┘å╪╕█î┘à╪º╪¬ ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬\n\n` +
+            `┘ê╪╢╪╣█î╪¬: ${enabled ? "Γ£à ┘ü╪╣╪º┘ä" : "Γ¥î ╪║█î╪▒┘ü╪╣╪º┘ä"}\n` +
+            `┘à╪¡╪╡┘ê┘ä ┘╛┘å┘ä: ${productName}\n` +
+            `╪¡╪¼┘à ╪¬╪│╪¬: ${testMb}MB\n` +
+            `┘à╪»╪¬ ╪▓┘à╪º┘å: ${testHours} ╪│╪º╪╣╪¬\n` +
+            `╪¬╪╣╪»╪º╪» ┌⌐╪º╪▒╪¿╪▒╪º┘å ╪º╪│╪¬┘ü╪º╪»┘çΓÇî┌⌐╪▒╪»┘ç: ${cnt} ┘å┘ü╪▒`,
         reply_markup: {
             inline_keyboard: [
-                [cb(enabled ? "⛔ غیرفعال‌کردن" : "✅ فعال‌کردن", "admin_toggle_test_config", enabled ? "danger" : "success")],
-                [cb("📦 انتخاب محصول پنل", "admin_pick_test_config_product", "primary")],
-                [cb("📊 تنظیم حجم (MB)", "admin_set_test_config_mb", "primary")],
-                [cb("⏱ تنظیم مدت (ساعت)", "admin_set_test_config_hours", "primary")],
-                [cb(`🔄 ریست کانفیگ تست (${cnt} نفر)`, "admin_reset_test_configs", "danger")],
+                [cb(enabled ? "Γ¢ö ╪║█î╪▒┘ü╪╣╪º┘äΓÇî┌⌐╪▒╪»┘å" : "Γ£à ┘ü╪╣╪º┘äΓÇî┌⌐╪▒╪»┘å", "admin_toggle_test_config", enabled ? "danger" : "success")],
+                [cb("≡ƒôª ╪º┘å╪¬╪«╪º╪¿ ┘à╪¡╪╡┘ê┘ä ┘╛┘å┘ä", "admin_pick_test_config_product", "primary")],
+                [cb("≡ƒôè ╪¬┘å╪╕█î┘à ╪¡╪¼┘à (MB)", "admin_set_test_config_mb", "primary")],
+                [cb("ΓÅ▒ ╪¬┘å╪╕█î┘à ┘à╪»╪¬ (╪│╪º╪╣╪¬)", "admin_set_test_config_hours", "primary")],
+                [cb(`≡ƒöä ╪▒█î╪│╪¬ ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ (${cnt} ┘å┘ü╪▒)`, "admin_reset_test_configs", "danger")],
                 [backButton("admin_settings")]
             ]
         }
@@ -9437,17 +9440,17 @@ async function showAdminTestConfigProductPicker(chatId) {
     LIMIT 30;
   `;
     const keyboard = rows.map((row) => {
-        const activeBadge = row.is_active ? "✅" : "⛔";
+        const activeBadge = row.is_active ? "Γ£à" : "Γ¢ö";
         return [cb(`${activeBadge} ${String(row.name)} (#${Number(row.id)})`, `admin_test_config_product_${Number(row.id)}`, "primary")];
     });
     if (!rows.length) {
-        keyboard.push([{ text: "هیچ محصول پنلی پیدا نشد", callback_data: "noop_no_panel_products" }]);
+        keyboard.push([{ text: "┘ç█î┌å ┘à╪¡╪╡┘ê┘ä ┘╛┘å┘ä█î ┘╛█î╪»╪º ┘å╪┤╪»", callback_data: "noop_no_panel_products" }]);
     }
-    keyboard.push([cb("🚫 پاک‌کردن محصول انتخاب‌شده", "admin_test_config_clear_product", "danger")]);
+    keyboard.push([cb("≡ƒÜ½ ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å ┘à╪¡╪╡┘ê┘ä ╪º┘å╪¬╪«╪º╪¿ΓÇî╪┤╪»┘ç", "admin_test_config_clear_product", "danger")]);
     keyboard.push([backButton("admin_test_config_settings")]);
     await tg("sendMessage", {
         chat_id: chatId,
-        text: "🧪 انتخاب محصول پنل برای کانفیگ تست\n\nیک محصول با sell_mode = panel انتخاب کنید.",
+        text: "≡ƒº¬ ╪º┘å╪¬╪«╪º╪¿ ┘à╪¡╪╡┘ê┘ä ┘╛┘å┘ä ╪¿╪▒╪º█î ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬\n\n█î┌⌐ ┘à╪¡╪╡┘ê┘ä ╪¿╪º sell_mode = panel ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪».",
         reply_markup: { inline_keyboard: keyboard }
     });
 }
@@ -9464,7 +9467,7 @@ async function cancelExpiredCryptoOrders() {
         const walletUsed = Number(row.wallet_used || 0);
         if (walletUsed > 0) {
             try {
-                await refundWalletUsage(Number(row.telegram_id), walletUsed, `بازگشت مبلغ کیف پول به دلیل انقضای سفارش ${row.purchase_id}`);
+                await refundWalletUsage(Number(row.telegram_id), walletUsed, `╪¿╪º╪▓┌»╪┤╪¬ ┘à╪¿┘ä╪║ ┌⌐█î┘ü ┘╛┘ê┘ä ╪¿┘ç ╪»┘ä█î┘ä ╪º┘å┘é╪╢╪º█î ╪│┘ü╪º╪▒╪┤ ${row.purchase_id}`);
             }
             catch (error) {
                 logError("refund_expired_crypto_wallet_failed", error, {
@@ -9488,8 +9491,8 @@ async function getProductPriceFromSizeMb(sizeMb) {
 async function sendConfigWithQr(chatId, purchaseId, configValue, keyboard, prefixText) {
     const captionLines = [
         prefixText ? prefixText : null,
-        `شناسه خرید: ${purchaseId}`,
-        `کانفیگ:\n${configValue}`
+        `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}`,
+        `┌⌐╪º┘å┘ü█î┌»:\n${configValue}`
     ].filter(Boolean);
     await tgSendConfigQr({
         chat_id: chatId,
@@ -9502,21 +9505,21 @@ async function sendConfigWithQr(chatId, purchaseId, configValue, keyboard, prefi
 async function sendDeliveryPackage(chatId, purchaseId, fallbackConfigValue, deliveryPayload, keyboard, prefixText) {
     const configLinks = deliveryPayload.configLinks || [];
     const hasManyConfigs = configLinks.length > 1;
-    // Only fall back to fallbackConfigValue when there is NO subscription URL — otherwise
-    // we'd show the sub link twice (once as "لینک ساب" and again as "کانفیگ").
+    // Only fall back to fallbackConfigValue when there is NO subscription URL ΓÇö otherwise
+    // we'd show the sub link twice (once as "┘ä█î┘å┌⌐ ╪│╪º╪¿" and again as "┌⌐╪º┘å┘ü█î┌»").
     const firstConfig = configLinks.length
         ? configLinks[0]
         : (!deliveryPayload.subscriptionUrl ? fallbackConfigValue || "" : "");
     const finalKeyboard = keyboard.map((row) => [...row]);
     if (hasManyConfigs && purchaseId && purchaseId !== "-") {
-        finalKeyboard.unshift([{ text: "📃 نمایش بقیه کانفیگ‌ها", callback_data: `show_configs_${purchaseId}_1` }]);
+        finalKeyboard.unshift([{ text: "≡ƒôâ ┘å┘à╪º█î╪┤ ╪¿┘é█î┘ç ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º", callback_data: `show_configs_${purchaseId}_1` }]);
     }
     const captionLines = [
         prefixText ? prefixText : null,
-        `شناسه خرید: ${purchaseId}`,
-        deliveryPayload.subscriptionUrl ? `لینک ساب:\n${deliveryPayload.subscriptionUrl}` : null,
-        firstConfig ? `کانفیگ:\n${firstConfig}` : null,
-        hasManyConfigs ? `(${configLinks.length - 1} کانفیگ دیگر هم موجود است)` : null
+        `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}`,
+        deliveryPayload.subscriptionUrl ? `┘ä█î┘å┌⌐ ╪│╪º╪¿:\n${deliveryPayload.subscriptionUrl}` : null,
+        firstConfig ? `┌⌐╪º┘å┘ü█î┌»:\n${firstConfig}` : null,
+        hasManyConfigs ? `(${configLinks.length - 1} ┌⌐╪º┘å┘ü█î┌» ╪»█î┌»╪▒ ┘ç┘à ┘à┘ê╪¼┘ê╪» ╪º╪│╪¬)` : null
     ].filter(Boolean);
     const qrText = String(firstConfig || deliveryPayload.subscriptionUrl || "").trim();
     if (!qrText) {
@@ -9554,18 +9557,18 @@ function buildAdminDeliverySummary(params) {
         allSubUrls.push(params.deliveryPayload.subscriptionUrl);
     }
     const subUrlLines = allSubUrls.length > 1
-        ? allSubUrls.map((u, i) => `لینک ساب ${i + 1}:\n${u}`).join("\n\n")
+        ? allSubUrls.map((u, i) => `┘ä█î┘å┌⌐ ╪│╪º╪¿ ${i + 1}:\n${u}`).join("\n\n")
         : allSubUrls.length === 1
-            ? `لینک ساب:\n${allSubUrls[0]}`
+            ? `┘ä█î┘å┌⌐ ╪│╪º╪¿:\n${allSubUrls[0]}`
             : null;
     const lines = [
-        "✅ سفارش تحویل شد",
-        `شناسه خرید: ${params.purchaseId}`,
-        `کاربر: ${params.userId}`,
-        `یوزرنیم: ${params.telegramUsername}`,
-        `نام: ${params.telegramFullName}`,
-        `محصول: ${params.productName}`,
-        params.walletUsed ? `کسر از کیف پول: ${formatPriceToman(params.walletUsed)} تومان` : null,
+        "Γ£à ╪│┘ü╪º╪▒╪┤ ╪¬╪¡┘ê█î┘ä ╪┤╪»",
+        `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${params.purchaseId}`,
+        `┌⌐╪º╪▒╪¿╪▒: ${params.userId}`,
+        `█î┘ê╪▓╪▒┘å█î┘à: ${params.telegramUsername}`,
+        `┘å╪º┘à: ${params.telegramFullName}`,
+        `┘à╪¡╪╡┘ê┘ä: ${params.productName}`,
+        params.walletUsed ? `┌⌐╪│╪▒ ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä: ${formatPriceToman(params.walletUsed)} ╪¬┘ê┘à╪º┘å` : null,
         subUrlLines,
         username ? `username: ${username}` : null,
         email ? `email: ${email}` : null,
@@ -9583,11 +9586,11 @@ async function createTopupCard2CardRequest(chatId, userId, inventoryId, mb) {
     LIMIT 1;
   `;
     if (!ownRows.length || !Number.isFinite(mb) || mb <= 0) {
-        await tg("sendMessage", { chat_id: chatId, text: "⚠️ درخواست معتبر نیست یا کانفیگ برای شما نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ╪»╪▒╪«┘ê╪º╪│╪¬ ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬ █î╪º ┌⌐╪º┘å┘ü█î┌» ╪¿╪▒╪º█î ╪┤┘à╪º ┘å█î╪│╪¬." });
         return null;
     }
     if (String(ownRows[0].status) === "migrated" && ownRows[0].migrated_to_inventory_id) {
-        await tg("sendMessage", { chat_id: chatId, text: "⚡ این کانفیگ به پنل جدید منتقل شده. برای افزایش دیتا از لیست کانفیگ‌هایتان اقدام کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜí ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪¿┘ç ┘╛┘å┘ä ╪¼╪»█î╪» ┘à┘å╪¬┘é┘ä ╪┤╪»┘ç. ╪¿╪▒╪º█î ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪º╪▓ ┘ä█î╪│╪¬ ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î╪¬╪º┘å ╪º┘é╪»╪º┘à ┌⌐┘å█î╪»." });
         return null;
     }
     const rateSetting = await getSetting("topup_price_per_gb_toman");
@@ -9596,7 +9599,7 @@ async function createTopupCard2CardRequest(chatId, userId, inventoryId, mb) {
     const finalPrice = Math.max(1, Math.ceil((mb / 1024) * rate));
     const cards = await sql `SELECT id, label, card_number, holder_name, bank_name FROM cards WHERE active = TRUE ORDER BY id ASC;`;
     if (!cards.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "فعلاً کارت فعالی برای پرداخت کارت‌به‌کارت ثبت نشده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ü╪╣┘ä╪º┘ï ┌⌐╪º╪▒╪¬ ┘ü╪╣╪º┘ä█î ╪¿╪▒╪º█î ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪º╪▒╪¬ΓÇî╪¿┘çΓÇî┌⌐╪º╪▒╪¬ ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬." });
         return null;
     }
     const randomMode = await getBoolSetting("random_card_distribution", false);
@@ -9613,16 +9616,16 @@ async function createTopupCard2CardRequest(chatId, userId, inventoryId, mb) {
     await setState(userId, "await_topup_receipt", { topupRequestId: inserted[0].id });
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `درخواست افزایش دیتا ساخته شد ✅\n` +
-            `شماره سفارش: ${purchaseId}\n` +
-            `مقدار: ${mb}MB\n` +
-            `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
-            `کارت مقصد:\n` +
+        text: `╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+            `╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤: ${purchaseId}\n` +
+            `┘à┘é╪»╪º╪▒: ${mb}MB\n` +
+            `┘à╪¿┘ä╪║: ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å\n\n` +
+            `┌⌐╪º╪▒╪¬ ┘à┘é╪╡╪»:\n` +
             `${selected.label}\n` +
-            `شماره کارت: ${selected.card_number}\n` +
-            `${selected.holder_name ? `صاحب کارت: ${selected.holder_name}\n` : ""}` +
-            `${selected.bank_name ? `بانک: ${selected.bank_name}\n` : ""}\n` +
-            `پس از پرداخت، عکس رسید را ارسال کنید.`,
+            `╪┤┘à╪º╪▒┘ç ┌⌐╪º╪▒╪¬: ${selected.card_number}\n` +
+            `${selected.holder_name ? `╪╡╪º╪¡╪¿ ┌⌐╪º╪▒╪¬: ${selected.holder_name}\n` : ""}` +
+            `${selected.bank_name ? `╪¿╪º┘å┌⌐: ${selected.bank_name}\n` : ""}\n` +
+            `┘╛╪│ ╪º╪▓ ┘╛╪▒╪»╪º╪«╪¬╪î ╪╣┌⌐╪│ ╪▒╪│█î╪» ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».`,
         reply_markup: { inline_keyboard: [[homeButton()]] }
     });
 }
@@ -9756,7 +9759,7 @@ async function resolveTelegramTargetId(raw) {
     }
     const username = normalized.replace("@", "").trim().toLowerCase();
     if (!username) {
-        return { ok: false, reason: "شناسه کاربر معتبر نیست." };
+        return { ok: false, reason: "╪┤┘å╪º╪│┘ç ┌⌐╪º╪▒╪¿╪▒ ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." };
     }
     const rows = await sql `
     SELECT telegram_id, username
@@ -9766,7 +9769,7 @@ async function resolveTelegramTargetId(raw) {
     LIMIT 1;
   `;
     if (!rows.length) {
-        return { ok: false, reason: "کاربری با این یوزرنیم پیدا نشد." };
+        return { ok: false, reason: "┌⌐╪º╪▒╪¿╪▒█î ╪¿╪º ╪º█î┘å █î┘ê╪▓╪▒┘å█î┘à ┘╛█î╪»╪º ┘å╪┤╪»." };
     }
     return { ok: true, telegramId: Number(rows[0].telegram_id), username: String(rows[0].username || username) };
 }
@@ -9779,7 +9782,7 @@ async function ensureAdminCustomProductId() {
   `;
     const rows = await sql `SELECT id FROM products WHERE name = ${name} LIMIT 1;`;
     if (!rows.length) {
-        throw new Error("محصول سیستمی برای کانفیگ سفارشی پیدا نشد.");
+        throw new Error("┘à╪¡╪╡┘ê┘ä ╪│█î╪│╪¬┘à█î ╪¿╪▒╪º█î ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î ┘╛█î╪»╪º ┘å╪┤╪».");
     }
     return Number(rows[0].id);
 }
@@ -9790,16 +9793,16 @@ async function resolveFirstSanaeiInboundId(panel) {
         password: String(panel.password || "")
     });
     if (!login.res.ok || !jsonSuccess(login.data) || !login.cookie) {
-        return { ok: false, reason: `ورود به پنل سانایی ناموفق: ${login.res.status}` };
+        return { ok: false, reason: `┘ê╪▒┘ê╪» ╪¿┘ç ┘╛┘å┘ä ╪│╪º┘å╪º█î█î ┘å╪º┘à┘ê┘ü┘é: ${login.res.status}` };
     }
     const inbounds = await getSanaeiInbounds(String(panel.base_url), login.cookie);
     if (!inbounds.res.ok || !jsonSuccess(inbounds.data) || !inbounds.items.length) {
-        return { ok: false, reason: "هیچ inbound فعالی روی پنل سانایی پیدا نشد." };
+        return { ok: false, reason: "┘ç█î┌å inbound ┘ü╪╣╪º┘ä█î ╪▒┘ê█î ┘╛┘å┘ä ╪│╪º┘å╪º█î█î ┘╛█î╪»╪º ┘å╪┤╪»." };
     }
     const first = inbounds.items[0];
     const inboundId = Number(first.id || 0);
     if (!Number.isFinite(inboundId) || inboundId <= 0) {
-        return { ok: false, reason: "شناسه inbound معتبر نیست." };
+        return { ok: false, reason: "╪┤┘å╪º╪│┘ç inbound ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." };
     }
     return { ok: true, inboundId, protocol: String(first.protocol || "vless") };
 }
@@ -10158,9 +10161,9 @@ async function tryAutoApplyPanelTopup(topupRequestId, doneBy) {
     const cfg = await sql `SELECT config_value FROM inventory WHERE id = ${doneRows[0].inventory_id} LIMIT 1;`;
     await tg("sendMessage", {
         chat_id: Number(doneRows[0].telegram_id),
-        text: `درخواست افزایش ${doneRows[0].requested_mb}MB شما به‌صورت خودکار انجام شد ✅\n` +
-            `شماره سفارش: ${doneRows[0].purchase_id}\n` +
-            `کانفیگ:\n${String(cfg[0]?.config_value || "-")}`
+        text: `╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ${doneRows[0].requested_mb}MB ╪┤┘à╪º ╪¿┘çΓÇî╪╡┘ê╪▒╪¬ ╪«┘ê╪»┌⌐╪º╪▒ ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à\n` +
+            `╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤: ${doneRows[0].purchase_id}\n` +
+            `┌⌐╪º┘å┘ü█î┌»:\n${String(cfg[0]?.config_value || "-")}`
     });
     return { ok: true, message: result.message };
 }
@@ -10170,7 +10173,7 @@ async function generateUniqueConfigName(baseName, userId, quantity, index, share
     const randomNum = sharedRandom ?? (Math.floor(Math.random() * 90000) + 10000);
     const nameWithRandom = `${baseName}${randomNum}`;
     let name = quantity === 1 ? nameWithRandom : `${nameWithRandom}_${index}`;
-    // Check globally — another user could already hold the same name on the panel
+    // Check globally ΓÇö another user could already hold the same name on the panel
     const existing = await sql `
     SELECT id FROM orders
     WHERE config_name = ${name}
@@ -10194,7 +10197,7 @@ async function createBulkOrders(chatId, userId, productId, paymentMethod, discou
     // Calculate total price - get product price and multiply by quantity
     const productRows = await sql `SELECT price_toman FROM products WHERE id = ${productId} LIMIT 1;`;
     if (!productRows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä █î╪º┘ü╪¬ ┘å╪┤╪»." });
         return null;
     }
     const unitPrice = Number(productRows[0].price_toman || 0);
@@ -10215,7 +10218,7 @@ async function createBulkOrders(chatId, userId, productId, paymentMethod, discou
     if (!orderCreated) {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `❌ خطا: نتوانستیم سفارش شما را ثبت کنیم. لطفاً دوباره تلاش کنید یا از پشتیبانی کمک بگیرید.`
+            text: `Γ¥î ╪«╪╖╪º: ┘å╪¬┘ê╪º┘å╪│╪¬█î┘à ╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪▒╪º ╪½╪¿╪¬ ┌⌐┘å█î┘à. ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪» █î╪º ╪º╪▓ ┘╛╪┤╪¬█î╪¿╪º┘å█î ┌⌐┘à┌⌐ ╪¿┌»█î╪▒█î╪».`
         });
         return null;
     }
@@ -10255,7 +10258,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
     LIMIT 1;
   `;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä █î╪º┘ü╪¬ ┘å╪┤╪»." });
         return null;
     }
     const product = rows[0];
@@ -10263,7 +10266,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
     const panelRemaining = Number(product.panel_sell_limit || 0) > 0 ? Math.max(0, Number(product.panel_sell_limit) - Number(product.panel_sales_count || 0)) : Infinity;
     if (sellMode === "panel" &&
         (!product.panel_id || !product.panel_active || !product.panel_allow_new_sales || panelRemaining <= 0)) {
-        await tg("sendMessage", { chat_id: chatId, text: "فروش از پنل برای این محصول فعلاً در دسترس نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ü╪▒┘ê╪┤ ╪º╪▓ ┘╛┘å┘ä ╪¿╪▒╪º█î ╪º█î┘å ┘à╪¡╪╡┘ê┘ä ┘ü╪╣┘ä╪º┘ï ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬." });
         return null;
     }
     const allowNoStock = sanitizePanelConfig(overrides?.panelConfigPatch).force_awaiting_config === true;
@@ -10277,8 +10280,8 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         await tg("sendMessage", {
             chat_id: chatId,
             text: Number(product.stock) <= 0
-                ? "موجودی این محصول تمام شده است."
-                : `موجودی کافی نیست. موجودی: ${Number(product.stock)} عدد، درخواست شما: ${orderQuantity} عدد.`
+                ? "┘à┘ê╪¼┘ê╪»█î ╪º█î┘å ┘à╪¡╪╡┘ê┘ä ╪¬┘à╪º┘à ╪┤╪»┘ç ╪º╪│╪¬."
+                : `┘à┘ê╪¼┘ê╪»█î ┌⌐╪º┘ü█î ┘å█î╪│╪¬. ┘à┘ê╪¼┘ê╪»█î: ${Number(product.stock)} ╪╣╪»╪»╪î ╪»╪▒╪«┘ê╪º╪│╪¬ ╪┤┘à╪º: ${orderQuantity} ╪╣╪»╪».`
         });
         return null;
     }
@@ -10290,7 +10293,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         const userRows = await sql `SELECT wallet_balance FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
         const walletBalance = userRows.length ? Number(userRows[0].wallet_balance || 0) : 0;
         if (walletBalance < finalPrice) {
-            await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما کافی نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ┌⌐╪º┘ü█î ┘å█î╪│╪¬." });
             return null;
         }
         walletUsed = finalPrice;
@@ -10312,14 +10315,14 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         const wallets = await getActiveCryptoWallets();
         const ready = wallets.filter(cryptoWalletReady);
         if (!ready.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "هیچ کیف پول کریپتوی فعالی برای پرداخت تنظیم نشده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê█î ┘ü╪╣╪º┘ä█î ╪¿╪▒╪º█î ┘╛╪▒╪»╪º╪«╪¬ ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         if (ready.length > 1) {
             await setState(userId, "await_crypto_wallet_select", { productId, discountInput, walletUsedParam, overrides });
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "کدام کیف پول را برای پرداخت انتخاب می‌کنید؟",
+                text: "┌⌐╪»╪º┘à ┌⌐█î┘ü ┘╛┘ê┘ä ╪▒╪º ╪¿╪▒╪º█î ┘╛╪▒╪»╪º╪«╪¬ ╪º┘å╪¬╪«╪º╪¿ ┘à█îΓÇî┌⌐┘å█î╪»╪ƒ",
                 reply_markup: { inline_keyboard: ready.slice(0, 12).map((w) => [{ text: cryptoWalletTitle(w), callback_data: `select_crypto_wallet_${w.id}` }]).concat([[homeButton()]]) }
             });
             return null;
@@ -10340,13 +10343,13 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
             const { getSwapwalletAllowedTokens } = await import("./swapwallet.js");
             const tokens = await getSwapwalletAllowedTokens();
             if (!tokens.length) {
-                await tg("sendMessage", { chat_id: chatId, text: "فعلاً هیچ روش پرداختی برای SwapWallet در دسترس نیست." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘ü╪╣┘ä╪º┘ï ┘ç█î┌å ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬█î ╪¿╪▒╪º█î SwapWallet ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬." });
                 return null;
             }
             await setState(userId, "await_swapwallet_asset_select", { productId, discountInput, walletUsedParam, overrides });
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "پرداخت با SwapWallet\nکدام ارز/شبکه را انتخاب می‌کنید؟",
+                text: "┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º SwapWallet\n┌⌐╪»╪º┘à ╪º╪▒╪▓/╪┤╪¿┌⌐┘ç ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┘à█îΓÇî┌⌐┘å█î╪»╪ƒ",
                 reply_markup: {
                     inline_keyboard: tokens
                         .slice(0, 12)
@@ -10357,7 +10360,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         }
         catch (e) {
             logError("swapwallet_allowed_tokens_failed", e, { userId, chatId });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در دریافت گزینه‌های پرداخت SwapWallet." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪»╪▒█î╪º┘ü╪¬ ┌»╪▓█î┘å┘çΓÇî┘ç╪º█î ┘╛╪▒╪»╪º╪«╪¬ SwapWallet." });
         }
         return null;
     }
@@ -10381,11 +10384,11 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 status: "pending",
                 walletUsed,
                 configName,
-                walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+                walletTransactionDescription: `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot} (╪│┘ü╪º╪▒╪┤ ${purchaseId})`
             }));
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `✅ مبلغ ${formatPriceToman(walletUsed)} تومان از کیف پول شما کسر شد و سفارش ثبت گردید.\nدرحال آماده‌سازی محصول...`
+                text: `Γ£à ┘à╪¿┘ä╪║ ${formatPriceToman(walletUsed)} ╪¬┘ê┘à╪º┘å ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ┌⌐╪│╪▒ ╪┤╪» ┘ê ╪│┘ü╪º╪▒╪┤ ╪½╪¿╪¬ ┌»╪▒╪»█î╪».\n╪»╪▒╪¡╪º┘ä ╪ó┘à╪º╪»┘çΓÇî╪│╪º╪▓█î ┘à╪¡╪╡┘ê┘ä...`
             });
             // Wrap finalizeOrder in a 24-second timeout so the user always gets a response
             // even if the panel is slow or Vercel kills the function at 30 s.
@@ -10401,11 +10404,11 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                     // nothing to do here
                 }
                 else if (reason === "already_paid" || reason === "already_processing" || reason === "awaiting_config") {
-                    // already handled or queued — no extra message needed
+                    // already handled or queued ΓÇö no extra message needed
                 }
                 else {
                     // panel_unavailable, stock_empty, timeout, or any other reason:
-                    // Payment was accepted but config could not be delivered → give the user options.
+                    // Payment was accepted but config could not be delivered ΓåÆ give the user options.
                     // Ensure order ends up in awaiting_config so the retry button can work.
                     await sql `
             UPDATE orders
@@ -10413,26 +10416,26 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
             WHERE id = ${orderId}
               AND status IN ('pending', 'fulfilling', 'receipt_submitted');
           `;
-                    const reasonLabel = reason === "timeout" ? "مدت زمان پاسخ‌دهی سرور بیش از حد طولانی شد" :
-                        reason === "panel_unavailable" ? "پنل در این لحظه در دسترس نیست" :
-                            reason === "stock_empty" ? "موجودی محصول تمام شده است" :
-                                "خطای ناشناخته در ساخت کانفیگ";
+                    const reasonLabel = reason === "timeout" ? "┘à╪»╪¬ ╪▓┘à╪º┘å ┘╛╪º╪│╪«ΓÇî╪»┘ç█î ╪│╪▒┘ê╪▒ ╪¿█î╪┤ ╪º╪▓ ╪¡╪» ╪╖┘ê┘ä╪º┘å█î ╪┤╪»" :
+                        reason === "panel_unavailable" ? "┘╛┘å┘ä ╪»╪▒ ╪º█î┘å ┘ä╪¡╪╕┘ç ╪»╪▒ ╪»╪│╪¬╪▒╪│ ┘å█î╪│╪¬" :
+                            reason === "stock_empty" ? "┘à┘ê╪¼┘ê╪»█î ┘à╪¡╪╡┘ê┘ä ╪¬┘à╪º┘à ╪┤╪»┘ç ╪º╪│╪¬" :
+                                "╪«╪╖╪º█î ┘å╪º╪┤┘å╪º╪«╪¬┘ç ╪»╪▒ ╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌»";
                     await tg("sendMessage", {
                         chat_id: chatId,
                         parse_mode: "HTML",
-                        text: `⚠️ پرداخت شما ثبت شد، اما آماده‌سازی محصول با مشکل مواجه شد.\n` +
-                            `دلیل: ${reasonLabel}\n\n` +
-                            `لطفاً یکی از گزینه‌های زیر را انتخاب کنید:`,
+                        text: `ΓÜá∩╕Å ┘╛╪▒╪»╪º╪«╪¬ ╪┤┘à╪º ╪½╪¿╪¬ ╪┤╪»╪î ╪º┘à╪º ╪ó┘à╪º╪»┘çΓÇî╪│╪º╪▓█î ┘à╪¡╪╡┘ê┘ä ╪¿╪º ┘à╪┤┌⌐┘ä ┘à┘ê╪º╪¼┘ç ╪┤╪».\n` +
+                            `╪»┘ä█î┘ä: ${reasonLabel}\n\n` +
+                            `┘ä╪╖┘ü╪º┘ï █î┌⌐█î ╪º╪▓ ┌»╪▓█î┘å┘çΓÇî┘ç╪º█î ╪▓█î╪▒ ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
                         reply_markup: {
                             inline_keyboard: [
-                                [{ text: "🔄 تلاش مجدد برای دریافت کانفیگ", callback_data: `retry_config_${orderId}` }],
-                                [{ text: "💰 بازگشت وجه به کیف پول", callback_data: `refund_to_wallet_${orderId}` }]
+                                [{ text: "≡ƒöä ╪¬┘ä╪º╪┤ ┘à╪¼╪»╪» ╪¿╪▒╪º█î ╪»╪▒█î╪º┘ü╪¬ ┌⌐╪º┘å┘ü█î┌»", callback_data: `retry_config_${orderId}` }],
+                                [{ text: "≡ƒÆ░ ╪¿╪º╪▓┌»╪┤╪¬ ┘ê╪¼┘ç ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä", callback_data: `refund_to_wallet_${orderId}` }]
                             ]
                         }
                     }).catch(() => { });
-                    await notifyAdmins(`⚠️ سفارش ${purchaseId} پرداخت شد (کیف پول) اما تحویل نشد.\nدلیل: ${reason}\nکاربر: ${userId}`, { inline_keyboard: [
-                            [{ text: "ارسال کانفیگ دستی", callback_data: `admin_provide_config_${orderId}` }],
-                            [{ text: "🔎 بررسی سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]
+                    await notifyAdmins(`ΓÜá∩╕Å ╪│┘ü╪º╪▒╪┤ ${purchaseId} ┘╛╪▒╪»╪º╪«╪¬ ╪┤╪» (┌⌐█î┘ü ┘╛┘ê┘ä) ╪º┘à╪º ╪¬╪¡┘ê█î┘ä ┘å╪┤╪».\n╪»┘ä█î┘ä: ${reason}\n┌⌐╪º╪▒╪¿╪▒: ${userId}`, { inline_keyboard: [
+                            [{ text: "╪º╪▒╪│╪º┘ä ┌⌐╪º┘å┘ü█î┌» ╪»╪│╪¬█î", callback_data: `admin_provide_config_${orderId}` }],
+                            [{ text: "≡ƒöÄ ╪¿╪▒╪▒╪│█î ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]
                         ] });
                 }
             }
@@ -10441,15 +10444,15 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         catch (error) {
             const code = getOrderInsertErrorCode(error);
             if (code === "discount_unavailable") {
-                await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪»█î┌»╪▒ ┘é╪º╪¿┘ä ╪º╪│╪¬┘ü╪º╪»┘ç ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪½╪¿╪¬ ┌⌐┘å█î╪»." });
                 return null;
             }
             if (code === "wallet_insufficient") {
-                await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما کافی نیست." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ┌⌐╪º┘ü█î ┘å█î╪│╪¬." });
                 return null;
             }
             logError("create_wallet_order_failed", error, { chatId, userId, productId, purchaseId });
-            await tg("sendMessage", { chat_id: chatId, text: "ساخت سفارش با خطا مواجه شد. لطفاً دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│╪º╪«╪¬ ╪│┘ü╪º╪▒╪┤ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪». ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
         }
         return null;
     }
@@ -10475,30 +10478,30 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
       RETURNING id;
     `;
         if (!inserted.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما کافی نیست یا خطایی رخ داده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ┌⌐╪º┘ü█î ┘å█î╪│╪¬ █î╪º ╪«╪╖╪º█î█î ╪▒╪« ╪»╪º╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         const negativeWalletUsed = -walletUsed;
         await sql `
       INSERT INTO wallet_transactions (telegram_id, amount, type, description, created_at)
-      VALUES (${userId}, ${negativeWalletUsed}, 'purchase', ${`خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`}, NOW());
+      VALUES (${userId}, ${negativeWalletUsed}, 'purchase', ${`╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot} (╪│┘ü╪º╪▒╪┤ ${purchaseId})`}, NOW());
     `;
         return purchaseId;
         const orderId = Number(inserted[0].id);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `✅ مبلغ ${formatPriceToman(walletUsed)} تومان از کیف پول شما کسر شد و سفارش ثبت گردید.\nدرحال آماده‌سازی محصول...`
+            text: `Γ£à ┘à╪¿┘ä╪║ ${formatPriceToman(walletUsed)} ╪¬┘ê┘à╪º┘å ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ┌⌐╪│╪▒ ╪┤╪» ┘ê ╪│┘ü╪º╪▒╪┤ ╪½╪¿╪¬ ┌»╪▒╪»█î╪».\n╪»╪▒╪¡╪º┘ä ╪ó┘à╪º╪»┘çΓÇî╪│╪º╪▓█î ┘à╪¡╪╡┘ê┘ä...`
         });
         const fulfill = await finalizeOrder(orderId, null);
         if (!fulfill.ok && fulfill.reason === "stock_empty") {
-            await tg("sendMessage", { chat_id: chatId, text: "موجودی صفر است. ادمین پیگیری می‌کند." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ╪╡┘ü╪▒ ╪º╪│╪¬. ╪º╪»┘à█î┘å ┘╛█î┌»█î╪▒█î ┘à█îΓÇî┌⌐┘å╪»." });
         }
         return null;
     }
     if (paymentMethod === "card2card") {
         const cards = await sql `SELECT id, label, card_number, holder_name, bank_name FROM cards WHERE active = TRUE ORDER BY id ASC;`;
         if (!cards.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "فعلاً کارت فعالی برای پرداخت کارت‌به‌کارت ثبت نشده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ü╪╣┘ä╪º┘ï ┌⌐╪º╪▒╪¬ ┘ü╪╣╪º┘ä█î ╪¿╪▒╪º█î ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪º╪▒╪¬ΓÇî╪¿┘çΓÇî┌⌐╪º╪▒╪¬ ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         const randomMode = await getBoolSetting("random_card_distribution", false);
@@ -10525,24 +10528,24 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 status: "awaiting_receipt",
                 walletUsed,
                 configName,
-                walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+                walletTransactionDescription: `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot} (╪│┘ü╪º╪▒╪┤ ${purchaseId})`
             }));
             await setState(userId, "await_receipt", { orderId });
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `سفارش شما ساخته شد ✅\n` +
-                    `شناسه خرید: ${purchaseId}\n` +
-                    `محصول: ${productNameSnapshot}\n` +
-                    `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
-                    `کارت مقصد:\n` +
+                text: `╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+                    `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}\n` +
+                    `┘à╪¡╪╡┘ê┘ä: ${productNameSnapshot}\n` +
+                    `┘à╪¿┘ä╪║: ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å\n\n` +
+                    `┌⌐╪º╪▒╪¬ ┘à┘é╪╡╪»:\n` +
                     `${selected.label}\n` +
-                    `شماره کارت: ${selected.card_number}\n` +
-                    `${selected.holder_name ? `صاحب کارت: ${selected.holder_name}\n` : ""}` +
-                    `${selected.bank_name ? `بانک: ${selected.bank_name}\n` : ""}\n` +
-                    `⚠️⚠️ هشدار مهم ⚠️⚠️\n` +
-                    `لطفاً دقیقاً مبلغ ${formatPriceToman(finalPrice)} تومان را واریز کنید.\n` +
-                    `در صورت واریز مبلغ اشتباه، سفارش شما تأیید نخواهد شد!\n\n` +
-                    `بعد از انتقال، اسکرین‌شات رسید را به صورت عکس ارسال کنید.`,
+                    `╪┤┘à╪º╪▒┘ç ┌⌐╪º╪▒╪¬: ${selected.card_number}\n` +
+                    `${selected.holder_name ? `╪╡╪º╪¡╪¿ ┌⌐╪º╪▒╪¬: ${selected.holder_name}\n` : ""}` +
+                    `${selected.bank_name ? `╪¿╪º┘å┌⌐: ${selected.bank_name}\n` : ""}\n` +
+                    `ΓÜá∩╕ÅΓÜá∩╕Å ┘ç╪┤╪»╪º╪▒ ┘à┘ç┘à ΓÜá∩╕ÅΓÜá∩╕Å\n` +
+                    `┘ä╪╖┘ü╪º┘ï ╪»┘é█î┘é╪º┘ï ┘à╪¿┘ä╪║ ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å ╪▒╪º ┘ê╪º╪▒█î╪▓ ┌⌐┘å█î╪».\n` +
+                    `╪»╪▒ ╪╡┘ê╪▒╪¬ ┘ê╪º╪▒█î╪▓ ┘à╪¿┘ä╪║ ╪º╪┤╪¬╪¿╪º┘ç╪î ╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪¬╪ú█î█î╪» ┘å╪«┘ê╪º┘ç╪» ╪┤╪»!\n\n` +
+                    `╪¿╪╣╪» ╪º╪▓ ╪º┘å╪¬┘é╪º┘ä╪î ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ╪▒╪│█î╪» ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».`,
                 reply_markup: {
                     inline_keyboard: [[homeButton()]]
                 }
@@ -10552,22 +10555,22 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         catch (error) {
             const code = getOrderInsertErrorCode(error);
             if (code === "discount_unavailable") {
-                await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪»█î┌»╪▒ ┘é╪º╪¿┘ä ╪º╪│╪¬┘ü╪º╪»┘ç ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪½╪¿╪¬ ┌⌐┘å█î╪»." });
                 return null;
             }
             if (code === "wallet_insufficient") {
-                await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪¿╪▒╪º█î ╪½╪¿╪¬ ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┌⌐╪º┘ü█î ┘å█î╪│╪¬." });
                 return null;
             }
             logError("create_card2card_order_failed", error, { chatId, userId, productId, purchaseId });
-            await tg("sendMessage", { chat_id: chatId, text: "ساخت سفارش با خطا مواجه شد. لطفاً دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│╪º╪«╪¬ ╪│┘ü╪º╪▒╪┤ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪». ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
         }
         return null;
     }
     if (false && paymentMethod === "card2card") {
         const cards = await sql `SELECT id, label, card_number, holder_name, bank_name FROM cards WHERE active = TRUE ORDER BY id ASC;`;
         if (!cards.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "فعلاً کارت فعالی برای پرداخت کارت‌به‌کارت ثبت نشده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ü╪╣┘ä╪º┘ï ┌⌐╪º╪▒╪¬ ┘ü╪╣╪º┘ä█î ╪¿╪▒╪º█î ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪º╪▒╪¬ΓÇî╪¿┘çΓÇî┌⌐╪º╪▒╪¬ ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         const randomMode = await getBoolSetting("random_card_distribution", false);
@@ -10592,16 +10595,16 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         await setState(userId, "await_receipt", { orderId: inserted[0].id });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `سفارش شما ساخته شد ✅\n` +
-                `شناسه خرید: ${purchaseId}\n` +
-                `محصول: ${productNameSnapshot}\n` +
-                `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
-                `کارت مقصد:\n` +
+            text: `╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+                `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}\n` +
+                `┘à╪¡╪╡┘ê┘ä: ${productNameSnapshot}\n` +
+                `┘à╪¿┘ä╪║: ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å\n\n` +
+                `┌⌐╪º╪▒╪¬ ┘à┘é╪╡╪»:\n` +
                 `${selected.label}\n` +
-                `شماره کارت: ${selected.card_number}\n` +
-                `${selected.holder_name ? `صاحب کارت: ${selected.holder_name}\n` : ""}` +
-                `${selected.bank_name ? `بانک: ${selected.bank_name}\n` : ""}\n` +
-                `بعد از انتقال، اسکرین‌شات رسید را به صورت عکس ارسال کنید.`,
+                `╪┤┘à╪º╪▒┘ç ┌⌐╪º╪▒╪¬: ${selected.card_number}\n` +
+                `${selected.holder_name ? `╪╡╪º╪¡╪¿ ┌⌐╪º╪▒╪¬: ${selected.holder_name}\n` : ""}` +
+                `${selected.bank_name ? `╪¿╪º┘å┌⌐: ${selected.bank_name}\n` : ""}\n` +
+                `╪¿╪╣╪» ╪º╪▓ ╪º┘å╪¬┘é╪º┘ä╪î ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ╪▒╪│█î╪» ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».`,
             reply_markup: {
                 inline_keyboard: [[homeButton()]]
             }
@@ -10610,7 +10613,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
     }
     if (paymentMethod === "crypto") {
         if (!cryptoWalletId) {
-            await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو انتخاب نشده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê ╪º┘å╪¬╪«╪º╪¿ ┘å╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         const walletRows = await sql `
@@ -10620,12 +10623,12 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
       LIMIT 1;
     `;
         if (!walletRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const w = walletRows[0];
         if (!cryptoWalletReady(w)) {
-            await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو به‌درستی تنظیم نشده یا غیرفعال است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê ╪¿┘çΓÇî╪»╪▒╪│╪¬█î ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç █î╪º ╪║█î╪▒┘ü╪╣╪º┘ä ╪º╪│╪¬." });
             return null;
         }
         const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
@@ -10638,14 +10641,14 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
             tomanPerUnit = Number(w.rate_toman_per_unit || 0) + Number(w.extra_toman_per_unit || 0);
         }
         if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "نرخ کیف پول کریپتو معتبر نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
             return null;
         }
         const decimals = String(w.currency).toUpperCase() === "USDT" ? 2 : 5;
         const factor = 10 ** decimals;
         const cryptoAmount = Math.ceil((finalPrice / tomanPerUnit) * factor) / factor;
         if (!Number.isFinite(cryptoAmount) || cryptoAmount <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "مبلغ کریپتو معتبر نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ┌⌐╪▒█î┘╛╪¬┘ê ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
             return null;
         }
         try {
@@ -10672,39 +10675,39 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 cryptoAddress: String(w.address || ""),
                 cryptoAmount,
                 cryptoExpiresAt: expiresAt.toISOString(),
-                walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+                walletTransactionDescription: `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot} (╪│┘ü╪º╪▒╪┤ ${purchaseId})`
             }));
         }
         catch (error) {
             const code = getOrderInsertErrorCode(error);
             if (code === "discount_unavailable") {
-                await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪»█î┌»╪▒ ┘é╪º╪¿┘ä ╪º╪│╪¬┘ü╪º╪»┘ç ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪½╪¿╪¬ ┌⌐┘å█î╪»." });
                 return null;
             }
             if (code === "wallet_insufficient") {
-                await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪¿╪▒╪º█î ╪½╪¿╪¬ ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┌⌐╪º┘ü█î ┘å█î╪│╪¬." });
                 return null;
             }
             logError("create_crypto_order_failed", error, { chatId, userId, productId, purchaseId, cryptoWalletId });
-            await tg("sendMessage", { chat_id: chatId, text: "ساخت سفارش با خطا مواجه شد. لطفاً دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│╪º╪«╪¬ ╪│┘ü╪º╪▒╪┤ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪». ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
             return null;
         }
-        const cryptoText = `سفارش شما ساخته شد ✅\n` +
-            `شناسه خرید: ${purchaseId}\n` +
-            `محصول: ${productNameSnapshot}\n` +
-            `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
-            `⏰ مهلت پرداخت: 20 دقیقه\n` +
-            `🪙 ارز: ${String(w.currency)}\n` +
-            `🌐 شبکه: ${String(w.network)}\n` +
-            `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
-            `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
-            `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`;
+        const cryptoText = `╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+            `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}\n` +
+            `┘à╪¡╪╡┘ê┘ä: ${productNameSnapshot}\n` +
+            `┘à╪¿┘ä╪║: ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å\n\n` +
+            `ΓÅ░ ┘à┘ç┘ä╪¬ ┘╛╪▒╪»╪º╪«╪¬: 20 ╪»┘é█î┘é┘ç\n` +
+            `≡ƒ¬Ö ╪º╪▒╪▓: ${String(w.currency)}\n` +
+            `≡ƒîÉ ╪┤╪¿┌⌐┘ç: ${String(w.network)}\n` +
+            `Γÿæ∩╕Å ┘à╪¿┘ä╪║ ┘╛╪▒╪»╪º╪«╪¬█î: ${cryptoAmount}\n\n` +
+            `≡ƒô▒ ╪ó╪»╪▒╪│ ┌⌐█î┘ü ┘╛┘ê┘ä:\n\n${String(w.address || "-")}\n\n` +
+            `╪¿╪╣╪» ╪º╪▓ ┘╛╪▒╪»╪º╪«╪¬ ╪▒┘ê█î ┬½╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬┬╗ ╪¿╪▓┘å█î╪» ┘ê ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».`;
         await tg("sendMessage", {
             chat_id: chatId,
             text: cryptoText,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
+                    [cb("Γ£à ╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬", `check_order_${purchaseId}`, "success")],
                     [homeButton()]
                 ]
             }
@@ -10713,7 +10716,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
     }
     if (false && paymentMethod === "crypto") {
         if (!cryptoWalletId) {
-            await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو انتخاب نشده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê ╪º┘å╪¬╪«╪º╪¿ ┘å╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         const walletRows = await sql `
@@ -10723,12 +10726,12 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
       LIMIT 1;
     `;
         if (!walletRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const w = walletRows[0];
         if (!cryptoWalletReady(w)) {
-            await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو به‌درستی تنظیم نشده یا غیرفعال است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê ╪¿┘çΓÇî╪»╪▒╪│╪¬█î ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç █î╪º ╪║█î╪▒┘ü╪╣╪º┘ä ╪º╪│╪¬." });
             return null;
         }
         const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
@@ -10741,14 +10744,14 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
             tomanPerUnit = Number(w.rate_toman_per_unit || 0) + Number(w.extra_toman_per_unit || 0);
         }
         if (!Number.isFinite(tomanPerUnit) || tomanPerUnit <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "نرخ کیف پول کریپتو معتبر نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
             return null;
         }
         const decimals = String(w.currency).toUpperCase() === "USDT" ? 2 : 5;
         const factor = 10 ** decimals;
         const cryptoAmount = Math.ceil((finalPrice / tomanPerUnit) * factor) / factor;
         if (!Number.isFinite(cryptoAmount) || cryptoAmount <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "مبلغ کریپتو معتبر نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ┌⌐╪▒█î┘╛╪¬┘ê ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
             return null;
         }
         await sql `
@@ -10766,22 +10769,22 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         ${w.id}, ${w.currency}, ${w.network}, ${String(w.address || "")}, ${cryptoAmount}, ${expiresAt.toISOString()}
       );
     `;
-        const cryptoText = `سفارش شما ساخته شد ✅\n` +
-            `شناسه خرید: ${purchaseId}\n` +
-            `محصول: ${productNameSnapshot}\n` +
-            `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
-            `⏰ مهلت پرداخت: 20 دقیقه\n` +
-            `🪙 ارز: ${String(w.currency)}\n` +
-            `🌐 شبکه: ${String(w.network)}\n` +
-            `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
-            `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
-            `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`;
+        const cryptoText = `╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+            `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}\n` +
+            `┘à╪¡╪╡┘ê┘ä: ${productNameSnapshot}\n` +
+            `┘à╪¿┘ä╪║: ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å\n\n` +
+            `ΓÅ░ ┘à┘ç┘ä╪¬ ┘╛╪▒╪»╪º╪«╪¬: 20 ╪»┘é█î┘é┘ç\n` +
+            `≡ƒ¬Ö ╪º╪▒╪▓: ${String(w.currency)}\n` +
+            `≡ƒîÉ ╪┤╪¿┌⌐┘ç: ${String(w.network)}\n` +
+            `Γÿæ∩╕Å ┘à╪¿┘ä╪║ ┘╛╪▒╪»╪º╪«╪¬█î: ${cryptoAmount}\n\n` +
+            `≡ƒô▒ ╪ó╪»╪▒╪│ ┌⌐█î┘ü ┘╛┘ê┘ä:\n\n${String(w.address || "-")}\n\n` +
+            `╪¿╪╣╪» ╪º╪▓ ┘╛╪▒╪»╪º╪«╪¬ ╪▒┘ê█î ┬½╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬┬╗ ╪¿╪▓┘å█î╪» ┘ê ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».`;
         await tg("sendMessage", {
             chat_id: chatId,
             text: cryptoText,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
+                    [cb("Γ£à ╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬", `check_order_${purchaseId}`, "success")],
                     [homeButton()]
                 ]
             }
@@ -10791,18 +10794,18 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
     if (paymentMethod === "swapwallet") {
         const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
         if (!callbackBase) {
-            await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
-            await notifyAdmins(`⚠️ تنظیمات Callback Base ناقص است (SwapWallet)\nسفارش: ${purchaseId}`, {
-                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪│╪º█î╪¬ ╪¿╪▒╪º█î Callback ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+            await notifyAdmins(`ΓÜá∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬ Callback Base ┘å╪º┘é╪╡ ╪º╪│╪¬ (SwapWallet)\n╪│┘ü╪º╪▒╪┤: ${purchaseId}`, {
+                inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
             });
             return null;
         }
         const apiKey = ((await getSetting("swapwallet_api_key")) || "").trim();
         const shopUsername = ((await getSetting("swapwallet_shop_username")) || "").trim();
         if (!apiKey || !shopUsername) {
-            await tg("sendMessage", { chat_id: chatId, text: "تنظیمات SwapWallet کامل نیست. لطفاً به پشتیبانی پیام دهید." });
-            await notifyAdmins(`⚠️ تنظیمات SwapWallet ناقص است\nسفارش: ${purchaseId}\napiKey:${apiKey ? "ok" : "missing"}\nshop:${shopUsername ? "ok" : "missing"}`, {
-                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            await tg("sendMessage", { chat_id: chatId, text: "╪¬┘å╪╕█î┘à╪º╪¬ SwapWallet ┌⌐╪º┘à┘ä ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+            await notifyAdmins(`ΓÜá∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬ SwapWallet ┘å╪º┘é╪╡ ╪º╪│╪¬\n╪│┘ü╪º╪▒╪┤: ${purchaseId}\napiKey:${apiKey ? "ok" : "missing"}\nshop:${shopUsername ? "ok" : "missing"}`, {
+                inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
             });
             return null;
         }
@@ -10817,7 +10820,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 ttlSeconds: 20 * 60,
                 orderId: purchaseId,
                 webhookUrl: `${callbackBase}/api/swapwallet-callback`,
-                description: `خرید محصول ${productNameSnapshot}`,
+                description: `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot}`,
                 customData: JSON.stringify({ purchaseId })
             });
             const linksRaw = Array.isArray(invoice.rawResult?.links) ? invoice.rawResult.links : [];
@@ -10846,23 +10849,23 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 swapwalletInvoiceId: invoiceId,
                 swapwalletPaymentUrl: primaryUrl,
                 swapwalletStatus: "new",
-                walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+                walletTransactionDescription: `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot} (╪│┘ü╪º╪▒╪┤ ${purchaseId})`
             }));
-            const exp = invoice.expiredAt ? `\n⏰ مهلت پرداخت: ${String(invoice.expiredAt)}` : "";
+            const exp = invoice.expiredAt ? `\nΓÅ░ ┘à┘ç┘ä╪¬ ┘╛╪▒╪»╪º╪«╪¬: ${String(invoice.expiredAt)}` : "";
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `سفارش شما ساخته شد ✅\n` +
-                    `شناسه خرید: ${purchaseId}\n` +
-                    `محصول: ${productNameSnapshot}\n` +
-                    `مبلغ: ${formatPriceToman(finalPrice)} تومان\n` +
-                    `روش: SwapWallet (${String(swapwalletToken)} / ${String(swapwalletNetwork)})\n\n` +
-                    `📱 آدرس کیف پول:\n\n${invoice.walletAddress}\n` +
+                text: `╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+                    `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}\n` +
+                    `┘à╪¡╪╡┘ê┘ä: ${productNameSnapshot}\n` +
+                    `┘à╪¿┘ä╪║: ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å\n` +
+                    `╪▒┘ê╪┤: SwapWallet (${String(swapwalletToken)} / ${String(swapwalletNetwork)})\n\n` +
+                    `≡ƒô▒ ╪ó╪»╪▒╪│ ┌⌐█î┘ü ┘╛┘ê┘ä:\n\n${invoice.walletAddress}\n` +
                     exp +
-                    `\n\nبعد از پرداخت، روی «بررسی پرداخت» بزنید.`,
+                    `\n\n╪¿╪╣╪» ╪º╪▓ ┘╛╪▒╪»╪º╪«╪¬╪î ╪▒┘ê█î ┬½╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬┬╗ ╪¿╪▓┘å█î╪».`,
                 reply_markup: {
                     inline_keyboard: [
-                        ...links.slice(0, 2).map((l) => [{ text: l.name ? `💳 ${l.name}` : "💳 پرداخت", url: l.url }]),
-                        [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
+                        ...links.slice(0, 2).map((l) => [{ text: l.name ? `≡ƒÆ│ ${l.name}` : "≡ƒÆ│ ┘╛╪▒╪»╪º╪«╪¬", url: l.url }]),
+                        [cb("Γ£à ╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬", `check_order_${purchaseId}`, "success")],
                         [homeButton()]
                     ]
                 }
@@ -10872,35 +10875,35 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         catch (error) {
             const code = getOrderInsertErrorCode(error);
             if (code === "discount_unavailable") {
-                await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪»█î┌»╪▒ ┘é╪º╪¿┘ä ╪º╪│╪¬┘ü╪º╪»┘ç ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪½╪¿╪¬ ┌⌐┘å█î╪»." });
                 return null;
             }
             if (code === "wallet_insufficient") {
-                await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪¿╪▒╪º█î ╪½╪¿╪¬ ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┌⌐╪º┘ü█î ┘å█î╪│╪¬." });
                 return null;
             }
             logError("create_swapwallet_invoice_failed", error, { chatId, userId, productId, purchaseId });
-            await notifyAdmins(`❌ خطا در ساخت فاکتور SwapWallet\nسفارش: ${purchaseId}\nعلت: ${error.message || String(error)}`, {
-                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            await notifyAdmins(`Γ¥î ╪«╪╖╪º ╪»╪▒ ╪│╪º╪«╪¬ ┘ü╪º┌⌐╪¬┘ê╪▒ SwapWallet\n╪│┘ü╪º╪▒╪┤: ${purchaseId}\n╪╣┘ä╪¬: ${error.message || String(error)}`, {
+                inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
             });
-            await tg("sendMessage", { chat_id: chatId, text: "ساخت لینک پرداخت با خطا مواجه شد. لطفاً کمی بعد دوباره تلاش کنید یا به پشتیبانی پیام دهید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│╪º╪«╪¬ ┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪». ┘ä╪╖┘ü╪º┘ï ┌⌐┘à█î ╪¿╪╣╪» ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪» █î╪º ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
             return null;
         }
     }
     if (paymentMethod === "tetrapay") {
         const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
         if (!callbackBase) {
-            await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
-            await notifyAdmins(`⚠️ تنظیمات Callback Base ناقص است (تتراپی)\nسفارش: ${purchaseId}`, {
-                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪│╪º█î╪¬ ╪¿╪▒╪º█î Callback ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+            await notifyAdmins(`ΓÜá∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬ Callback Base ┘å╪º┘é╪╡ ╪º╪│╪¬ (╪¬╪¬╪▒╪º┘╛█î)\n╪│┘ü╪º╪▒╪┤: ${purchaseId}`, {
+                inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
             });
             return null;
         }
         const tetrapayApiKey = ((await getSetting("tetrapay_api_key")) || "").trim();
         if (!tetrapayApiKey) {
-            await tg("sendMessage", { chat_id: chatId, text: "کلید تتراپی تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
-            await notifyAdmins(`⚠️ کلید تتراپی تنظیم نشده است\nسفارش: ${purchaseId}`, {
-                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» ╪¬╪¬╪▒╪º┘╛█î ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+            await notifyAdmins(`ΓÜá∩╕Å ┌⌐┘ä█î╪» ╪¬╪¬╪▒╪º┘╛█î ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬\n╪│┘ü╪º╪▒╪┤: ${purchaseId}`, {
+                inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
             });
             return null;
         }
@@ -10909,12 +10912,12 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
             const orderRes = await createTetrapayOrder({
                 purchaseId,
                 amountToman: finalPrice,
-                description: `خرید محصول ${productNameSnapshot}`,
+                description: `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot}`,
                 callbackUrl: `${callbackBase}/api/tetrapay-callback`,
                 apiKey: tetrapayApiKey
             });
             if (!orderRes.ok) {
-                await tg("sendMessage", { chat_id: chatId, text: `خطا در ارتباط با درگاه تتراپی: ${orderRes.message}` });
+                await tg("sendMessage", { chat_id: chatId, text: `╪«╪╖╪º ╪»╪▒ ╪º╪▒╪¬╪¿╪º╪╖ ╪¿╪º ╪»╪▒┌»╪º┘ç ╪¬╪¬╪▒╪º┘╛█î: ${orderRes.message}` });
                 return null;
             }
             await withClaimedDiscount(discountCode, () => insertOrderRecord({
@@ -10936,18 +10939,18 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 configName,
                 tronadoToken: orderRes.authority,
                 tronadoPaymentUrl: orderRes.paymentUrlBot,
-                walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+                walletTransactionDescription: `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot} (╪│┘ü╪º╪▒╪┤ ${purchaseId})`
             }));
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `سفارش شما ساخته شد ✅\n` +
-                    `شناسه خرید: ${purchaseId}\n` +
-                    `محصول: ${productNameSnapshot}\n` +
-                    `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
-                    `برای پرداخت روی دکمه زیر کلیک کنید.`,
+                text: `╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+                    `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}\n` +
+                    `┘à╪¡╪╡┘ê┘ä: ${productNameSnapshot}\n` +
+                    `┘à╪¿┘ä╪║: ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å\n\n` +
+                    `╪¿╪▒╪º█î ┘╛╪▒╪»╪º╪«╪¬ ╪▒┘ê█î ╪»┌⌐┘à┘ç ╪▓█î╪▒ ┌⌐┘ä█î┌⌐ ┌⌐┘å█î╪».`,
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: "💳 پرداخت با تتراپی", url: orderRes.paymentUrlBot }],
+                        [{ text: "≡ƒÆ│ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º ╪¬╪¬╪▒╪º┘╛█î", url: orderRes.paymentUrlBot }],
                         [homeButton()]
                     ]
                 }
@@ -10957,31 +10960,31 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         catch (error) {
             const code = getOrderInsertErrorCode(error);
             if (code === "discount_unavailable") {
-                await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪»█î┌»╪▒ ┘é╪º╪¿┘ä ╪º╪│╪¬┘ü╪º╪»┘ç ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪½╪¿╪¬ ┌⌐┘å█î╪»." });
                 return null;
             }
             if (code === "wallet_insufficient") {
-                await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪¿╪▒╪º█î ╪½╪¿╪¬ ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┌⌐╪º┘ü█î ┘å█î╪│╪¬." });
                 return null;
             }
             logError("create_tetrapay_order_failed", error, { chatId, userId, productId });
-            await tg("sendMessage", { chat_id: chatId, text: `ساخت سفارش با خطا مواجه شد: ${String(error.message || error)}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪│╪º╪«╪¬ ╪│┘ü╪º╪▒╪┤ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪»: ${String(error.message || error)}` });
         }
         return null;
     }
     if (paymentMethod === "plisio") {
         const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
         if (!callbackBase) {
-            await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
-            await notifyAdmins(`⚠️ تنظیمات Callback Base ناقص است (Plisio)\nسفارش: ${purchaseId}`, {
-                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪│╪º█î╪¬ ╪¿╪▒╪º█î Callback ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+            await notifyAdmins(`ΓÜá∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬ Callback Base ┘å╪º┘é╪╡ ╪º╪│╪¬ (Plisio)\n╪│┘ü╪º╪▒╪┤: ${purchaseId}`, {
+                inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
             });
             return null;
         }
         const plisioApiKey = ((await getSetting("plisio_api_key")) || "").trim();
         if (!plisioApiKey) {
-            await tg("sendMessage", { chat_id: chatId, text: "تنظیمات Plisio کامل نیست. لطفاً به پشتیبانی پیام دهید." });
-            await notifyAdmins(`⚠️ تنظیمات Plisio ناقص است\nسفارش: ${purchaseId}\nکلید: ${plisioApiKey ? "ok" : "missing"}`, { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]] });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¬┘å╪╕█î┘à╪º╪¬ Plisio ┌⌐╪º┘à┘ä ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+            await notifyAdmins(`ΓÜá∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬ Plisio ┘å╪º┘é╪╡ ╪º╪│╪¬\n╪│┘ü╪º╪▒╪┤: ${purchaseId}\n┌⌐┘ä█î╪»: ${plisioApiKey ? "ok" : "missing"}`, { inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]] });
             return null;
         }
         try {
@@ -11015,20 +11018,20 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 plisioTxnId: invoice.txnId,
                 plisioInvoiceUrl: invoice.invoiceUrl,
                 plisioStatus: "new",
-                walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+                walletTransactionDescription: `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot} (╪│┘ü╪º╪▒╪┤ ${purchaseId})`
             }));
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `سفارش شما ساخته شد ✅\n` +
-                    `شناسه خرید: ${purchaseId}\n` +
-                    `محصول: ${productNameSnapshot}\n` +
-                    `مبلغ: ${formatPriceToman(finalPrice)} تومان\n` +
-                    `معادل تقریبی: ${usdtAmount} USDT\n\n` +
-                    `بعد از پرداخت، روی دکمه «بررسی پرداخت» بزنید.`,
+                text: `╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+                    `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}\n` +
+                    `┘à╪¡╪╡┘ê┘ä: ${productNameSnapshot}\n` +
+                    `┘à╪¿┘ä╪║: ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å\n` +
+                    `┘à╪╣╪º╪»┘ä ╪¬┘é╪▒█î╪¿█î: ${usdtAmount} USDT\n\n` +
+                    `╪¿╪╣╪» ╪º╪▓ ┘╛╪▒╪»╪º╪«╪¬╪î ╪▒┘ê█î ╪»┌⌐┘à┘ç ┬½╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬┬╗ ╪¿╪▓┘å█î╪».`,
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: "💳 پرداخت با Plisio", url: invoice.invoiceUrl }],
-                        [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
+                        [{ text: "≡ƒÆ│ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º Plisio", url: invoice.invoiceUrl }],
+                        [cb("Γ£à ╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬", `check_order_${purchaseId}`, "success")],
                         [homeButton()]
                     ]
                 }
@@ -11038,18 +11041,18 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         catch (error) {
             const code = getOrderInsertErrorCode(error);
             if (code === "discount_unavailable") {
-                await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪»█î┌»╪▒ ┘é╪º╪¿┘ä ╪º╪│╪¬┘ü╪º╪»┘ç ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪½╪¿╪¬ ┌⌐┘å█î╪»." });
                 return null;
             }
             if (code === "wallet_insufficient") {
-                await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪¿╪▒╪º█î ╪½╪¿╪¬ ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┌⌐╪º┘ü█î ┘å█î╪│╪¬." });
                 return null;
             }
             logError("create_plisio_invoice_failed", error, { chatId, userId, productId, purchaseId });
-            await notifyAdmins(`❌ خطا در ساخت فاکتور Plisio\nسفارش: ${purchaseId}\nعلت: ${error.message || String(error)}`, {
-                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            await notifyAdmins(`Γ¥î ╪«╪╖╪º ╪»╪▒ ╪│╪º╪«╪¬ ┘ü╪º┌⌐╪¬┘ê╪▒ Plisio\n╪│┘ü╪º╪▒╪┤: ${purchaseId}\n╪╣┘ä╪¬: ${error.message || String(error)}`, {
+                inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
             });
-            await tg("sendMessage", { chat_id: chatId, text: "ساخت لینک پرداخت با خطا مواجه شد. لطفاً کمی بعد دوباره تلاش کنید یا به پشتیبانی پیام دهید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│╪º╪«╪¬ ┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪». ┘ä╪╖┘ü╪º┘ï ┌⌐┘à█î ╪¿╪╣╪» ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪» █î╪º ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
         }
         return null;
     }
@@ -11057,7 +11060,7 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         const walletFromSetting = await getSetting("business_wallet_address");
         const walletAddress = walletFromSetting || env.BUSINESS_WALLET_ADDRESS;
         if (!walletAddress) {
-            await tg("sendMessage", { chat_id: chatId, text: "تنظیمات کیف پول کامل نیست. لطفاً به پشتیبانی پیام دهید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¬┘å╪╕█î┘à╪º╪¬ ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪º┘à┘ä ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
             return null;
         }
         const tronadoApiKey = ((await getSetting("tronado_api_key")) || "").trim();
@@ -11076,9 +11079,9 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         const tronAmount = Math.ceil((baseTrx + extraTrx) * scale) / scale;
         const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
         if (!callbackBase) {
-            await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
-            await notifyAdmins(`⚠️ تنظیمات Callback Base ناقص است (Tronado)\nسفارش: ${purchaseId}`, {
-                inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+            await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪│╪º█î╪¬ ╪¿╪▒╪º█î Callback ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+            await notifyAdmins(`ΓÜá∩╕Å ╪¬┘å╪╕█î┘à╪º╪¬ Callback Base ┘å╪º┘é╪╡ ╪º╪│╪¬ (Tronado)\n╪│┘ü╪º╪▒╪┤: ${purchaseId}`, {
+                inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
             });
             return null;
         }
@@ -11107,24 +11110,24 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
             walletUsed,
             tronadoToken: token.token,
             tronadoPaymentUrl: token.paymentUrl,
-            walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
+            walletTransactionDescription: `╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä ${productNameSnapshot} (╪│┘ü╪º╪▒╪┤ ${purchaseId})`
         }));
-        const feeLine = feeToman > 0 ? `کارمزد: ${formatPriceToman(feeToman)} تومان\n` : "";
-        const payableLine = feeToman > 0 ? `مبلغ نهایی: ${formatPriceToman(requiredToman)} تومان\n` : "";
+        const feeLine = feeToman > 0 ? `┌⌐╪º╪▒┘à╪▓╪»: ${formatPriceToman(feeToman)} ╪¬┘ê┘à╪º┘å\n` : "";
+        const payableLine = feeToman > 0 ? `┘à╪¿┘ä╪║ ┘å┘ç╪º█î█î: ${formatPriceToman(requiredToman)} ╪¬┘ê┘à╪º┘å\n` : "";
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `سفارش شما ساخته شد ✅\n` +
-                `شناسه خرید: ${purchaseId}\n` +
-                `محصول: ${productNameSnapshot}\n` +
-                `مبلغ: ${formatPriceToman(finalPrice)} تومان\n` +
+            text: `╪│┘ü╪º╪▒╪┤ ╪┤┘à╪º ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n` +
+                `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}\n` +
+                `┘à╪¡╪╡┘ê┘ä: ${productNameSnapshot}\n` +
+                `┘à╪¿┘ä╪║: ${formatPriceToman(finalPrice)} ╪¬┘ê┘à╪º┘å\n` +
                 feeLine +
                 payableLine +
-                `مقدار TRON: ${Math.max(0.1, tronAmount)}\n\n` +
-                `بعد از پرداخت، روی دکمه «بررسی پرداخت» بزنید.`,
+                `┘à┘é╪»╪º╪▒ TRON: ${Math.max(0.1, tronAmount)}\n\n` +
+                `╪¿╪╣╪» ╪º╪▓ ┘╛╪▒╪»╪º╪«╪¬╪î ╪▒┘ê█î ╪»┌⌐┘à┘ç ┬½╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬┬╗ ╪¿╪▓┘å█î╪».`,
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "💳 پرداخت", url: token.paymentUrl }],
-                    [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
+                    [{ text: "≡ƒÆ│ ┘╛╪▒╪»╪º╪«╪¬", url: token.paymentUrl }],
+                    [cb("Γ£à ╪¿╪▒╪▒╪│█î ┘╛╪▒╪»╪º╪«╪¬", `check_order_${purchaseId}`, "success")],
                     [homeButton()]
                 ]
             }
@@ -11134,15 +11137,15 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
     catch (error) {
         const code = getOrderInsertErrorCode(error);
         if (code === "discount_unavailable") {
-            await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف دیگر قابل استفاده نیست. لطفاً دوباره سفارش را ثبت کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪»█î┌»╪▒ ┘é╪º╪¿┘ä ╪º╪│╪¬┘ü╪º╪»┘ç ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪½╪¿╪¬ ┌⌐┘å█î╪»." });
             return null;
         }
         if (code === "wallet_insufficient") {
-            await tg("sendMessage", { chat_id: chatId, text: "موجودی کیف پول شما برای ثبت این سفارش کافی نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪¼┘ê╪»█î ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪¿╪▒╪º█î ╪½╪¿╪¬ ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┌⌐╪º┘ü█î ┘å█î╪│╪¬." });
             return null;
         }
         logError("create_order_failed", error, { chatId, userId, productId, paymentMethod });
-        await tg("sendMessage", { chat_id: chatId, text: `ساخت سفارش با خطا مواجه شد: ${String(error.message || error)}` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪│╪º╪«╪¬ ╪│┘ü╪º╪▒╪┤ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪»: ${String(error.message || error)}` });
     }
     return null;
 }
@@ -11155,7 +11158,7 @@ async function showMyConfigs(chatId, userId, forTopupFlow, page = 0) {
   `;
     const total = Number(countRows[0]?.total || 0);
     if (total === 0) {
-        await tg("sendMessage", { chat_id: chatId, text: "شما هنوز کانفیگی خریداری نکرده‌اید." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪┤┘à╪º ┘ç┘å┘ê╪▓ ┌⌐╪º┘å┘ü█î┌»█î ╪«╪▒█î╪»╪º╪▒█î ┘å┌⌐╪▒╪»┘çΓÇî╪º█î╪»." });
         return null;
     }
     const totalPages = Math.ceil(total / CONFIGS_PER_PAGE);
@@ -11186,7 +11189,7 @@ async function showMyConfigs(chatId, userId, forTopupFlow, page = 0) {
                 const configName = String(payload.metadata?.label || payload.metadata?.email || payload.metadata?.username || row.name || "").trim();
                 const sizeMb = Number(row.size_mb || 0);
                 const sizeLabel = sizeMb >= 1024 ? `${(sizeMb / 1024).toFixed(0)}GB` : sizeMb > 0 ? `${sizeMb}MB` : "";
-                return `🔹 ${configName}${revoked ? " 🚫" : ""}${sizeLabel ? ` | ${sizeLabel}` : ""}`;
+                return `≡ƒö╣ ${configName}${revoked ? " ≡ƒÜ½" : ""}${sizeLabel ? ` | ${sizeLabel}` : ""}`;
             })(),
             callback_data: `open_config_${row.id}${forTopupFlow ? "_t" : ""}`
         }
@@ -11197,23 +11200,23 @@ async function showMyConfigs(chatId, userId, forTopupFlow, page = 0) {
         const prevCb = forTopupFlow ? `topup_page_${safePage - 1}` : `my_configs_page_${safePage - 1}`;
         const nextCb = forTopupFlow ? `topup_page_${safePage + 1}` : `my_configs_page_${safePage + 1}`;
         if (safePage > 0)
-            navRow.push({ text: "◀️ قبلی", callback_data: prevCb });
-        navRow.push({ text: `صفحه ${safePage + 1} از ${totalPages}`, callback_data: "noop" });
+            navRow.push({ text: "ΓùÇ∩╕Å ┘é╪¿┘ä█î", callback_data: prevCb });
+        navRow.push({ text: `╪╡┘ü╪¡┘ç ${safePage + 1} ╪º╪▓ ${totalPages}`, callback_data: "noop" });
         if (safePage < totalPages - 1)
-            navRow.push({ text: "بعدی ▶️", callback_data: nextCb });
+            navRow.push({ text: "╪¿╪╣╪»█î Γû╢∩╕Å", callback_data: nextCb });
         keyboard.push(navRow);
     }
     if (!forTopupFlow) {
-        keyboard.push([cb("🧾 سفارش‌های من", "my_orders", "primary"), cb("🔎 پیگیری سفارش", "order_lookup", "primary")]);
-        keyboard.push([cb("➕ افزایش دیتا", "topup_menu", "primary"), cb("📜 درخواست‌های انتقال", "my_migrations", "primary")]);
+        keyboard.push([cb("≡ƒº╛ ╪│┘ü╪º╪▒╪┤ΓÇî┘ç╪º█î ┘à┘å", "my_orders", "primary"), cb("≡ƒöÄ ┘╛█î┌»█î╪▒█î ╪│┘ü╪º╪▒╪┤", "order_lookup", "primary")]);
+        keyboard.push([cb("Γ₧ò ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º", "topup_menu", "primary"), cb("≡ƒô£ ╪»╪▒╪«┘ê╪º╪│╪¬ΓÇî┘ç╪º█î ╪º┘å╪¬┘é╪º┘ä", "my_migrations", "primary")]);
     }
     keyboard.push([homeButton()]);
-    const pageLabel = totalPages > 1 ? ` (صفحه ${safePage + 1} از ${totalPages})` : "";
+    const pageLabel = totalPages > 1 ? ` (╪╡┘ü╪¡┘ç ${safePage + 1} ╪º╪▓ ${totalPages})` : "";
     await tg("sendMessage", {
         chat_id: chatId,
         text: forTopupFlow
-            ? `کانفیگ موردنظر برای افزایش دیتا را انتخاب کنید${pageLabel}:`
-            : `کانفیگ‌های خریداری‌شده شما 👇${pageLabel}\nبرای دیدن جزئیات و QR روی هر کانفیگ بزنید:`,
+            ? `┌⌐╪º┘å┘ü█î┌» ┘à┘ê╪▒╪»┘å╪╕╪▒ ╪¿╪▒╪º█î ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»${pageLabel}:`
+            : `┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î ╪«╪▒█î╪»╪º╪▒█îΓÇî╪┤╪»┘ç ╪┤┘à╪º ≡ƒæç${pageLabel}\n╪¿╪▒╪º█î ╪»█î╪»┘å ╪¼╪▓╪ª█î╪º╪¬ ┘ê QR ╪▒┘ê█î ┘ç╪▒ ┌⌐╪º┘å┘ü█î┌» ╪¿╪▓┘å█î╪»:`,
         reply_markup: { inline_keyboard: keyboard }
     });
 }
@@ -11228,13 +11231,13 @@ async function openMyConfig(chatId, userId, inventoryId, fromTopupFlow) {
     LIMIT 1;
   `;
     if (!rows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "این کانفیگ برای شما نیست یا یافت نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪¿╪▒╪º█î ╪┤┘à╪º ┘å█î╪│╪¬ █î╪º █î╪º┘ü╪¬ ┘å╪┤╪»." });
         return null;
     }
     // If this config was migrated, transparently redirect to the new config
     if (String(rows[0].status) === 'migrated' && rows[0].migrated_to_inventory_id) {
         const newId = Number(rows[0].migrated_to_inventory_id);
-        await tg("sendMessage", { chat_id: chatId, text: "⚡ این کانفیگ به پنل جدید منتقل شده. کانفیگ جدید شما:" });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜí ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪¿┘ç ┘╛┘å┘ä ╪¼╪»█î╪» ┘à┘å╪¬┘é┘ä ╪┤╪»┘ç. ┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ╪┤┘à╪º:" });
         return openMyConfig(chatId, userId, newId, fromTopupFlow);
     }
     const row = rows[0];
@@ -11266,9 +11269,9 @@ async function openMyConfig(chatId, userId, inventoryId, fromTopupFlow) {
                     const remainBytes = totalBytes > 0 ? Math.max(0, totalBytes - usedBytes) : 0;
                     const statusLabel = String(u.status || "-");
                     liveStats =
-                        `📶 وضعیت: ${statusLabel}\n` +
-                            `📊 حجم: ${totalBytes > 0 ? `${formatBytesShort(remainBytes)} باقی‌مانده از ${formatBytesShort(totalBytes)}` : "نامحدود"}\n` +
-                            `📅 انقضا: ${formatExpiryLabelFromSeconds(u.expire)}`;
+                        `≡ƒô╢ ┘ê╪╢╪╣█î╪¬: ${statusLabel}\n` +
+                            `≡ƒôè ╪¡╪¼┘à: ${totalBytes > 0 ? `${formatBytesShort(remainBytes)} ╪¿╪º┘é█îΓÇî┘à╪º┘å╪»┘ç ╪º╪▓ ${formatBytesShort(totalBytes)}` : "┘å╪º┘à╪¡╪»┘ê╪»"}\n` +
+                            `≡ƒôà ╪º┘å┘é╪╢╪º: ${formatExpiryLabelFromSeconds(u.expire)}`;
                 }
                 else if (found.message !== "user_not_found") {
                     panelError = true;
@@ -11289,9 +11292,9 @@ async function openMyConfig(chatId, userId, inventoryId, fromTopupFlow) {
                     const remainBytes = totalBytes > 0 ? Math.max(0, totalBytes - usedBytes) : 0;
                     const enabled = parseMaybeBoolean(c.enable) !== false;
                     liveStats =
-                        `📶 وضعیت: ${enabled ? "فعال ✅" : "غیرفعال ❌"}\n` +
-                            `📊 حجم: ${totalBytes > 0 ? `${formatBytesShort(remainBytes)} باقی‌مانده از ${formatBytesShort(totalBytes)}` : "نامحدود"}\n` +
-                            `📅 انقضا: ${formatExpiryLabelFromMilliseconds(c.expiryTime)}`;
+                        `≡ƒô╢ ┘ê╪╢╪╣█î╪¬: ${enabled ? "┘ü╪╣╪º┘ä Γ£à" : "╪║█î╪▒┘ü╪╣╪º┘ä Γ¥î"}\n` +
+                            `≡ƒôè ╪¡╪¼┘à: ${totalBytes > 0 ? `${formatBytesShort(remainBytes)} ╪¿╪º┘é█îΓÇî┘à╪º┘å╪»┘ç ╪º╪▓ ${formatBytesShort(totalBytes)}` : "┘å╪º┘à╪¡╪»┘ê╪»"}\n` +
+                            `≡ƒôà ╪º┘å┘é╪╢╪º: ${formatExpiryLabelFromMilliseconds(c.expiryTime)}`;
                 }
                 else if (found.message !== "client_not_found") {
                     panelError = true;
@@ -11299,11 +11302,11 @@ async function openMyConfig(chatId, userId, inventoryId, fromTopupFlow) {
             }
             if (!panelError) {
                 if (!identifier) {
-                    // No usable identifier in metadata — cannot validate panel-side, skip entirely.
+                    // No usable identifier in metadata ΓÇö cannot validate panel-side, skip entirely.
                     // (Old orders created before metadata was stored would otherwise be wrongly deleted.)
                 }
                 else if (!foundOnPanel) {
-                    // Config is genuinely gone from the panel — remove from inventory.
+                    // Config is genuinely gone from the panel ΓÇö remove from inventory.
                     await sql `
             WITH
             nullify_orders AS (
@@ -11320,12 +11323,12 @@ async function openMyConfig(chatId, userId, inventoryId, fromTopupFlow) {
             )
             DELETE FROM inventory WHERE id = ${row.id};
           `;
-                    await tg("sendMessage", { chat_id: chatId, text: "کانفیگ در پنل یافت نشد. این کانفیگ از لیست شما حذف شد." });
+                    await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ╪»╪▒ ┘╛┘å┘ä █î╪º┘ü╪¬ ┘å╪┤╪». ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪º╪▓ ┘ä█î╪│╪¬ ╪┤┘à╪º ╪¡╪░┘ü ╪┤╪»." });
                     return null;
                 }
                 else {
                     // Config IS on the panel. Check for URL drift (panel domain/host change).
-                    // Do NOT delete — update our stored link and continue showing the config.
+                    // Do NOT delete ΓÇö update our stored link and continue showing the config.
                     const linkMismatch = panelType === "sanaei" && userSubLink && panelSubLink
                         ? !sanaeiSubscriptionUrlsMatchSubId(userSubLink, panelSubLink)
                         : Boolean(userSubLink && panelSubLink && userSubLink !== panelSubLink);
@@ -11363,17 +11366,17 @@ async function openMyConfig(chatId, userId, inventoryId, fromTopupFlow) {
         }
     }
     const keyboard = [
-        [{ text: "➕ درخواست افزایش دیتا", callback_data: `request_topup_${row.id}` }],
-        [{ text: "🔁 انتقال به پنل جدید", callback_data: `config_migrate_targets_${row.id}` }],
-        [{ text: "🧹 حذف از لیست من", callback_data: `customer_remove_cfg_${row.id}` }],
-        ...(isPanelConfig ? [[{ text: "🔄 بازسازی لینک", callback_data: `customer_revoke_cfg_${row.id}` }]] : []),
-        [{ text: "📦 بازگشت به لیست کانفیگ‌ها", callback_data: fromTopupFlow ? "topup_menu" : "my_configs" }],
+        [{ text: "Γ₧ò ╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º", callback_data: `request_topup_${row.id}` }],
+        [{ text: "≡ƒöü ╪º┘å╪¬┘é╪º┘ä ╪¿┘ç ┘╛┘å┘ä ╪¼╪»█î╪»", callback_data: `config_migrate_targets_${row.id}` }],
+        [{ text: "≡ƒº╣ ╪¡╪░┘ü ╪º╪▓ ┘ä█î╪│╪¬ ┘à┘å", callback_data: `customer_remove_cfg_${row.id}` }],
+        ...(isPanelConfig ? [[{ text: "≡ƒöä ╪¿╪º╪▓╪│╪º╪▓█î ┘ä█î┘å┌⌐", callback_data: `customer_revoke_cfg_${row.id}` }]] : []),
+        [{ text: "≡ƒôª ╪¿╪º╪▓┌»╪┤╪¬ ╪¿┘ç ┘ä█î╪│╪¬ ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º", callback_data: fromTopupFlow ? "topup_menu" : "my_configs" }],
         [homeButton()]
     ];
     if (revoked) {
-        await tg("sendMessage", { chat_id: chatId, text: "⚠️ این کانفیگ توسط ادمین غیرفعال شده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪¬┘ê╪│╪╖ ╪º╪»┘à█î┘å ╪║█î╪▒┘ü╪╣╪º┘ä ╪┤╪»┘ç ╪º╪│╪¬." });
     }
-    await sendDeliveryPackage(chatId, String(row.purchase_id || "-"), String(row.config_value), displayDelivery, keyboard, `محصول: ${row.name}${liveStats ? `\n\n${liveStats}` : ""}`);
+    await sendDeliveryPackage(chatId, String(row.purchase_id || "-"), String(row.config_value), displayDelivery, keyboard, `┘à╪¡╪╡┘ê┘ä: ${row.name}${liveStats ? `\n\n${liveStats}` : ""}`);
 }
 async function notifyAdmins(text, replyMarkup) {
     const ids = await getAdminIds();
@@ -11385,7 +11388,7 @@ async function notifyAdmins(text, replyMarkup) {
         }
         catch (error) {
             const errMsg = String(error?.message || "");
-            // These are not actionable errors — skip silently
+            // These are not actionable errors ΓÇö skip silently
             if (errMsg.includes("bot was blocked by the user") ||
                 errMsg.includes("chat not found") ||
                 errMsg.includes("user is deactivated") ||
@@ -11434,20 +11437,20 @@ async function sendPurchaseLookupResult(chatId, purchaseId) {
         const username = row.username ? `@${String(row.username)}` : "-";
         const fullName = [row.first_name ? String(row.first_name) : "", row.last_name ? String(row.last_name) : ""].filter(Boolean).join(" ").trim() || "-";
         const actualWalletUsed = Number(row.wallet_used || 0);
-        const walletUsedText = actualWalletUsed > 0 ? `\nکسر از کیف پول: ${formatPriceToman(actualWalletUsed)} تومان` : "";
+        const walletUsedText = actualWalletUsed > 0 ? `\n┌⌐╪│╪▒ ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä: ${formatPriceToman(actualWalletUsed)} ╪¬┘ê┘à╪º┘å` : "";
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `جزئیات سفارش:\n` +
-                `شماره سفارش: ${row.purchase_id}\n` +
-                `نوع: خرید محصول\n` +
-                `کاربر: ${row.telegram_id}\n` +
-                `یوزرنیم: ${username}\n` +
-                `نام: ${fullName}\n` +
-                `محصول: ${row.product_name || row.product_id}\n` +
-                `مبلغ پرداختی: ${formatPriceToman(Number(row.final_price))} تومان` + walletUsedText + `\n` +
-                `روش پرداخت: ${row.payment_method}\n` +
-                `وضعیت: ${row.status}\n` +
-                `زمان: ${row.created_at}`
+            text: `╪¼╪▓╪ª█î╪º╪¬ ╪│┘ü╪º╪▒╪┤:\n` +
+                `╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤: ${row.purchase_id}\n` +
+                `┘å┘ê╪╣: ╪«╪▒█î╪» ┘à╪¡╪╡┘ê┘ä\n` +
+                `┌⌐╪º╪▒╪¿╪▒: ${row.telegram_id}\n` +
+                `█î┘ê╪▓╪▒┘å█î┘à: ${username}\n` +
+                `┘å╪º┘à: ${fullName}\n` +
+                `┘à╪¡╪╡┘ê┘ä: ${row.product_name || row.product_id}\n` +
+                `┘à╪¿┘ä╪║ ┘╛╪▒╪»╪º╪«╪¬█î: ${formatPriceToman(Number(row.final_price))} ╪¬┘ê┘à╪º┘å` + walletUsedText + `\n` +
+                `╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬: ${row.payment_method}\n` +
+                `┘ê╪╢╪╣█î╪¬: ${row.status}\n` +
+                `╪▓┘à╪º┘å: ${row.created_at}`
         });
         return true;
     }
@@ -11470,7 +11473,7 @@ async function sendPurchaseLookupResult(chatId, purchaseId) {
     LIMIT 1;
   `;
     if (!topupRows.length) {
-        await tg("sendMessage", { chat_id: chatId, text: "شماره سفارش پیدا نشد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ┘╛█î╪»╪º ┘å╪┤╪»." });
         return false;
     }
     const row = topupRows[0];
@@ -11478,18 +11481,18 @@ async function sendPurchaseLookupResult(chatId, purchaseId) {
     const fullName = [row.first_name ? String(row.first_name) : "", row.last_name ? String(row.last_name) : ""].filter(Boolean).join(" ").trim() || "-";
     await tg("sendMessage", {
         chat_id: chatId,
-        text: `جزئیات سفارش:\n` +
-            `شماره سفارش: ${row.purchase_id}\n` +
-            `نوع: افزایش دیتا\n` +
-            `کاربر: ${row.telegram_id}\n` +
-            `یوزرنیم: ${username}\n` +
-            `نام: ${fullName}\n` +
-            `کانفیگ: ${row.inventory_id}\n` +
-            `حجم درخواستی: ${row.requested_mb}MB\n` +
-            `مبلغ: ${formatPriceToman(Number(row.final_price))} تومان\n` +
-            `روش پرداخت: ${row.payment_method}\n` +
-            `وضعیت: ${row.status}\n` +
-            `زمان: ${row.created_at}`
+        text: `╪¼╪▓╪ª█î╪º╪¬ ╪│┘ü╪º╪▒╪┤:\n` +
+            `╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤: ${row.purchase_id}\n` +
+            `┘å┘ê╪╣: ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º\n` +
+            `┌⌐╪º╪▒╪¿╪▒: ${row.telegram_id}\n` +
+            `█î┘ê╪▓╪▒┘å█î┘à: ${username}\n` +
+            `┘å╪º┘à: ${fullName}\n` +
+            `┌⌐╪º┘å┘ü█î┌»: ${row.inventory_id}\n` +
+            `╪¡╪¼┘à ╪»╪▒╪«┘ê╪º╪│╪¬█î: ${row.requested_mb}MB\n` +
+            `┘à╪¿┘ä╪║: ${formatPriceToman(Number(row.final_price))} ╪¬┘ê┘à╪º┘å\n` +
+            `╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬: ${row.payment_method}\n` +
+            `┘ê╪╢╪╣█î╪¬: ${row.status}\n` +
+            `╪▓┘à╪º┘å: ${row.created_at}`
     });
     return true;
 }
@@ -11537,27 +11540,27 @@ export async function fulfillOrderByPaymentId(paymentId) {
         const paymentLabel = paymentMethod === "tronado"
             ? "Tronado"
             : paymentMethod === "tetrapay"
-                ? "تتراپی"
+                ? "╪¬╪¬╪▒╪º┘╛█î"
                 : paymentMethod === "plisio"
                     ? "Plisio"
                     : paymentMethod === "swapwallet"
                         ? "SwapWallet"
                         : paymentMethod === "crypto"
-                            ? "کریپتو"
+                            ? "┌⌐╪▒█î┘╛╪¬┘ê"
                             : paymentMethod || "-";
         await sql `
       INSERT INTO wallet_transactions (telegram_id, amount, type, description)
-      VALUES (${topup.telegram_id}, ${topup.amount}, 'charge', ${`شارژ از طریق ${paymentLabel}`});
+      VALUES (${topup.telegram_id}, ${topup.amount}, 'charge', ${`╪┤╪º╪▒┌ÿ ╪º╪▓ ╪╖╪▒█î┘é ${paymentLabel}`});
     `;
         try {
             await tg("sendMessage", {
                 chat_id: Number(topup.telegram_id),
-                text: `✅ پرداخت شما با موفقیت انجام شد و مبلغ ${formatPriceToman(Number(topup.amount))} تومان به کیف پول شما اضافه شد.`
+                text: `Γ£à ┘╛╪▒╪»╪º╪«╪¬ ╪┤┘à╪º ╪¿╪º ┘à┘ê┘ü┘é█î╪¬ ╪º┘å╪¼╪º┘à ╪┤╪» ┘ê ┘à╪¿┘ä╪║ ${formatPriceToman(Number(topup.amount))} ╪¬┘ê┘à╪º┘å ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪º╪╢╪º┘ü┘ç ╪┤╪».`
             });
             for (const adminId of await getAdminIds()) {
                 await tg("sendMessage", {
                     chat_id: adminId,
-                    text: `💰 کاربر ${topup.telegram_id} مبلغ ${formatPriceToman(Number(topup.amount))} تومان از طریق ${paymentLabel} کیف پول خود را شارژ کرد.`
+                    text: `≡ƒÆ░ ┌⌐╪º╪▒╪¿╪▒ ${topup.telegram_id} ┘à╪¿┘ä╪║ ${formatPriceToman(Number(topup.amount))} ╪¬┘ê┘à╪º┘å ╪º╪▓ ╪╖╪▒█î┘é ${paymentLabel} ┌⌐█î┘ü ┘╛┘ê┘ä ╪«┘ê╪» ╪▒╪º ╪┤╪º╪▒┌ÿ ┌⌐╪▒╪».`
                 }).catch(() => { });
             }
         }
@@ -11664,23 +11667,23 @@ async function finalizeOrder(orderId, decidedBy) {
                 // Give the user two choices: retry config creation or get a wallet refund
                 await tg("sendMessage", {
                     chat_id: Number(order.telegram_id),
-                    text: `✅ پرداخت شما تایید شد\n` +
-                        `⚠️ متاسفانه ساخت کانفیگ برای سفارش <b>${escapeHtml(String(order.purchase_id))}</b> با خطا مواجه شد.\n` +
-                        `${allProvisions.length > 0 ? `${allProvisions.length} کانفیگ از ${bulkQuantity} ساخته شد.\n` : ""}` +
-                        `\nلطفاً یکی از گزینه‌های زیر را انتخاب کنید:`,
+                    text: `Γ£à ┘╛╪▒╪»╪º╪«╪¬ ╪┤┘à╪º ╪¬╪º█î█î╪» ╪┤╪»\n` +
+                        `ΓÜá∩╕Å ┘à╪¬╪º╪│┘ü╪º┘å┘ç ╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪¿╪▒╪º█î ╪│┘ü╪º╪▒╪┤ <b>${escapeHtml(String(order.purchase_id))}</b> ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪».\n` +
+                        `${allProvisions.length > 0 ? `${allProvisions.length} ┌⌐╪º┘å┘ü█î┌» ╪º╪▓ ${bulkQuantity} ╪│╪º╪«╪¬┘ç ╪┤╪».\n` : ""}` +
+                        `\n┘ä╪╖┘ü╪º┘ï █î┌⌐█î ╪º╪▓ ┌»╪▓█î┘å┘çΓÇî┘ç╪º█î ╪▓█î╪▒ ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
                     parse_mode: "HTML",
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: "🔄 تلاش مجدد برای دریافت کانفیگ", callback_data: `retry_config_${order.id}` }],
-                            [{ text: "💰 بازگشت وجه به کیف پول", callback_data: `refund_to_wallet_${order.id}` }]
+                            [{ text: "≡ƒöä ╪¬┘ä╪º╪┤ ┘à╪¼╪»╪» ╪¿╪▒╪º█î ╪»╪▒█î╪º┘ü╪¬ ┌⌐╪º┘å┘ü█î┌»", callback_data: `retry_config_${order.id}` }],
+                            [{ text: "≡ƒÆ░ ╪¿╪º╪▓┌»╪┤╪¬ ┘ê╪¼┘ç ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä", callback_data: `refund_to_wallet_${order.id}` }]
                         ]
                     }
                 }).catch(() => { });
-                await notifyAdmins(`❌ خطای ساخت کانفیگ روی پنل برای سفارش ${order.purchase_id}:\n${err.message || "Unknown error"}\nتعداد کل: ${bulkQuantity}\nساخته شده: ${allProvisions.length}\n` +
-                    `کاربر ${order.telegram_id} گزینه‌های تلاش مجدد / بازگشت وجه را دریافت کرد.`, {
+                await notifyAdmins(`Γ¥î ╪«╪╖╪º█î ╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪▒┘ê█î ┘╛┘å┘ä ╪¿╪▒╪º█î ╪│┘ü╪º╪▒╪┤ ${order.purchase_id}:\n${err.message || "Unknown error"}\n╪¬╪╣╪»╪º╪» ┌⌐┘ä: ${bulkQuantity}\n╪│╪º╪«╪¬┘ç ╪┤╪»┘ç: ${allProvisions.length}\n` +
+                    `┌⌐╪º╪▒╪¿╪▒ ${order.telegram_id} ┌»╪▓█î┘å┘çΓÇî┘ç╪º█î ╪¬┘ä╪º╪┤ ┘à╪¼╪»╪» / ╪¿╪º╪▓┌»╪┤╪¬ ┘ê╪¼┘ç ╪▒╪º ╪»╪▒█î╪º┘ü╪¬ ┌⌐╪▒╪».`, {
                     inline_keyboard: [
-                        [{ text: "ارسال کانفیگ دستی", callback_data: `admin_provide_config_${order.id}` }],
-                        [{ text: "🔎 بررسی سفارش", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]
+                        [{ text: "╪º╪▒╪│╪º┘ä ┌⌐╪º┘å┘ü█î┌» ╪»╪│╪¬█î", callback_data: `admin_provide_config_${order.id}` }],
+                        [{ text: "≡ƒöÄ ╪¿╪▒╪▒╪│█î ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]
                     ]
                 });
                 return { ok: false, reason: "provision_failed" };
@@ -11766,197 +11769,76 @@ async function finalizeOrder(orderId, decidedBy) {
                     }
                 }
             }
-            await notifyAdmins(`⚠️ سفارش ${order.purchase_id}: پروویژن تکمیل شد اما سفارش قبلاً لغو/استرداد شده بود.\n` +
-                `کانفیگ‌های ساخته‌شده به‌صورت خودکار پاک‌سازی شدند.\nکاربر: ${order.telegram_id}`).catch(() => { });
-            return { ok: false, reason: "order_cancelled_during_provision" };
         }
-        await tg("sendMessage", {
-            chat_id: Number(order.telegram_id),
-            text: `پرداخت شما تایید شد ✅${bulkQuantity > 1 ? `\n${bulkQuantity} کانفیگ ساخته شد.` : ""}`
-        }).catch(() => { });
-        // Deliver each config separately when every provision has its own subscription URL
-        // (Sanaei / Marzban bulk: each user gets a distinct sub link)
-        if (allSubscriptionUrls.length > 1) {
-            for (let i = 0; i < allProvisions.length; i++) {
-                const prov = allProvisions[i];
-                const isLast = i === allProvisions.length - 1;
-                const provLinks = prov.deliveryPayload.configLinks || [];
-                const provSub = prov.deliveryPayload.subscriptionUrl || null;
-                const singleDelivery = {
-                    configLinks: provLinks,
-                    subscriptionUrl: provSub,
-                    primaryQr: buildQrText(provLinks[0] || null, provLinks, provSub),
-                    primaryText: provLinks[0] || provSub || "",
-                    metadata: prov.deliveryPayload.metadata
-                };
-                await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), String(provLinks[0] || provSub || ""), singleDelivery, isLast
-                    ? [[{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }], [homeButton()]]
-                    : []).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
-            }
-        }
-        else {
-            // Single sub URL or no subs: send one combined message
-            const combinedDelivery = {
-                configLinks: allConfigLinks,
-                subscriptionUrl: allSubscriptionUrls[0] || null,
-                primaryQr: buildQrText(allConfigLinks[0] || null, allConfigLinks, allSubscriptionUrls[0] || null),
-                primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
-                metadata: {
-                    bulkCount: bulkQuantity
-                }
-            };
-            await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), String(allConfigLinks[0] || allSubscriptionUrls[0] || ""), combinedDelivery, [[{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }], [homeButton()]]).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
-        }
-        // Admin notification — build a combined summary with ALL sub URLs
-        const adminDelivery = {
-            configLinks: allConfigLinks,
-            subscriptionUrl: allSubscriptionUrls[0] || null,
-            primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
-            metadata: {
-                bulkCount: bulkQuantity,
-                allSubscriptionUrls: allSubscriptionUrls.length > 1 ? allSubscriptionUrls : undefined
-            }
-        };
-        await notifyAdmins(buildAdminDeliverySummary({
-            purchaseId: String(order.purchase_id),
-            userId: Number(order.telegram_id),
-            telegramUsername: profile.username,
-            telegramFullName: profile.fullName,
-            productName: String(order.product_name || "-") + (bulkQuantity > 1 ? ` (x${bulkQuantity})` : ""),
-            deliveryPayload: adminDelivery,
-            walletUsed: Number(order.wallet_used || 0)
-        }), { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
-        return { ok: true, reason: "fulfilled" };
     }
-    else if (parseSellMode(String(order.sell_mode || "")) === "pingchi") {
-        const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
-        const bulkQuantity = getOrderBulkQuantity(order, panelConfig);
-        const allProvisions = [];
-        for (let i = 0; i < bulkQuantity; i++) {
-            let provision;
-            try {
-                provision = await provisionPingchiSale({ purchase_id: String(order.purchase_id), product_name_snapshot: String(order.product_name) }, panelConfig);
-                allProvisions.push(provision);
-            }
-            catch (err) {
-                logError("pingchi_provision_failed", err, { orderId: order.id, configIndex: i });
-                await sql `
-          UPDATE orders
-          SET status = 'awaiting_config', paid_at = NOW(), admin_decision_by = ${decidedBy}
-          WHERE id = ${order.id} AND status = 'fulfilling';
-        `;
-                await tg("sendMessage", {
-                    chat_id: Number(order.telegram_id),
-                    text: `✅ پرداخت شما تایید شد.\nاما مشکلی در ارتباط با سرور رخ داد. به ادمین پیام دادیم تا سریعا بررسی کند.`
-                }).catch(() => { });
-                const adminIds = await getAdminIds();
-                if (adminIds.length > 0) {
-                    await tg("sendMessage", {
-                        chat_id: adminIds[0],
-                        text: `❌ خطای پینگچی (سفارش ${order.purchase_id})\n${err.message || ""}`
-                    }).catch(() => { });
-                }
-                return { ok: false, reason: "provision_failed" };
-            }
-        }
-        // Save to inventory
-        const allConfigLinks = [];
-        const allSubscriptionUrls = [];
-        let firstInventoryId = null;
-        for (const provision of allProvisions) {
-            const delivered = parseDeliveryPayload(provision.deliveryPayload);
-            const panelUserKey = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || delivered.metadata?.uuid || "").trim() || null;
-            const inserted = await sql `
-        INSERT INTO inventory (
-          product_id, panel_user_key, config_value, delivery_payload, status, owner_telegram_id, sold_order_id, panel_id, sold_at
-        )
-        VALUES (
-          ${order.product_id},
-          ${panelUserKey},
-          ${provision.configValue},
-          ${serializeDeliveryPayload(provision.deliveryPayload)}::jsonb,
-          'sold',
-          ${order.telegram_id},
-          ${order.id},
-          ${order.source_panel_id},
-          NOW()
-        )
-        RETURNING id;
-      `;
-            if (!firstInventoryId)
-                firstInventoryId = Number(inserted[0].id);
-            await recordInventoryForensicEvent(Number(inserted[0].id), "sale_delivered", {
-                purchaseId: String(order.purchase_id),
-                by: decidedBy
-            });
-            if (provision.deliveryPayload.configLinks) {
-                allConfigLinks.push(...provision.deliveryPayload.configLinks);
-            }
-            if (provision.deliveryPayload.subscriptionUrl) {
-                allSubscriptionUrls.push(provision.deliveryPayload.subscriptionUrl);
-            }
-        }
-        const updateResult = await sql `
-      UPDATE orders
-      SET status = 'paid', paid_at = NOW(), inventory_id = ${firstInventoryId}, admin_decision_by = ${decidedBy}
-      WHERE id = ${order.id} AND status = 'fulfilling'
-      RETURNING id, purchase_id;
-    `;
-        if (!updateResult.length) {
-            // Order cancelled during provision
-            for (const p of allProvisions) {
-                const delivered = parseDeliveryPayload(p.deliveryPayload);
-                const key = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || "").trim();
-                if (key) {
-                    pingchiApi("services.delete", { username: key }).catch(() => { });
-                }
-            }
-            await notifyAdmins(`⚠️ سفارش ${order.purchase_id} لغو شد و پینگچی پاک‌سازی شد.`).catch(() => { });
-            return { ok: false, reason: "order_cancelled_during_provision" };
-        }
-        await tg("sendMessage", {
-            chat_id: Number(order.telegram_id),
-            text: `پرداخت شما تایید شد ✅${bulkQuantity > 1 ? `\n${bulkQuantity} کانفیگ ساخته شد.` : ""}`
-        }).catch(() => { });
-        for (let i = 0; i < allProvisions.length; i++) {
-            const prov = allProvisions[i];
-            const isLast = i === allProvisions.length - 1;
-            const provLinks = prov.deliveryPayload.configLinks || [];
-            const provSub = prov.deliveryPayload.subscriptionUrl || null;
-            const singleDelivery = {
-                configLinks: provLinks,
-                subscriptionUrl: provSub,
-                primaryQr: buildQrText(provLinks[0] || null, provLinks, provSub),
-                primaryText: provLinks[0] || provSub || "",
-                metadata: prov.deliveryPayload.metadata
-            };
-            await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), String(provLinks[0] || provSub || ""), singleDelivery, isLast ? [[{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }], [homeButton()]] : []).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
-        }
-        const profile = await getTelegramProfileText(Number(order.telegram_id));
-        const adminDelivery = {
-            configLinks: allConfigLinks,
-            subscriptionUrl: allSubscriptionUrls[0] || null,
-            primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
-            metadata: { bulkCount: bulkQuantity }
+    await notifyAdmins(`ΓÜá∩╕Å ╪│┘ü╪º╪▒╪┤ ${order.purchase_id}: ┘╛╪▒┘ê┘ê█î┌ÿ┘å ╪¬┌⌐┘à█î┘ä ╪┤╪» ╪º┘à╪º ╪│┘ü╪º╪▒╪┤ ┘é╪¿┘ä╪º┘ï ┘ä╪║┘ê/╪º╪│╪¬╪▒╪»╪º╪» ╪┤╪»┘ç ╪¿┘ê╪».\n` +
+        `┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î ╪│╪º╪«╪¬┘çΓÇî╪┤╪»┘ç ╪¿┘çΓÇî╪╡┘ê╪▒╪¬ ╪«┘ê╪»┌⌐╪º╪▒ ┘╛╪º┌⌐ΓÇî╪│╪º╪▓█î ╪┤╪»┘å╪».\n┌⌐╪º╪▒╪¿╪▒: ${order.telegram_id}`).catch(() => { });
+    return { ok: false, reason: "order_cancelled_during_provision" };
+}
+await tg("sendMessage", {
+    chat_id: Number(order.telegram_id),
+    text: `┘╛╪▒╪»╪º╪«╪¬ ╪┤┘à╪º ╪¬╪º█î█î╪» ╪┤╪» Γ£à${bulkQuantity > 1 ? `\n${bulkQuantity} ┌⌐╪º┘å┘ü█î┌» ╪│╪º╪«╪¬┘ç ╪┤╪».` : ""}`
+}).catch(() => { });
+// Deliver each config separately when every provision has its own subscription URL
+// (Sanaei / Marzban bulk: each user gets a distinct sub link)
+if (allSubscriptionUrls.length > 1) {
+    for (let i = 0; i < allProvisions.length; i++) {
+        const prov = allProvisions[i];
+        const isLast = i === allProvisions.length - 1;
+        const provLinks = prov.deliveryPayload.configLinks || [];
+        const provSub = prov.deliveryPayload.subscriptionUrl || null;
+        const singleDelivery = {
+            configLinks: provLinks,
+            subscriptionUrl: provSub,
+            primaryQr: buildQrText(provLinks[0] || null, provLinks, provSub),
+            primaryText: provLinks[0] || provSub || "",
+            metadata: prov.deliveryPayload.metadata
         };
-        await notifyAdmins(buildAdminDeliverySummary({
-            purchaseId: String(order.purchase_id),
-            userId: Number(order.telegram_id),
-            telegramUsername: profile.username,
-            telegramFullName: profile.fullName,
-            productName: String(order.product_name || "-") + (bulkQuantity > 1 ? ` (x${bulkQuantity})` : ""),
-            deliveryPayload: adminDelivery,
-            walletUsed: Number(order.wallet_used || 0)
-        }), { inline_keyboard: [[{ text: "🔎 بررسی", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
-        return { ok: true, reason: "fulfilled" };
+        await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), String(provLinks[0] || provSub || ""), singleDelivery, isLast
+            ? [[{ text: "Γ₧ò ╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º", callback_data: "topup_menu" }], [homeButton()]]
+            : []).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
     }
-    const globalInfinite = await getBoolSetting("global_infinite_mode", false);
-    const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
-    const bulkQty = getOrderBulkQuantity(order, panelConfig);
-    // Allocate N inventory items for bulk orders
-    const allocatedItems = [];
-    for (let i = 0; i < bulkQty; i++) {
-        const allocated = await sql `
+}
+else {
+    // Single sub URL or no subs: send one combined message
+    const combinedDelivery = {
+        configLinks: allConfigLinks,
+        subscriptionUrl: allSubscriptionUrls[0] || null,
+        primaryQr: buildQrText(allConfigLinks[0] || null, allConfigLinks, allSubscriptionUrls[0] || null),
+        primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
+        metadata: {
+            bulkCount: bulkQuantity
+        }
+    };
+    await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), String(allConfigLinks[0] || allSubscriptionUrls[0] || ""), combinedDelivery, [[{ text: "Γ₧ò ╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º", callback_data: "topup_menu" }], [homeButton()]]).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
+}
+// Admin notification ΓÇö build a combined summary with ALL sub URLs
+const adminDelivery = {
+    configLinks: allConfigLinks,
+    subscriptionUrl: allSubscriptionUrls[0] || null,
+    primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
+    metadata: {
+        bulkCount: bulkQuantity,
+        allSubscriptionUrls: allSubscriptionUrls.length > 1 ? allSubscriptionUrls : undefined
+    }
+};
+await notifyAdmins(buildAdminDeliverySummary({
+    purchaseId: String(order.purchase_id),
+    userId: Number(order.telegram_id),
+    telegramUsername: profile.username,
+    telegramFullName: profile.fullName,
+    productName: String(order.product_name || "-") + (bulkQuantity > 1 ? ` (x${bulkQuantity})` : ""),
+    deliveryPayload: adminDelivery,
+    walletUsed: Number(order.wallet_used || 0)
+}), { inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
+return { ok: true, reason: "fulfilled" };
+const globalInfinite = await getBoolSetting("global_infinite_mode", false);
+const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
+const bulkQty = getOrderBulkQuantity(order, panelConfig);
+// Allocate N inventory items for bulk orders
+const allocatedItems = [];
+for (let i = 0; i < bulkQty; i++) {
+    const allocated = await sql `
       UPDATE inventory
       SET status = 'sold', owner_telegram_id = ${order.telegram_id}, sold_order_id = ${order.id}, sold_at = NOW()
       WHERE id = (
@@ -11968,110 +11850,109 @@ async function finalizeOrder(orderId, decidedBy) {
       )
       RETURNING id, config_value;
     `;
-        if (allocated.length) {
-            const configValue = String(allocated[0].config_value);
-            const itemPayload = serializeDeliveryPayload({
-                configLinks: [configValue],
-                primaryText: configValue
-            });
-            await sql `
+    if (allocated.length) {
+        const configValue = String(allocated[0].config_value);
+        const itemPayload = serializeDeliveryPayload({
+            configLinks: [configValue],
+            primaryText: configValue
+        });
+        await sql `
         UPDATE inventory
         SET delivery_payload = ${itemPayload}::jsonb
         WHERE id = ${Number(allocated[0].id)};
       `;
-            allocatedItems.push({ id: Number(allocated[0].id), config_value: configValue });
-        }
-        else {
-            break;
-        }
+        allocatedItems.push({ id: Number(allocated[0].id), config_value: configValue });
     }
-    if (!allocatedItems.length) {
-        const forceAwaitingConfig = panelConfig.force_awaiting_config === true;
-        const forceRequireInventory = panelConfig.force_require_inventory === true;
-        if (!forceRequireInventory && (globalInfinite || order.is_infinite || forceAwaitingConfig)) {
-            await sql `
+    else {
+        break;
+    }
+}
+if (!allocatedItems.length) {
+    const forceAwaitingConfig = panelConfig.force_awaiting_config === true;
+    const forceRequireInventory = panelConfig.force_require_inventory === true;
+    if (!forceRequireInventory && (globalInfinite || order.is_infinite || forceAwaitingConfig)) {
+        await sql `
         UPDATE orders
         SET status = 'awaiting_config', paid_at = NOW(), admin_decision_by = ${decidedBy}
         WHERE id = ${order.id};
       `;
-            await tg("sendMessage", {
-                chat_id: Number(order.telegram_id),
-                text: `پرداخت شما تایید شد ✅\nشناسه خرید: ${order.purchase_id}\nدر حال آماده‌سازی کانفیگ هستیم.`
-            }).catch(() => { });
-            const extraLines = [];
-            if (typeof panelConfig.data_limit_mb === "number")
-                extraLines.push(`حجم: ${Math.max(1, Math.round(Number(panelConfig.data_limit_mb) / 1024))} گیگابایت`);
-            if (typeof panelConfig.expire_days === "number")
-                extraLines.push(`زمان: ${Math.max(1, Math.round(Number(panelConfig.expire_days)))} روز`);
-            const bulkQtyNotif = getOrderBulkQuantity(order, panelConfig);
-            if (bulkQtyNotif > 1)
-                extraLines.push(`تعداد کانفیگ: ${bulkQtyNotif} عدد`);
-            const bulkNamesNotif = Array.isArray(panelConfig.bulk_config_names) ? panelConfig.bulk_config_names : [];
-            if (bulkNamesNotif.length > 0)
-                extraLines.push(`نام‌ها: ${bulkNamesNotif.join(", ")}`);
-            await notifyAdmins(`🛠 سفارش ${order.purchase_id} نیاز به ساخت کانفیگ دستی دارد.${extraLines.length ? `\n${extraLines.join("\n")}` : ""}`, {
-                inline_keyboard: [[{ text: "ارسال کانفیگ", callback_data: `admin_provide_config_${order.id}` }]]
-            });
-            return { ok: true, reason: "awaiting_config" };
-        }
-        await sql `UPDATE orders SET status = 'receipt_submitted' WHERE id = ${order.id} AND status = 'fulfilling';`;
-        await notifyAdmins(`⚠️ سفارش ${order.purchase_id} پرداخت شد اما موجودی این محصول تمام شده است.`);
-        return { ok: false, reason: "stock_empty" };
+        await tg("sendMessage", {
+            chat_id: Number(order.telegram_id),
+            text: `┘╛╪▒╪»╪º╪«╪¬ ╪┤┘à╪º ╪¬╪º█î█î╪» ╪┤╪» Γ£à\n╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${order.purchase_id}\n╪»╪▒ ╪¡╪º┘ä ╪ó┘à╪º╪»┘çΓÇî╪│╪º╪▓█î ┌⌐╪º┘å┘ü█î┌» ┘ç╪│╪¬█î┘à.`
+        }).catch(() => { });
+        const extraLines = [];
+        if (typeof panelConfig.data_limit_mb === "number")
+            extraLines.push(`╪¡╪¼┘à: ${Math.max(1, Math.round(Number(panelConfig.data_limit_mb) / 1024))} ┌»█î┌»╪º╪¿╪º█î╪¬`);
+        if (typeof panelConfig.expire_days === "number")
+            extraLines.push(`╪▓┘à╪º┘å: ${Math.max(1, Math.round(Number(panelConfig.expire_days)))} ╪▒┘ê╪▓`);
+        const bulkQtyNotif = getOrderBulkQuantity(order, panelConfig);
+        if (bulkQtyNotif > 1)
+            extraLines.push(`╪¬╪╣╪»╪º╪» ┌⌐╪º┘å┘ü█î┌»: ${bulkQtyNotif} ╪╣╪»╪»`);
+        const bulkNamesNotif = Array.isArray(panelConfig.bulk_config_names) ? panelConfig.bulk_config_names : [];
+        if (bulkNamesNotif.length > 0)
+            extraLines.push(`┘å╪º┘àΓÇî┘ç╪º: ${bulkNamesNotif.join(", ")}`);
+        await notifyAdmins(`≡ƒ¢á ╪│┘ü╪º╪▒╪┤ ${order.purchase_id} ┘å█î╪º╪▓ ╪¿┘ç ╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪»╪│╪¬█î ╪»╪º╪▒╪».${extraLines.length ? `\n${extraLines.join("\n")}` : ""}`, {
+            inline_keyboard: [[{ text: "╪º╪▒╪│╪º┘ä ┌⌐╪º┘å┘ü█î┌»", callback_data: `admin_provide_config_${order.id}` }]]
+        });
+        return { ok: true, reason: "awaiting_config" };
     }
-    // Warn admin if fewer items were allocated than requested
-    if (allocatedItems.length < bulkQty) {
-        await notifyAdmins(`⚠️ سفارش ${order.purchase_id}: درخواست ${bulkQty} آیتم بود اما فقط ${allocatedItems.length} موجود بود.`);
-    }
-    await sql `
+    await sql `UPDATE orders SET status = 'receipt_submitted' WHERE id = ${order.id} AND status = 'fulfilling';`;
+    await notifyAdmins(`ΓÜá∩╕Å ╪│┘ü╪º╪▒╪┤ ${order.purchase_id} ┘╛╪▒╪»╪º╪«╪¬ ╪┤╪» ╪º┘à╪º ┘à┘ê╪¼┘ê╪»█î ╪º█î┘å ┘à╪¡╪╡┘ê┘ä ╪¬┘à╪º┘à ╪┤╪»┘ç ╪º╪│╪¬.`);
+    return { ok: false, reason: "stock_empty" };
+}
+// Warn admin if fewer items were allocated than requested
+if (allocatedItems.length < bulkQty) {
+    await notifyAdmins(`ΓÜá∩╕Å ╪│┘ü╪º╪▒╪┤ ${order.purchase_id}: ╪»╪▒╪«┘ê╪º╪│╪¬ ${bulkQty} ╪ó█î╪¬┘à ╪¿┘ê╪» ╪º┘à╪º ┘ü┘é╪╖ ${allocatedItems.length} ┘à┘ê╪¼┘ê╪» ╪¿┘ê╪».`);
+}
+await sql `
     UPDATE orders
     SET status = 'paid', paid_at = NOW(), inventory_id = ${allocatedItems[0].id}, admin_decision_by = ${decidedBy}
     WHERE id = ${order.id};
   `;
-    for (const item of allocatedItems) {
-        await recordInventoryForensicEvent(item.id, "sale_delivered", {
-            purchaseId: String(order.purchase_id),
-            by: decidedBy
-        });
-    }
-    await tg("sendMessage", {
-        chat_id: Number(order.telegram_id),
-        text: `پرداخت شما تایید شد ✅${allocatedItems.length > 1 ? `\n${allocatedItems.length} کانفیگ آماده شد.` : ""}`
-    }).catch(() => { });
-    const allConfigLinks = allocatedItems.map((item) => item.config_value);
-    const inventoryDelivery = {
-        configLinks: allConfigLinks,
-        primaryText: allConfigLinks[0] || "",
-        metadata: { bulkCount: allocatedItems.length }
-    };
-    if (allConfigLinks.length > 1) {
-        for (let i = 0; i < allConfigLinks.length; i++) {
-            const configValue = allConfigLinks[i];
-            const isLast = i === allConfigLinks.length - 1;
-            await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), configValue, { configLinks: [configValue], primaryText: configValue }, isLast
-                ? [
-                    [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
-                    [homeButton()]
-                ]
-                : []).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
-        }
-    }
-    else {
-        await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), allConfigLinks[0] || "", inventoryDelivery, [
-            [{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }],
-            [homeButton()]
-        ]).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
-    }
-    await notifyAdmins(buildAdminDeliverySummary({
+for (const item of allocatedItems) {
+    await recordInventoryForensicEvent(item.id, "sale_delivered", {
         purchaseId: String(order.purchase_id),
-        userId: Number(order.telegram_id),
-        telegramUsername: profile.username,
-        telegramFullName: profile.fullName,
-        productName: String(order.product_name || "-") + (allocatedItems.length > 1 ? ` (x${allocatedItems.length})` : ""),
-        deliveryPayload: inventoryDelivery,
-        walletUsed: Number(order.wallet_used || 0)
-    }), { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
-    return { ok: true, reason: "fulfilled" };
+        by: decidedBy
+    });
 }
+await tg("sendMessage", {
+    chat_id: Number(order.telegram_id),
+    text: `┘╛╪▒╪»╪º╪«╪¬ ╪┤┘à╪º ╪¬╪º█î█î╪» ╪┤╪» Γ£à${allocatedItems.length > 1 ? `\n${allocatedItems.length} ┌⌐╪º┘å┘ü█î┌» ╪ó┘à╪º╪»┘ç ╪┤╪».` : ""}`
+}).catch(() => { });
+const allConfigLinks = allocatedItems.map((item) => item.config_value);
+const inventoryDelivery = {
+    configLinks: allConfigLinks,
+    primaryText: allConfigLinks[0] || "",
+    metadata: { bulkCount: allocatedItems.length }
+};
+if (allConfigLinks.length > 1) {
+    for (let i = 0; i < allConfigLinks.length; i++) {
+        const configValue = allConfigLinks[i];
+        const isLast = i === allConfigLinks.length - 1;
+        await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), configValue, { configLinks: [configValue], primaryText: configValue }, isLast
+            ? [
+                [{ text: "Γ₧ò ╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º", callback_data: "topup_menu" }],
+                [homeButton()]
+            ]
+            : []).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
+    }
+}
+else {
+    await sendDeliveryPackage(Number(order.telegram_id), String(order.purchase_id), allConfigLinks[0] || "", inventoryDelivery, [
+        [{ text: "Γ₧ò ╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º", callback_data: "topup_menu" }],
+        [homeButton()]
+    ]).catch((e) => logError("delivery_package_failed", e, { orderId: order.id }));
+}
+await notifyAdmins(buildAdminDeliverySummary({
+    purchaseId: String(order.purchase_id),
+    userId: Number(order.telegram_id),
+    telegramUsername: profile.username,
+    telegramFullName: profile.fullName,
+    productName: String(order.product_name || "-") + (allocatedItems.length > 1 ? ` (x${allocatedItems.length})` : ""),
+    deliveryPayload: inventoryDelivery,
+    walletUsed: Number(order.wallet_used || 0)
+}), { inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] });
+return { ok: true, reason: "fulfilled" };
 async function handleCallback(update) {
     if (!update?.data || !update.message)
         return null;
@@ -12087,7 +11968,7 @@ async function handleCallback(update) {
         return null;
     }
     if (await isBanned(userId)) {
-        await tg("sendMessage", { chat_id: chatId, text: "دسترسی شما به دلیل تخلف مسدود شده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪»╪│╪¬╪▒╪│█î ╪┤┘à╪º ╪¿┘ç ╪»┘ä█î┘ä ╪¬╪«┘ä┘ü ┘à╪│╪»┘ê╪» ╪┤╪»┘ç ╪º╪│╪¬." });
         return null;
     }
     if (data !== "check_membership" && !(await checkMandatoryChannels(userId, chatId))) {
@@ -12101,14 +11982,14 @@ async function handleCallback(update) {
             if (msgId) {
                 const deleted = await tg("deleteMessage", { chat_id: chatId, message_id: msgId }).catch(() => null);
                 if (!deleted || !deleted.ok) {
-                    await tg("editMessageText", { chat_id: chatId, message_id: msgId, text: "عضویت شما تایید شد ✅" }).catch(() => { });
+                    await tg("editMessageText", { chat_id: chatId, message_id: msgId, text: "╪╣╪╢┘ê█î╪¬ ╪┤┘à╪º ╪¬╪º█î█î╪» ╪┤╪» Γ£à" }).catch(() => { });
                 }
             }
             await sendStartMedia(chatId);
-            await sendMainMenu(chatId, userId, "عضویت شما تایید شد ✅");
+            await sendMainMenu(chatId, userId, "╪╣╪╢┘ê█î╪¬ ╪┤┘à╪º ╪¬╪º█î█î╪» ╪┤╪» Γ£à");
         }
         else {
-            await tg("answerCallbackQuery", { callback_query_id: update.id, text: "هنوز در همه کانال‌ها عضو نشده‌اید!", show_alert: true }).catch(() => { });
+            await tg("answerCallbackQuery", { callback_query_id: update.id, text: "┘ç┘å┘ê╪▓ ╪»╪▒ ┘ç┘à┘ç ┌⌐╪º┘å╪º┘äΓÇî┘ç╪º ╪╣╪╢┘ê ┘å╪┤╪»┘çΓÇî╪º█î╪»!", show_alert: true }).catch(() => { });
         }
         return null;
     }
@@ -12152,7 +12033,7 @@ async function handleCallback(update) {
         await setState(userId, "await_wallet_charge_amount");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "مبلغ شارژ را به تومان ارسال کنید.\nمثال: 50000",
+            text: "┘à╪¿┘ä╪║ ╪┤╪º╪▒┌ÿ ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 50000",
             reply_markup: { inline_keyboard: [[backButton("wallet_menu")]] }
         });
         return null;
@@ -12174,7 +12055,7 @@ async function handleCallback(update) {
                 const walletFromSetting = await getSetting("business_wallet_address");
                 const walletAddress = walletFromSetting || env.BUSINESS_WALLET_ADDRESS;
                 if (!walletAddress) {
-                    await tg("sendMessage", { chat_id: chatId, text: "تنظیمات کیف پول کامل نیست. لطفاً به پشتیبانی پیام دهید." });
+                    await tg("sendMessage", { chat_id: chatId, text: "╪¬┘å╪╕█î┘à╪º╪¬ ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪º┘à┘ä ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
                     return null;
                 }
                 const tronadoApiKey = ((await getSetting("tronado_api_key")) || "").trim();
@@ -12182,7 +12063,7 @@ async function handleCallback(update) {
                 const tronAmount = Number((amount / tronPrice).toFixed(6));
                 const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
                 if (!callbackBase) {
-                    await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+                    await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪│╪º█î╪¬ ╪¿╪▒╪º█î Callback ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
                     return null;
                 }
                 const paymentId = `W${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
@@ -12196,26 +12077,26 @@ async function handleCallback(update) {
                 await sql `UPDATE wallet_topups SET receipt_file_id = ${paymentId} WHERE id = ${topupId}`;
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: `لینک پرداخت ترونادو برای شارژ کیف پول آماده است:\nمبلغ: ${formatPriceToman(amount)} تومان`,
-                    reply_markup: { inline_keyboard: [[{ text: "💳 پرداخت با Tronado", url: tokenData.paymentUrl }]] }
+                    text: `┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬ ╪¬╪▒┘ê┘å╪º╪»┘ê ╪¿╪▒╪º█î ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ╪ó┘à╪º╪»┘ç ╪º╪│╪¬:\n┘à╪¿┘ä╪║: ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å`,
+                    reply_markup: { inline_keyboard: [[{ text: "≡ƒÆ│ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º Tronado", url: tokenData.paymentUrl }]] }
                 });
                 await clearState(userId);
             }
             catch (error) {
                 logError("create_wallet_tronado_failed", error, { userId, amount });
-                await tg("sendMessage", { chat_id: chatId, text: "خطا در ایجاد لینک پرداخت." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪º█î╪¼╪º╪» ┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬." });
             }
         }
         else if (method === "tetrapay") {
             try {
                 const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
                 if (!callbackBase) {
-                    await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+                    await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪│╪º█î╪¬ ╪¿╪▒╪º█î Callback ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
                     return null;
                 }
                 const tetrapayApiKey = ((await getSetting("tetrapay_api_key")) || "").trim();
                 if (!tetrapayApiKey) {
-                    await tg("sendMessage", { chat_id: chatId, text: "کلید تتراپی تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+                    await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» ╪¬╪¬╪▒╪º┘╛█î ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
                     return null;
                 }
                 const paymentId = `W${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
@@ -12223,12 +12104,12 @@ async function handleCallback(update) {
                 const orderRes = await createTetrapayOrder({
                     purchaseId: paymentId,
                     amountToman: amount,
-                    description: `شارژ کیف پول`,
+                    description: `╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä`,
                     callbackUrl: `${callbackBase}/api/tetrapay-callback`,
                     apiKey: tetrapayApiKey
                 });
                 if (!orderRes.ok) {
-                    await tg("sendMessage", { chat_id: chatId, text: `خطا در ارتباط با درگاه تتراپی: ${orderRes.message}` });
+                    await tg("sendMessage", { chat_id: chatId, text: `╪«╪╖╪º ╪»╪▒ ╪º╪▒╪¬╪¿╪º╪╖ ╪¿╪º ╪»╪▒┌»╪º┘ç ╪¬╪¬╪▒╪º┘╛█î: ${orderRes.message}` });
                     return null;
                 }
                 await sql `
@@ -12237,10 +12118,10 @@ async function handleCallback(update) {
         `;
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: `لینک پرداخت تتراپی برای شارژ کیف پول آماده است:\nمبلغ: ${formatPriceToman(amount)} تومان`,
+                    text: `┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬ ╪¬╪¬╪▒╪º┘╛█î ╪¿╪▒╪º█î ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ╪ó┘à╪º╪»┘ç ╪º╪│╪¬:\n┘à╪¿┘ä╪║: ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å`,
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: "💳 پرداخت با تتراپی", url: orderRes.paymentUrlBot }],
+                            [{ text: "≡ƒÆ│ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º ╪¬╪¬╪▒╪º┘╛█î", url: orderRes.paymentUrlBot }],
                             [homeButton()]
                         ]
                     }
@@ -12249,19 +12130,19 @@ async function handleCallback(update) {
             }
             catch (error) {
                 logError("create_wallet_tetrapay_failed", error, { userId, amount });
-                await tg("sendMessage", { chat_id: chatId, text: "خطا در ایجاد لینک پرداخت." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪º█î╪¼╪º╪» ┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬." });
             }
         }
         else if (method === "plisio") {
             try {
                 const callbackBase = await getPublicBaseUrl(env.PUBLIC_BASE_URL);
                 if (!callbackBase) {
-                    await tg("sendMessage", { chat_id: chatId, text: "آدرس سایت برای Callback تنظیم نشده است. لطفاً به پشتیبانی پیام دهید." });
+                    await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ╪│╪º█î╪¬ ╪¿╪▒╪º█î Callback ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
                     return null;
                 }
                 const plisioApiKey = ((await getSetting("plisio_api_key")) || "").trim();
                 if (!plisioApiKey) {
-                    await tg("sendMessage", { chat_id: chatId, text: "تنظیمات Plisio کامل نیست. لطفاً به پشتیبانی پیام دهید." });
+                    await tg("sendMessage", { chat_id: chatId, text: "╪¬┘å╪╕█î┘à╪º╪¬ Plisio ┌⌐╪º┘à┘ä ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
                     return null;
                 }
                 const paymentId = `W${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, "0")}`;
@@ -12282,33 +12163,33 @@ async function handleCallback(update) {
         `;
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: `لینک پرداخت Plisio برای شارژ کیف پول آماده است:\nمبلغ: ${formatPriceToman(amount)} تومان\nمعادل تقریبی: ${usdtAmount} USDT`,
-                    reply_markup: { inline_keyboard: [[{ text: "💳 پرداخت با Plisio", url: invoice.invoiceUrl }], [homeButton()]] }
+                    text: `┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬ Plisio ╪¿╪▒╪º█î ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ╪ó┘à╪º╪»┘ç ╪º╪│╪¬:\n┘à╪¿┘ä╪║: ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å\n┘à╪╣╪º╪»┘ä ╪¬┘é╪▒█î╪¿█î: ${usdtAmount} USDT`,
+                    reply_markup: { inline_keyboard: [[{ text: "≡ƒÆ│ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪º Plisio", url: invoice.invoiceUrl }], [homeButton()]] }
                 });
                 await clearState(userId);
             }
             catch (error) {
                 logError("create_wallet_plisio_failed", error, { userId, amount });
-                await tg("sendMessage", { chat_id: chatId, text: "خطا در ایجاد لینک پرداخت." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪º█î╪¼╪º╪» ┘ä█î┘å┌⌐ ┘╛╪▒╪»╪º╪«╪¬." });
             }
         }
         else if (method === "crypto") {
             const wallets = await getActiveCryptoWallets();
             const ready = wallets.filter(cryptoWalletReady);
             if (!ready.length) {
-                await tg("sendMessage", { chat_id: chatId, text: "هیچ کیف پول کریپتوی فعالی برای شارژ کیف پول تنظیم نشده است." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê█î ┘ü╪╣╪º┘ä█î ╪¿╪▒╪º█î ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬." });
                 return null;
             }
             if (ready.length > 1) {
                 await setState(userId, "await_wallet_charge_crypto_wallet_select", { amount });
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: "کدام کیف پول را برای شارژ انتخاب می‌کنید؟",
+                    text: "┌⌐╪»╪º┘à ┌⌐█î┘ü ┘╛┘ê┘ä ╪▒╪º ╪¿╪▒╪º█î ╪┤╪º╪▒┌ÿ ╪º┘å╪¬╪«╪º╪¿ ┘à█îΓÇî┌⌐┘å█î╪»╪ƒ",
                     reply_markup: {
                         inline_keyboard: ready
                             .slice(0, 12)
                             .map((w) => [cb(cryptoWalletTitle(w), `wallet_charge_crypto_wallet_${w.id}`, "primary")])
-                            .concat([[backButton("wallet_menu", "🔙 بازگشت")]])
+                            .concat([[backButton("wallet_menu", "≡ƒöÖ ╪¿╪º╪▓┌»╪┤╪¬")]])
                     }
                 });
                 return null;
@@ -12318,7 +12199,7 @@ async function handleCallback(update) {
         else if (method === "card2card") {
             const cards = await sql `SELECT card_number, holder_name, bank_name FROM cards WHERE active = TRUE;`;
             if (!cards.length) {
-                await tg("sendMessage", { chat_id: chatId, text: "هیچ کارتی برای کارت‌به‌کارت تنظیم نشده است." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘ç█î┌å ┌⌐╪º╪▒╪¬█î ╪¿╪▒╪º█î ┌⌐╪º╪▒╪¬ΓÇî╪¿┘çΓÇî┌⌐╪º╪▒╪¬ ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬." });
                 return null;
             }
             const rows = await sql `
@@ -12329,15 +12210,15 @@ async function handleCallback(update) {
             const topupId = Number(rows[0].id);
             await setState(userId, "await_wallet_receipt", { topupId });
             const cardsText = cards
-                .map(c => `💳 ${c.card_number}\n👤 ${c.holder_name || "نامشخص"} (${c.bank_name || "نامشخص"})`)
+                .map(c => `≡ƒÆ│ ${c.card_number}\n≡ƒæñ ${c.holder_name || "┘å╪º┘à╪┤╪«╪╡"} (${c.bank_name || "┘å╪º┘à╪┤╪«╪╡"})`)
                 .join("\n\n");
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `مبلغ: ${formatPriceToman(amount)} تومان\n\nلطفاً مبلغ را به یکی از کارت‌های زیر واریز کنید:\n\n${cardsText}\n\nسپس تصویر رسید را همینجا ارسال کنید.`
+                text: `┘à╪¿┘ä╪║: ${formatPriceToman(amount)} ╪¬┘ê┘à╪º┘å\n\n┘ä╪╖┘ü╪º┘ï ┘à╪¿┘ä╪║ ╪▒╪º ╪¿┘ç █î┌⌐█î ╪º╪▓ ┌⌐╪º╪▒╪¬ΓÇî┘ç╪º█î ╪▓█î╪▒ ┘ê╪º╪▒█î╪▓ ┌⌐┘å█î╪»:\n\n${cardsText}\n\n╪│┘╛╪│ ╪¬╪╡┘ê█î╪▒ ╪▒╪│█î╪» ╪▒╪º ┘ç┘à█î┘å╪¼╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».`
             });
         }
         else {
-            await tg("sendMessage", { chat_id: chatId, text: "این روش پرداخت برای شارژ کیف پول پشتیبانی نمی‌شود." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪▒╪º█î ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘å┘à█îΓÇî╪┤┘ê╪»." });
         }
         return null;
     }
@@ -12354,12 +12235,12 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!walletRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const w = walletRows[0];
         if (!cryptoWalletReady(w)) {
-            await tg("sendMessage", { chat_id: chatId, text: "کیف پول کریپتو به‌درستی تنظیم نشده یا غیرفعال است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪▒█î┘╛╪¬┘ê ╪¿┘çΓÇî╪»╪▒╪│╪¬█î ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç █î╪º ╪║█î╪▒┘ü╪╣╪º┘ä ╪º╪│╪¬." });
             return null;
         }
         await createCryptoWalletTopup(chatId, userId, amount, w);
@@ -12386,13 +12267,13 @@ async function handleCallback(update) {
         const productId = Number(data.replace("buy_product_", ""));
         await setState(userId, "await_bulk_quantity", { productId });
         const quantityKeyboard = [
-            [cb("1️⃣ 1 عدد", "bulk_qty_1"), cb("2️⃣ 2 عدد", "bulk_qty_2"), cb("3️⃣ 3 عدد", "bulk_qty_3")],
-            [cb("4️⃣ 4 عدد", "bulk_qty_4"), cb("5️⃣ 5 عدد", "bulk_qty_5"), cb("➕ سفارشی", "bulk_qty_custom")],
+            [cb("1∩╕ÅΓâú 1 ╪╣╪»╪»", "bulk_qty_1"), cb("2∩╕ÅΓâú 2 ╪╣╪»╪»", "bulk_qty_2"), cb("3∩╕ÅΓâú 3 ╪╣╪»╪»", "bulk_qty_3")],
+            [cb("4∩╕ÅΓâú 4 ╪╣╪»╪»", "bulk_qty_4"), cb("5∩╕ÅΓâú 5 ╪╣╪»╪»", "bulk_qty_5"), cb("Γ₧ò ╪│┘ü╪º╪▒╪┤█î", "bulk_qty_custom")],
             [homeButton()]
         ];
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "چند عدد از این محصول می‌خواهید؟",
+            text: "┌å┘å╪» ╪╣╪»╪» ╪º╪▓ ╪º█î┘å ┘à╪¡╪╡┘ê┘ä ┘à█îΓÇî╪«┘ê╪º┘ç█î╪»╪ƒ",
             reply_markup: { inline_keyboard: quantityKeyboard }
         });
         return null;
@@ -12404,21 +12285,21 @@ async function handleCallback(update) {
         const qtyStr = data.replace("bulk_qty_", "");
         let quantity = 1;
         if (qtyStr === "custom") {
-            await tg("sendMessage", { chat_id: chatId, text: "تعداد مورد نظر را وارد کنید (1-100):" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¬╪╣╪»╪º╪» ┘à┘ê╪▒╪» ┘å╪╕╪▒ ╪▒╪º ┘ê╪º╪▒╪» ┌⌐┘å█î╪» (1-100):" });
             return null;
         }
         else {
             quantity = Number(qtyStr);
         }
         if (quantity < 1 || quantity > 100) {
-            await tg("sendMessage", { chat_id: chatId, text: "تعداد باید بین 1 تا 100 باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¬╪╣╪»╪º╪» ╪¿╪º█î╪» ╪¿█î┘å 1 ╪¬╪º 100 ╪¿╪º╪┤╪»." });
             return null;
         }
         const productId = Number(state.payload?.productId || 0);
         await setState(userId, "await_config_name", { productId, quantity });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `برای ${quantity} عدد${quantity > 1 ? " از" : ""} محصول یک نام انتخاب کنید:\n(اگر نام تکراری باشد، عدد تصادفی اضافه می‌شود)\n\nمثال: config1, myVPN, etc`
+            text: `╪¿╪▒╪º█î ${quantity} ╪╣╪»╪»${quantity > 1 ? " ╪º╪▓" : ""} ┘à╪¡╪╡┘ê┘ä █î┌⌐ ┘å╪º┘à ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:\n(╪º┌»╪▒ ┘å╪º┘à ╪¬┌⌐╪▒╪º╪▒█î ╪¿╪º╪┤╪»╪î ╪╣╪»╪» ╪¬╪╡╪º╪»┘ü█î ╪º╪╢╪º┘ü┘ç ┘à█îΓÇî╪┤┘ê╪»)\n\n┘à╪½╪º┘ä: config1, myVPN, etc`
         });
         return null;
     }
@@ -12435,7 +12316,7 @@ async function handleCallback(update) {
         }
         catch (e) {
             logError("custom_v2ray_count_adjust_failed", e, { userId, chatId, data });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در بروزرسانی تعداد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ╪¬╪╣╪»╪º╪»." });
         }
         return null;
     }
@@ -12466,7 +12347,7 @@ async function handleCallback(update) {
         }
         catch (e) {
             logError("custom_v2ray_adjust_failed", e, { userId, chatId, data });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در بروزرسانی فاکتور." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ┘ü╪º┌⌐╪¬┘ê╪▒." });
         }
         return null;
     }
@@ -12481,13 +12362,13 @@ async function handleCallback(update) {
             await tg("sendMessage", {
                 chat_id: chatId,
                 text: qty > 1
-                    ? `برای ${qty} کانفیگ یک نام پایه انتخاب کنید:\n(کانفیگ‌ها به صورت نام_1، نام_2، ... ساخته می‌شوند)\n\nمثال: myVPN, config1, etc`
-                    : "لطفاً یک نام برای کانفیگ خود انتخاب کنید:\n(اگر نام تکراری باشد، عدد تصادفی اضافه می‌شود)\n\nمثال: myVPN, config1, etc"
+                    ? `╪¿╪▒╪º█î ${qty} ┌⌐╪º┘å┘ü█î┌» █î┌⌐ ┘å╪º┘à ┘╛╪º█î┘ç ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:\n(┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ┘å╪º┘à_1╪î ┘å╪º┘à_2╪î ... ╪│╪º╪«╪¬┘ç ┘à█îΓÇî╪┤┘ê┘å╪»)\n\n┘à╪½╪º┘ä: myVPN, config1, etc`
+                    : "┘ä╪╖┘ü╪º┘ï █î┌⌐ ┘å╪º┘à ╪¿╪▒╪º█î ┌⌐╪º┘å┘ü█î┌» ╪«┘ê╪» ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:\n(╪º┌»╪▒ ┘å╪º┘à ╪¬┌⌐╪▒╪º╪▒█î ╪¿╪º╪┤╪»╪î ╪╣╪»╪» ╪¬╪╡╪º╪»┘ü█î ╪º╪╢╪º┘ü┘ç ┘à█îΓÇî╪┤┘ê╪»)\n\n┘à╪½╪º┘ä: myVPN, config1, etc"
             });
         }
         catch (e) {
             logError("custom_v2ray_confirm_failed", e, { userId, chatId });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در ادامه پرداخت." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪º╪»╪º┘à┘ç ┘╛╪▒╪»╪º╪«╪¬." });
         }
         return null;
     }
@@ -12495,15 +12376,15 @@ async function handleCallback(update) {
         try {
             const state = await getState(userId);
             if (!state || state.state !== "custom_v2ray_checkout") {
-                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪│┘ü╪º╪▒╪┤ ╪│┘ü╪º╪▒╪┤█î ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ╪º┘ê┘ä ╪┤╪▒┘ê╪╣ ┌⌐┘å." });
                 return null;
             }
             await setState(userId, "await_custom_wallet_amount", { checkout: state.payload });
-            await tg("sendMessage", { chat_id: chatId, text: "مبلغی که می‌خواهی از کیف پول کسر شود را به تومان وارد کن (فقط عدد):" });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║█î ┌⌐┘ç ┘à█îΓÇî╪«┘ê╪º┘ç█î ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪│╪▒ ╪┤┘ê╪» ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ┘ê╪º╪▒╪» ┌⌐┘å (┘ü┘é╪╖ ╪╣╪»╪»):" });
         }
         catch (e) {
             logError("custom_v2ray_wallet_custom_failed", e, { userId, chatId });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در انتخاب کیف پول." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪º┘å╪¬╪«╪º╪¿ ┌⌐█î┘ü ┘╛┘ê┘ä." });
         }
         return null;
     }
@@ -12512,7 +12393,7 @@ async function handleCallback(update) {
             const amount = Number(data.replace("custom_v2ray_use_wallet_", ""));
             const state = await getState(userId);
             if (!state || state.state !== "custom_v2ray_checkout") {
-                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪│┘ü╪º╪▒╪┤ ╪│┘ü╪º╪▒╪┤█î ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ╪º┘ê┘ä ╪┤╪▒┘ê╪╣ ┌⌐┘å." });
                 return null;
             }
             const totalPrice = Math.max(1, Math.round(Number(state.payload.totalPrice || 0)));
@@ -12520,7 +12401,7 @@ async function handleCallback(update) {
         }
         catch (e) {
             logError("custom_v2ray_wallet_pick_failed", e, { userId, chatId });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در انتخاب کیف پول." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪º┘å╪¬╪«╪º╪¿ ┌⌐█î┘ü ┘╛┘ê┘ä." });
         }
         return null;
     }
@@ -12532,14 +12413,14 @@ async function handleCallback(update) {
             const walletUsed = Math.max(0, Math.round(Number(parts[1] || 0)));
             const state = await getState(userId);
             if (!state || state.state !== "custom_v2ray_checkout") {
-                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪│┘ü╪º╪▒╪┤ ╪│┘ü╪º╪▒╪┤█î ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ╪º┘ê┘ä ╪┤╪▒┘ê╪╣ ┌⌐┘å." });
                 return null;
             }
             await showDiscountChoiceCustom(chatId, Number(state.payload.productId || 0), method, walletUsed);
         }
         catch (e) {
             logError("custom_v2ray_select_pay_failed", e, { userId, chatId, data });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در انتخاب روش پرداخت." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪º┘å╪¬╪«╪º╪¿ ╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬." });
         }
         return null;
     }
@@ -12555,15 +12436,15 @@ async function handleCallback(update) {
             const paymentMethod = parts.slice(1).join("_");
             const state = await getState(userId);
             if (!state || state.state !== "custom_v2ray_checkout") {
-                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪│┘ü╪º╪▒╪┤ ╪│┘ü╪º╪▒╪┤█î ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ╪º┘ê┘ä ╪┤╪▒┘ê╪╣ ┌⌐┘å." });
                 return null;
             }
             await setState(userId, "await_custom_discount_code", { productId, paymentMethod, walletUsed, checkout: state.payload });
-            await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف را ارسال کنید:" });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»:" });
         }
         catch (e) {
             logError("custom_v2ray_discount_yes_failed", e, { userId, chatId, data });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در مرحله تخفیف." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ┘à╪▒╪¡┘ä┘ç ╪¬╪«┘ü█î┘ü." });
         }
         return null;
     }
@@ -12579,7 +12460,7 @@ async function handleCallback(update) {
             const paymentMethod = parts.slice(1).join("_");
             const state = await getState(userId);
             if (!state || state.state !== "custom_v2ray_checkout") {
-                await tg("sendMessage", { chat_id: chatId, text: "جلسه سفارش سفارشی منقضی شده. دوباره از اول شروع کن." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪│┘ü╪º╪▒╪┤ ╪│┘ü╪º╪▒╪┤█î ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ╪º┘ê┘ä ╪┤╪▒┘ê╪╣ ┌⌐┘å." });
                 return null;
             }
             const checkout = state.payload || {};
@@ -12593,7 +12474,7 @@ async function handleCallback(update) {
             const overrides = {
                 basePriceToman: totalPrice,
                 panelConfigPatch: { data_limit_mb: dataMb, expire_days: days, force_awaiting_config: true, ...(quantity > 1 ? { bulk_quantity: quantity, bulk_config_names: configNames } : {}) },
-                productNameSuffix: `(سفارشی ${gb}GB / ${days} روز${quantity > 1 ? ` × ${quantity}` : ""})`,
+                productNameSuffix: `(╪│┘ü╪º╪▒╪┤█î ${gb}GB / ${days} ╪▒┘ê╪▓${quantity > 1 ? ` ├ù ${quantity}` : ""})`,
                 configName
             };
             await clearState(userId);
@@ -12601,14 +12482,14 @@ async function handleCallback(update) {
         }
         catch (e) {
             logError("custom_v2ray_discount_no_failed", e, { userId, chatId, data });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در ثبت سفارش." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪½╪¿╪¬ ╪│┘ü╪º╪▒╪┤." });
         }
         return null;
     }
     if (data.startsWith("use_wallet_custom_")) {
         const productId = Number(data.replace("use_wallet_custom_", ""));
         await setState(userId, "await_wallet_custom_amount", { productId });
-        await tg("sendMessage", { chat_id: chatId, text: "لطفاً مبلغی که می‌خواهید از کیف پول کسر شود را به تومان وارد کنید (فقط عدد):" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ┘à╪¿┘ä╪║█î ┌⌐┘ç ┘à█îΓÇî╪«┘ê╪º┘ç█î╪» ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪│╪▒ ╪┤┘ê╪» ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ┘ê╪º╪▒╪» ┌⌐┘å█î╪» (┘ü┘é╪╖ ╪╣╪»╪»):" });
         return null;
     }
     if (data.startsWith("use_wallet_")) {
@@ -12687,7 +12568,7 @@ async function handleCallback(update) {
         else {
             await setState(userId, "await_discount_code", { productId, paymentMethod, walletUsed });
         }
-        await tg("sendMessage", { chat_id: chatId, text: "کد تخفیف را ارسال کنید:" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪» ╪¬╪«┘ü█î┘ü ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»:" });
         return null;
     }
     if (data.startsWith("discount_no_")) {
@@ -12716,7 +12597,7 @@ async function handleCallback(update) {
     if (data.startsWith("check_order_")) {
         const purchaseId = data.replace("check_order_", "");
         if (await isRateLimited(userId, "check_order", 10_000)) {
-            await tg("sendMessage", { chat_id: chatId, text: "کمی صبر کنید و دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘à█î ╪╡╪¿╪▒ ┌⌐┘å█î╪» ┘ê ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
             return null;
         }
         try {
@@ -12727,7 +12608,7 @@ async function handleCallback(update) {
         LIMIT 1;
       `;
             if (!orderRows.length) {
-                await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪»." });
                 return null;
             }
             const paymentMethod = orderRows[0].payment_method;
@@ -12735,11 +12616,11 @@ async function handleCallback(update) {
             if (paymentMethod === "tetrapay") {
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: "بررسی وضعیت پرداخت تتراپی معمولاً به صورت خودکار انجام می‌شود.\nاگر پرداخت کرده‌ای ولی تایید نمی‌شود، اسکرین‌شات پرداخت را ارسال کن تا ادمین بررسی کند.",
+                    text: "╪¿╪▒╪▒╪│█î ┘ê╪╢╪╣█î╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪¬╪¬╪▒╪º┘╛█î ┘à╪╣┘à┘ê┘ä╪º┘ï ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪«┘ê╪»┌⌐╪º╪▒ ╪º┘å╪¼╪º┘à ┘à█îΓÇî╪┤┘ê╪».\n╪º┌»╪▒ ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪▒╪»┘çΓÇî╪º█î ┘ê┘ä█î ╪¬╪º█î█î╪» ┘å┘à█îΓÇî╪┤┘ê╪»╪î ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å ╪¬╪º ╪º╪»┘à█î┘å ╪¿╪▒╪▒╪│█î ┌⌐┘å╪».",
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: "📷 ارسال اسکرین‌شات پرداخت", callback_data: `crypto_receipt_${purchaseId}` }],
-                            [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+                            [{ text: "≡ƒô╖ ╪º╪▒╪│╪º┘ä ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬", callback_data: `crypto_receipt_${purchaseId}` }],
+                            [{ text: "≡ƒÅá ┘à┘å┘ê█î ╪º╪╡┘ä█î", callback_data: "home" }]
                         ]
                     }
                 });
@@ -12755,17 +12636,17 @@ async function handleCallback(update) {
             else if (paymentMethod === "plisio") {
                 const txnId = String(orderRows[0].plisio_txn_id || "").trim();
                 if (!txnId) {
-                    await tg("sendMessage", { chat_id: chatId, text: "اطلاعات پرداخت Plisio ناقص است. لطفاً به پشتیبانی پیام دهید." });
-                    await notifyAdmins(`⚠️ Plisio txn_id برای سفارش ثبت نشده است\nسفارش: ${purchaseId}`, {
-                        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+                    await tg("sendMessage", { chat_id: chatId, text: "╪º╪╖┘ä╪º╪╣╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ Plisio ┘å╪º┘é╪╡ ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+                    await notifyAdmins(`ΓÜá∩╕Å Plisio txn_id ╪¿╪▒╪º█î ╪│┘ü╪º╪▒╪┤ ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬\n╪│┘ü╪º╪▒╪┤: ${purchaseId}`, {
+                        inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
                     });
                     return null;
                 }
                 const plisioApiKey = ((await getSetting("plisio_api_key")) || "").trim();
                 if (!plisioApiKey) {
-                    await tg("sendMessage", { chat_id: chatId, text: "تنظیمات Plisio کامل نیست. لطفاً به پشتیبانی پیام دهید." });
-                    await notifyAdmins(`⚠️ کلید Plisio تنظیم نشده است\nسفارش: ${purchaseId}`, {
-                        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+                    await tg("sendMessage", { chat_id: chatId, text: "╪¬┘å╪╕█î┘à╪º╪¬ Plisio ┌⌐╪º┘à┘ä ┘å█î╪│╪¬. ┘ä╪╖┘ü╪º┘ï ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪»." });
+                    await notifyAdmins(`ΓÜá∩╕Å ┌⌐┘ä█î╪» Plisio ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬\n╪│┘ü╪º╪▒╪┤: ${purchaseId}`, {
+                        inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
                     });
                     return null;
                 }
@@ -12774,9 +12655,9 @@ async function handleCallback(update) {
                 const s = String(op?.status || "").toLowerCase().trim();
                 await sql `UPDATE orders SET plisio_status = ${s} WHERE purchase_id = ${purchaseId};`;
                 if (s === "expired" || s === "cancelled" || s === "error" || s === "cancelled duplicate") {
-                    await tg("sendMessage", { chat_id: chatId, text: `وضعیت پرداخت Plisio: ${s}\nاگر پرداخت کرده‌اید ولی ثبت نشده، به پشتیبانی پیام دهید.` });
-                    await notifyAdmins(`⚠️ وضعیت ناموفق Plisio\nسفارش: ${purchaseId}\nstatus: ${s}\ntxn: ${txnId}`, {
-                        inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${purchaseId}` }]]
+                    await tg("sendMessage", { chat_id: chatId, text: `┘ê╪╢╪╣█î╪¬ ┘╛╪▒╪»╪º╪«╪¬ Plisio: ${s}\n╪º┌»╪▒ ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪▒╪»┘çΓÇî╪º█î╪» ┘ê┘ä█î ╪½╪¿╪¬ ┘å╪┤╪»┘ç╪î ╪¿┘ç ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘╛█î╪º┘à ╪»┘ç█î╪».` });
+                    await notifyAdmins(`ΓÜá∩╕Å ┘ê╪╢╪╣█î╪¬ ┘å╪º┘à┘ê┘ü┘é Plisio\n╪│┘ü╪º╪▒╪┤: ${purchaseId}\nstatus: ${s}\ntxn: ${txnId}`, {
+                        inline_keyboard: [[{ text: "≡ƒöÄ ╪¿╪º╪▓ ┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤", callback_data: `admin_open_purchase_${purchaseId}` }]]
                     });
                     return null;
                 }
@@ -12785,30 +12666,30 @@ async function handleCallback(update) {
             else if (paymentMethod === "crypto") {
                 const existingReceipt = String(orderRows[0].receipt_file_id || "").trim() || "";
                 if (existingReceipt) {
-                    await tg("sendMessage", { chat_id: chatId, text: "قبلاً برای این سفارش اطلاعات پرداخت ثبت شده و در انتظار تایید ادمین است." });
+                    await tg("sendMessage", { chat_id: chatId, text: "┘é╪¿┘ä╪º┘ï ╪¿╪▒╪º█î ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ╪º╪╖┘ä╪º╪╣╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪½╪¿╪¬ ╪┤╪»┘ç ┘ê ╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒ ╪¬╪º█î█î╪» ╪º╪»┘à█î┘å ╪º╪│╪¬." });
                     return null;
                 }
                 await setState(userId, "await_crypto_receipt", { purchaseId });
-                await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کنید:" });
+                await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»:" });
                 return null;
             }
             if (isAccepted) {
                 const fulfill = await fulfillOrderByPaymentId(purchaseId);
                 if (!fulfill.ok && fulfill.reason === "stock_empty") {
-                    await tg("sendMessage", { chat_id: chatId, text: "پرداخت ثبت شد ولی موجودی صفر است. ادمین پیگیری می‌کند." });
+                    await tg("sendMessage", { chat_id: chatId, text: "┘╛╪▒╪»╪º╪«╪¬ ╪½╪¿╪¬ ╪┤╪» ┘ê┘ä█î ┘à┘ê╪¼┘ê╪»█î ╪╡┘ü╪▒ ╪º╪│╪¬. ╪º╪»┘à█î┘å ┘╛█î┌»█î╪▒█î ┘à█îΓÇî┌⌐┘å╪»." });
                 }
             }
             else {
                 const allowManual = paymentMethod === "tronado" || paymentMethod === "plisio" || paymentMethod === "tetrapay";
                 await tg("sendMessage", {
                     chat_id: chatId,
-                    text: "هنوز پرداخت تایید نشده است.\nاگر پرداخت کرده‌ای ولی تایید نمی‌شود، اسکرین‌شات پرداخت را ارسال کن تا ادمین بررسی کند.",
+                    text: "┘ç┘å┘ê╪▓ ┘╛╪▒╪»╪º╪«╪¬ ╪¬╪º█î█î╪» ┘å╪┤╪»┘ç ╪º╪│╪¬.\n╪º┌»╪▒ ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪▒╪»┘çΓÇî╪º█î ┘ê┘ä█î ╪¬╪º█î█î╪» ┘å┘à█îΓÇî╪┤┘ê╪»╪î ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å ╪¬╪º ╪º╪»┘à█î┘å ╪¿╪▒╪▒╪│█î ┌⌐┘å╪».",
                     ...(allowManual
                         ? {
                             reply_markup: {
                                 inline_keyboard: [
-                                    [{ text: "📷 ارسال اسکرین‌شات پرداخت", callback_data: `crypto_receipt_${purchaseId}` }],
-                                    [{ text: "🏠 منوی اصلی", callback_data: "home" }]
+                                    [{ text: "≡ƒô╖ ╪º╪▒╪│╪º┘ä ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬", callback_data: `crypto_receipt_${purchaseId}` }],
+                                    [{ text: "≡ƒÅá ┘à┘å┘ê█î ╪º╪╡┘ä█î", callback_data: "home" }]
                                 ]
                             }
                         }
@@ -12818,7 +12699,7 @@ async function handleCallback(update) {
         }
         catch (error) {
             logError("check_order_status_failed", error, { purchaseId, userId, chatId });
-            await tg("sendMessage", { chat_id: chatId, text: "خطا در بررسی وضعیت پرداخت." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪¿╪▒╪▒╪│█î ┘ê╪╢╪╣█î╪¬ ┘╛╪▒╪»╪º╪«╪¬." });
         }
         return null;
     }
@@ -12833,26 +12714,26 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "سفارش پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const order = rows[0];
         const method = String(order.payment_method || "").toLowerCase();
         if (!(method === "tronado" || method === "plisio" || method === "tetrapay")) {
-            await tg("sendMessage", { chat_id: chatId, text: "این سفارش نیازی به ارسال اسکرین‌شات ندارد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┘å█î╪º╪▓█î ╪¿┘ç ╪º╪▒╪│╪º┘ä ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘å╪»╪º╪▒╪»." });
             return null;
         }
         const status = String(order.status || "").toLowerCase();
         if (status === "paid") {
-            await tg("sendMessage", { chat_id: chatId, text: "این سفارش قبلاً پرداخت شده است ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┘é╪¿┘ä╪º┘ï ┘╛╪▒╪»╪º╪«╪¬ ╪┤╪»┘ç ╪º╪│╪¬ Γ£à" });
             return null;
         }
         if (status === "denied" || status === "cancelled") {
-            await tg("sendMessage", { chat_id: chatId, text: "این سفارش بسته شده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪│┘ü╪º╪▒╪┤ ╪¿╪│╪¬┘ç ╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         await setState(userId, "await_crypto_receipt", { orderId: Number(order.id) });
-        await tg("sendMessage", { chat_id: chatId, text: "لطفاً اسکرین‌شات پرداخت را به صورت عکس ارسال کن:" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ╪º╪│┌⌐╪▒█î┘åΓÇî╪┤╪º╪¬ ┘╛╪▒╪»╪º╪«╪¬ ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å:" });
         return null;
     }
     if (data.startsWith("show_configs_")) {
@@ -12873,7 +12754,7 @@ async function handleCallback(update) {
       ORDER BY i.id ASC;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "⚠️ این سفارش برای شما نیست یا یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ╪¿╪▒╪º█î ╪┤┘à╪º ┘å█î╪│╪¬ █î╪º █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const productName = String(rows[0].name || "-");
@@ -12894,7 +12775,7 @@ async function handleCallback(update) {
             }
         }
         if (entries.length <= 1) {
-            await tg("sendMessage", { chat_id: chatId, text: "برای این سفارش کانفیگ اضافی وجود ندارد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┌⌐╪º┘å┘ü█î┌» ╪º╪╢╪º┘ü█î ┘ê╪¼┘ê╪» ┘å╪»╪º╪▒╪»." });
             return null;
         }
         const pageSize = 3;
@@ -12906,24 +12787,24 @@ async function handleCallback(update) {
             const num = start + idx + 1;
             const parts = [`${num})`];
             if (entry.subUrl)
-                parts.push(`لینک ساب:\n${entry.subUrl}`);
+                parts.push(`┘ä█î┘å┌⌐ ╪│╪º╪¿:\n${entry.subUrl}`);
             if (entry.configLink)
-                parts.push(`کانفیگ:\n${entry.configLink}`);
+                parts.push(`┌⌐╪º┘å┘ü█î┌»:\n${entry.configLink}`);
             return parts.join("\n");
         });
-        const text = `محصول: ${productName}\n` +
-            `شناسه خرید: ${purchaseId}\n` +
-            `کانفیگ‌ها (صفحه ${safePage}/${totalPages}):\n\n` +
+        const text = `┘à╪¡╪╡┘ê┘ä: ${productName}\n` +
+            `╪┤┘å╪º╪│┘ç ╪«╪▒█î╪»: ${purchaseId}\n` +
+            `┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º (╪╡┘ü╪¡┘ç ${safePage}/${totalPages}):\n\n` +
             entryLines.join("\n\n");
         const navRow = [];
         if (safePage > 1)
-            navRow.push({ text: "⬅️ قبلی", callback_data: `show_configs_${purchaseId}_${safePage - 1}` });
+            navRow.push({ text: "Γ¼à∩╕Å ┘é╪¿┘ä█î", callback_data: `show_configs_${purchaseId}_${safePage - 1}` });
         if (safePage < totalPages)
-            navRow.push({ text: "بعدی ➡️", callback_data: `show_configs_${purchaseId}_${safePage + 1}` });
+            navRow.push({ text: "╪¿╪╣╪»█î Γ₧í∩╕Å", callback_data: `show_configs_${purchaseId}_${safePage + 1}` });
         const keyboard = [];
         if (navRow.length)
             keyboard.push(navRow);
-        keyboard.push([{ text: "📦 کانفیگ‌های من", callback_data: "my_configs" }]);
+        keyboard.push([{ text: "≡ƒôª ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î ┘à┘å", callback_data: "my_configs" }]);
         keyboard.push([homeButton()]);
         await tg("sendMessage", { chat_id: chatId, text, reply_markup: { inline_keyboard: keyboard } });
         return null;
@@ -12945,7 +12826,7 @@ async function handleCallback(update) {
         await setState(userId, "await_order_lookup");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "شناسه سفارش را ارسال کن (مثال: P1712345678901234):",
+            text: "╪┤┘å╪º╪│┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å (┘à╪½╪º┘ä: P1712345678901234):",
             reply_markup: { inline_keyboard: [[backButton("my_orders")], [homeButton()]] }
         });
         return null;
@@ -12963,18 +12844,18 @@ async function handleCallback(update) {
             return null;
         const rows = await sql `SELECT id, status, purchase_id FROM orders WHERE id = ${orderId} AND telegram_id = ${userId} LIMIT 1;`;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "سفارش پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         if (String(rows[0].status || "").toLowerCase() !== "awaiting_receipt") {
-            await tg("sendMessage", { chat_id: chatId, text: "برای این سفارش نیازی به ارسال رسید نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┘å█î╪º╪▓█î ╪¿┘ç ╪º╪▒╪│╪º┘ä ╪▒╪│█î╪» ┘å█î╪│╪¬." });
             return null;
         }
         await setState(userId, "await_receipt", { orderId });
         const purchaseId = String(rows[0].purchase_id || "").trim();
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "لطفاً تصویر رسید را به صورت عکس ارسال کن:",
+            text: "┘ä╪╖┘ü╪º┘ï ╪¬╪╡┘ê█î╪▒ ╪▒╪│█î╪» ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ ╪╣┌⌐╪│ ╪º╪▒╪│╪º┘ä ┌⌐┘å:",
             reply_markup: { inline_keyboard: [[backButton(`open_order_${purchaseId}`)], [homeButton()]] }
         });
         return null;
@@ -12994,14 +12875,14 @@ async function handleCallback(update) {
         if (rows.length) {
             const walletUsed = Number(rows[0].wallet_used || 0);
             if (walletUsed > 0) {
-                await refundWalletUsage(Number(rows[0].telegram_id), walletUsed, `بازگشت مبلغ کیف پول به دلیل لغو سفارش ${rows[0].purchase_id}`);
+                await refundWalletUsage(Number(rows[0].telegram_id), walletUsed, `╪¿╪º╪▓┌»╪┤╪¬ ┘à╪¿┘ä╪║ ┌⌐█î┘ü ┘╛┘ê┘ä ╪¿┘ç ╪»┘ä█î┘ä ┘ä╪║┘ê ╪│┘ü╪º╪▒╪┤ ${rows[0].purchase_id}`);
             }
         }
         await tg("sendMessage", {
             chat_id: chatId,
             text: rows.length
-                ? (Number(rows[0].wallet_used || 0) > 0 ? "سفارش لغو شد و مبلغ کیف پول شما برگشت ✅" : "سفارش لغو شد ✅")
-                : "امکان لغو این سفارش وجود ندارد."
+                ? (Number(rows[0].wallet_used || 0) > 0 ? "╪│┘ü╪º╪▒╪┤ ┘ä╪║┘ê ╪┤╪» ┘ê ┘à╪¿┘ä╪║ ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪¿╪▒┌»╪┤╪¬ Γ£à" : "╪│┘ü╪º╪▒╪┤ ┘ä╪║┘ê ╪┤╪» Γ£à")
+                : "╪º┘à┌⌐╪º┘å ┘ä╪║┘ê ╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┘ê╪¼┘ê╪» ┘å╪»╪º╪▒╪»."
         });
         if (rows.length) {
             await showOrderDetails(chatId, userId, purchaseId);
@@ -13026,7 +12907,7 @@ async function handleCallback(update) {
         const fromTopupFlow = payload.endsWith("_t");
         const inventoryId = Number(fromTopupFlow ? payload.slice(0, -2) : payload);
         if (!Number.isFinite(inventoryId) || inventoryId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ انتخاب‌شده معتبر نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ╪º┘å╪¬╪«╪º╪¿ΓÇî╪┤╪»┘ç ┘à╪╣╪¬╪¿╪▒ ┘å█î╪│╪¬." });
             return null;
         }
         await openMyConfig(chatId, userId, inventoryId, fromTopupFlow);
@@ -13040,20 +12921,20 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!ownRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "⚠️ این کانفیگ برای شما نیست یا یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ╪¿╪▒╪º█î ╪┤┘à╪º ┘å█î╪│╪¬ █î╪º █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
-        // Migrated config — redirect topup to the new config
+        // Migrated config ΓÇö redirect topup to the new config
         if (String(ownRows[0].status) === "migrated" && ownRows[0].migrated_to_inventory_id) {
-            await tg("sendMessage", { chat_id: chatId, text: "⚡ این کانفیگ منتقل شده. برای افزایش دیتا از لیست کانفیگ‌هایتان اقدام کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "ΓÜí ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘à┘å╪¬┘é┘ä ╪┤╪»┘ç. ╪¿╪▒╪º█î ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪º╪▓ ┘ä█î╪│╪¬ ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î╪¬╪º┘å ╪º┘é╪»╪º┘à ┌⌐┘å█î╪»." });
             return null;
         }
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "مقدار افزایش دیتا را انتخاب کنید:\n" +
-                "500MB = نیم گیگابایت\n" +
-                "1024MB = یک گیگابایت\n" +
-                "2048MB = دو گیگابایت",
+            text: "┘à┘é╪»╪º╪▒ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:\n" +
+                "500MB = ┘å█î┘à ┌»█î┌»╪º╪¿╪º█î╪¬\n" +
+                "1024MB = █î┌⌐ ┌»█î┌»╪º╪¿╪º█î╪¬\n" +
+                "2048MB = ╪»┘ê ┌»█î┌»╪º╪¿╪º█î╪¬",
             reply_markup: {
                 inline_keyboard: [
                     [
@@ -13061,7 +12942,7 @@ async function handleCallback(update) {
                         { text: "1GB (1024MB)", callback_data: `topup_amount_${inventoryId}_1024` }
                     ],
                     [{ text: "2GB (2048MB)", callback_data: `topup_amount_${inventoryId}_2048` }],
-                    [{ text: "✍️ مقدار دلخواه", callback_data: `topup_custom_${inventoryId}` }],
+                    [{ text: "Γ£ì∩╕Å ┘à┘é╪»╪º╪▒ ╪»┘ä╪«┘ê╪º┘ç", callback_data: `topup_custom_${inventoryId}` }],
                     [homeButton()]
                 ]
             }
@@ -13073,7 +12954,7 @@ async function handleCallback(update) {
         await setState(userId, "await_migration_sublink", {});
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "🔗 لینک سابسکریپشن یا نام کاربری کانفیگ قدیمی را ارسال کنید:\n\n(مثال: https://panel.example.com/sub/xxxx یا نام کاربری مثل user123)\n\n/cancel برای لغو"
+            text: "≡ƒöù ┘ä█î┘å┌⌐ ╪│╪º╪¿╪│┌⌐╪▒█î┘╛╪┤┘å █î╪º ┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î ┌⌐╪º┘å┘ü█î┌» ┘é╪»█î┘à█î ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»:\n\n(┘à╪½╪º┘ä: https://panel.example.com/sub/xxxx █î╪º ┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒█î ┘à╪½┘ä user123)\n\n/cancel ╪¿╪▒╪º█î ┘ä╪║┘ê"
         });
         return null;
     }
@@ -13100,7 +12981,7 @@ async function handleCallback(update) {
         await setState(userId, "await_topup_custom_amount", { inventoryId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "مقدار دلخواه را بفرستید.\nنمونه: 1536 یا 1.5GB یا 800MB"
+            text: "┘à┘é╪»╪º╪▒ ╪»┘ä╪«┘ê╪º┘ç ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».\n┘å┘à┘ê┘å┘ç: 1536 █î╪º 1.5GB █î╪º 800MB"
         });
         return null;
     }
@@ -13121,7 +13002,7 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "⚠️ این کانفیگ پیدا نشد یا متعلق به شما نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "ΓÜá∩╕Å ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪» █î╪º ┘à╪¬╪╣┘ä┘é ╪¿┘ç ╪┤┘à╪º ┘å█î╪│╪¬." });
             return null;
         }
         await recordInventoryForensicEvent(inventoryId, "customer_removed_from_inventory", { actorUser: userId });
@@ -13142,7 +13023,7 @@ async function handleCallback(update) {
         )
       WHERE id = ${inventoryId};
     `;
-        await tg("sendMessage", { chat_id: chatId, text: "کانفیگ از لیست شما حذف شد ✅\nاطلاعات برای پیگیری امنیتی ذخیره شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ╪º╪▓ ┘ä█î╪│╪¬ ╪┤┘à╪º ╪¡╪░┘ü ╪┤╪» Γ£à\n╪º╪╖┘ä╪º╪╣╪º╪¬ ╪¿╪▒╪º█î ┘╛█î┌»█î╪▒█î ╪º┘à┘å█î╪¬█î ╪░╪«█î╪▒┘ç ╪┤╪»." });
         return null;
     }
     if (data.startsWith("customer_revoke_cfg_")) {
@@ -13153,15 +13034,15 @@ async function handleCallback(update) {
     if (data === "support") {
         const support = await getSetting("support_username");
         if (!support) {
-            await tg("sendMessage", { chat_id: chatId, text: "پشتیبانی هنوز تنظیم نشده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛╪┤╪¬█î╪¿╪º┘å█î ┘ç┘å┘ê╪▓ ╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `🆘 پشتیبانی\n\nبرای ارتباط با پشتیبانی روی دکمه زیر بزنید یا پیام دهید:\n@${support}`,
+            text: `≡ƒåÿ ┘╛╪┤╪¬█î╪¿╪º┘å█î\n\n╪¿╪▒╪º█î ╪º╪▒╪¬╪¿╪º╪╖ ╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪▒┘ê█î ╪»┌⌐┘à┘ç ╪▓█î╪▒ ╪¿╪▓┘å█î╪» █î╪º ┘╛█î╪º┘à ╪»┘ç█î╪»:\n@${support}`,
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "💬 چت با پشتیبانی", url: `https://t.me/${support}` }],
+                    [{ text: "≡ƒÆ¼ ┌å╪¬ ╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î", url: `https://t.me/${support}` }],
                     [homeButton()]
                 ]
             }
@@ -13173,7 +13054,7 @@ async function handleCallback(update) {
     if (data.startsWith("admin_lookup_ban_")) {
         const targetUser = Number(data.replace("admin_lookup_ban_", ""));
         if (!Number.isFinite(targetUser) || targetUser <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کاربر نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º╪▒╪¿╪▒ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         await sql `
@@ -13181,7 +13062,7 @@ async function handleCallback(update) {
       VALUES (${targetUser}, 'lookup_abuse', ${userId})
       ON CONFLICT (telegram_id) DO UPDATE SET reason = EXCLUDED.reason, banned_by = EXCLUDED.banned_by;
     `;
-        await tg("sendMessage", { chat_id: chatId, text: `کاربر ${targetUser} بن شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┌⌐╪º╪▒╪¿╪▒ ${targetUser} ╪¿┘å ╪┤╪» Γ£à` });
         return null;
     }
     if (data.startsWith("admin_lookup_toggle_inv_")) {
@@ -13195,7 +13076,7 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const row = rows[0];
@@ -13205,7 +13086,7 @@ async function handleCallback(update) {
         const panelType = String(delivery.metadata?.panelType || "");
         const panelId = Number(row.panel_id || 0);
         const key = String(delivery.metadata?.username || delivery.metadata?.uuid || delivery.metadata?.email || delivery.metadata?.subId || "").trim();
-        let panelToggleMessage = "عملیات روی پنل انجام نشد.";
+        let panelToggleMessage = "╪╣┘à┘ä█î╪º╪¬ ╪▒┘ê█î ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».";
         if (panelId && panelType && key) {
             const panelRows = await sql `
         SELECT id, panel_type, base_url, username, password
@@ -13215,7 +13096,7 @@ async function handleCallback(update) {
       `;
             if (panelRows.length) {
                 const result = isMarzbanLike(panelType) ? await toggleMarzbanUser(panelRows[0], key, willEnable) : await toggleSanaeiClient(panelRows[0], key, willEnable);
-                panelToggleMessage = result.ok ? "عملیات پنل موفق ✅" : `عملیات پنل ناموفق: ${result.message}`;
+                panelToggleMessage = result.ok ? "╪╣┘à┘ä█î╪º╪¬ ┘╛┘å┘ä ┘à┘ê┘ü┘é Γ£à" : `╪╣┘à┘ä█î╪º╪¬ ┘╛┘å┘ä ┘å╪º┘à┘ê┘ü┘é: ${result.message}`;
             }
         }
         await recordInventoryForensicEvent(inventoryId, willEnable ? "admin_enable" : "admin_disable", { adminId: userId, panelResult: panelToggleMessage });
@@ -13229,7 +13110,7 @@ async function handleCallback(update) {
       )
       WHERE id = ${inventoryId};
     `;
-        await tg("sendMessage", { chat_id: chatId, text: `وضعیت کانفیگ تغییر یافت (${willEnable ? 'فعال' : 'غیرفعال'}) ✅\n${panelToggleMessage}` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘ê╪╢╪╣█î╪¬ ┌⌐╪º┘å┘ü█î┌» ╪¬╪║█î█î╪▒ █î╪º┘ü╪¬ (${willEnable ? '┘ü╪╣╪º┘ä' : '╪║█î╪▒┘ü╪╣╪º┘ä'}) Γ£à\n${panelToggleMessage}` });
         return null;
     }
     if (data.startsWith("admin_lookup_regen_link_")) {
@@ -13249,12 +13130,12 @@ async function handleCallback(update) {
         if (!isConfirmed) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `⚠️ آیا از لغو دسترسی کانفیگ #${inventoryId} اطمینان دارید؟\nاین عمل دسترسی کاربر را در پنل و دیتابیس غیرفعال می‌کند.`,
+                text: `ΓÜá∩╕Å ╪ó█î╪º ╪º╪▓ ┘ä╪║┘ê ╪»╪│╪¬╪▒╪│█î ┌⌐╪º┘å┘ü█î┌» #${inventoryId} ╪º╪╖┘à█î┘å╪º┘å ╪»╪º╪▒█î╪»╪ƒ\n╪º█î┘å ╪╣┘à┘ä ╪»╪│╪¬╪▒╪│█î ┌⌐╪º╪▒╪¿╪▒ ╪▒╪º ╪»╪▒ ┘╛┘å┘ä ┘ê ╪»█î╪¬╪º╪¿█î╪│ ╪║█î╪▒┘ü╪╣╪º┘ä ┘à█îΓÇî┌⌐┘å╪».`,
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            cb("✅ تایید", `admin_lookup_revoke_inv_${inventoryId}_confirm`, "danger"),
-                            cb("❌ انصراف", "admin_lookup_action_cancel", "primary")
+                            cb("Γ£à ╪¬╪º█î█î╪»", `admin_lookup_revoke_inv_${inventoryId}_confirm`, "danger"),
+                            cb("Γ¥î ╪º┘å╪╡╪▒╪º┘ü", "admin_lookup_action_cancel", "primary")
                         ]
                     ]
                 }
@@ -13269,7 +13150,7 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const row = rows[0];
@@ -13277,7 +13158,7 @@ async function handleCallback(update) {
         const panelType = String(delivery.metadata?.panelType || "");
         const panelId = Number(row.panel_id || 0);
         const key = String(delivery.metadata?.username || delivery.metadata?.uuid || delivery.metadata?.email || delivery.metadata?.subId || "").trim();
-        let panelRevokeMessage = "لغو دسترسی در پنل انجام نشد.";
+        let panelRevokeMessage = "┘ä╪║┘ê ╪»╪│╪¬╪▒╪│█î ╪»╪▒ ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».";
         if (panelId && panelType && key) {
             const panelRows = await sql `
         SELECT id, panel_type, base_url, username, password
@@ -13287,7 +13168,7 @@ async function handleCallback(update) {
       `;
             if (panelRows.length) {
                 const result = isMarzbanLike(panelType) ? await toggleMarzbanUser(panelRows[0], key, false) : await toggleSanaeiClient(panelRows[0], key, false);
-                panelRevokeMessage = result.ok ? "لغو دسترسی در پنل موفق ✅" : `لغو دسترسی در پنل ناموفق: ${result.message}`;
+                panelRevokeMessage = result.ok ? "┘ä╪║┘ê ╪»╪│╪¬╪▒╪│█î ╪»╪▒ ┘╛┘å┘ä ┘à┘ê┘ü┘é Γ£à" : `┘ä╪║┘ê ╪»╪│╪¬╪▒╪│█î ╪»╪▒ ┘╛┘å┘ä ┘å╪º┘à┘ê┘ü┘é: ${result.message}`;
             }
         }
         await recordInventoryForensicEvent(inventoryId, "admin_revoke", { adminId: userId, panelResult: panelRevokeMessage });
@@ -13301,7 +13182,7 @@ async function handleCallback(update) {
       )
       WHERE id = ${inventoryId};
     `;
-        await tg("sendMessage", { chat_id: chatId, text: `دسترسی کانفیگ قطع شد ✅\n${panelRevokeMessage}` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪»╪│╪¬╪▒╪│█î ┌⌐╪º┘å┘ü█î┌» ┘é╪╖╪╣ ╪┤╪» Γ£à\n${panelRevokeMessage}` });
         return null;
     }
     if (data.startsWith("admin_lookup_direct_links_")) {
@@ -13315,7 +13196,7 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const row = rows[0];
@@ -13327,7 +13208,7 @@ async function handleCallback(update) {
                 links.push(String(row.config_value));
             }
             else {
-                await tg("sendMessage", { chat_id: chatId, text: "لینک مستقیمی برای این کانفیگ یافت نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘ä█î┘å┌⌐ ┘à╪│╪¬┘é█î┘à█î ╪¿╪▒╪º█î ╪º█î┘å ┌⌐╪º┘å┘ü█î┌» █î╪º┘ü╪¬ ┘å╪┤╪»." });
                 return null;
             }
         }
@@ -13336,7 +13217,7 @@ async function handleCallback(update) {
         for (let i = 0; i < links.length; i += chunkSize) {
             const chunk = links.slice(i, i + chunkSize);
             const chunkText = chunk.map(l => `<code>${escapeHtml(l)}</code>`).join("\n\n");
-            const msgText = i === 0 ? `🔗 لینک‌های مستقیم (تعداد کل: ${links.length}):\n\n${chunkText}` : chunkText;
+            const msgText = i === 0 ? `≡ƒöù ┘ä█î┘å┌⌐ΓÇî┘ç╪º█î ┘à╪│╪¬┘é█î┘à (╪¬╪╣╪»╪º╪» ┌⌐┘ä: ${links.length}):\n\n${chunkText}` : chunkText;
             await tg("sendMessage", {
                 chat_id: chatId,
                 text: msgText,
@@ -13353,18 +13234,18 @@ async function handleCallback(update) {
         }
         const inventoryId = Number(inventoryIdRaw);
         if (!Number.isFinite(inventoryId)) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         if (!isConfirmed) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `🧨 خطر! آیا از حذف کامل کانفیگ #${inventoryId} اطمینان دارید؟\nاین عمل قابل بازگشت نیست و کاربر از دیتابیس و پنل حذف می‌شود.`,
+                text: `≡ƒº¿ ╪«╪╖╪▒! ╪ó█î╪º ╪º╪▓ ╪¡╪░┘ü ┌⌐╪º┘à┘ä ┌⌐╪º┘å┘ü█î┌» #${inventoryId} ╪º╪╖┘à█î┘å╪º┘å ╪»╪º╪▒█î╪»╪ƒ\n╪º█î┘å ╪╣┘à┘ä ┘é╪º╪¿┘ä ╪¿╪º╪▓┌»╪┤╪¬ ┘å█î╪│╪¬ ┘ê ┌⌐╪º╪▒╪¿╪▒ ╪º╪▓ ╪»█î╪¬╪º╪¿█î╪│ ┘ê ┘╛┘å┘ä ╪¡╪░┘ü ┘à█îΓÇî╪┤┘ê╪».`,
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            cb("🔥 حذف کامل", `admin_lookup_delete_inv_${inventoryId}_confirm`, "danger"),
-                            cb("❌ انصراف", "admin_lookup_action_cancel", "primary")
+                            cb("≡ƒöÑ ╪¡╪░┘ü ┌⌐╪º┘à┘ä", `admin_lookup_delete_inv_${inventoryId}_confirm`, "danger"),
+                            cb("Γ¥î ╪º┘å╪╡╪▒╪º┘ü", "admin_lookup_action_cancel", "primary")
                         ]
                     ]
                 }
@@ -13379,7 +13260,7 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const row = rows[0];
@@ -13387,7 +13268,7 @@ async function handleCallback(update) {
         const panelType = String(delivery.metadata?.panelType || "");
         const panelId = Number(row.panel_id || 0);
         const key = String(delivery.metadata?.username || delivery.metadata?.uuid || delivery.metadata?.email || delivery.metadata?.subId || "").trim();
-        let panelDeleteMessage = "حذف پنل انجام نشد.";
+        let panelDeleteMessage = "╪¡╪░┘ü ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ┘å╪┤╪».";
         if (panelId && panelType && key) {
             const panelRows = await sql `
         SELECT id, panel_type, base_url, username, password
@@ -13399,7 +13280,7 @@ async function handleCallback(update) {
                 const result = isMarzbanLike(panelType)
                     ? await deleteMarzbanUser(panelRows[0], key)
                     : await revokeSanaeiClient(panelRows[0], key);
-                panelDeleteMessage = result.ok ? "حذف/غیرفعالسازی در پنل موفق ✅" : `اقدام پنل ناموفق: ${result.message}`;
+                panelDeleteMessage = result.ok ? "╪¡╪░┘ü/╪║█î╪▒┘ü╪╣╪º┘ä╪│╪º╪▓█î ╪»╪▒ ┘╛┘å┘ä ┘à┘ê┘ü┘é Γ£à" : `╪º┘é╪»╪º┘à ┘╛┘å┘ä ┘å╪º┘à┘ê┘ü┘é: ${result.message}`;
             }
         }
         await recordInventoryForensicEvent(inventoryId, "admin_permanent_delete", { adminId: userId, panelResult: panelDeleteMessage });
@@ -13420,24 +13301,24 @@ async function handleCallback(update) {
       `;
             // Also nullify references in orders to prevent violating orders_inventory_id_fkey
             await sql `UPDATE orders SET inventory_id = NULL WHERE inventory_id = ${inventoryId}`;
-            await tg("sendMessage", { chat_id: chatId, text: `کانفیگ از دیتابیس حذف شد ✅\n${panelDeleteMessage}` });
+            await tg("sendMessage", { chat_id: chatId, text: `┌⌐╪º┘å┘ü█î┌» ╪º╪▓ ╪»█î╪¬╪º╪¿█î╪│ ╪¡╪░┘ü ╪┤╪» Γ£à\n${panelDeleteMessage}` });
         }
         catch (err) {
             logError("admin_inventory_delete_failed", err, { inventoryId, adminId: userId });
-            await tg("sendMessage", { chat_id: chatId, text: `❌ حذف کانفیگ از دیتابیس با خطا مواجه شد.\n${err.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `Γ¥î ╪¡╪░┘ü ┌⌐╪º┘å┘ü█î┌» ╪º╪▓ ╪»█î╪¬╪º╪¿█î╪│ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪».\n${err.message}` });
         }
         return null;
     }
     if (data.startsWith("admin_lookup_add_data_")) {
         const inventoryId = Number(data.replace("admin_lookup_add_data_", ""));
         if (!Number.isFinite(inventoryId) || inventoryId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         await setState(userId, "admin_lookup_add_data", { inventoryId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "مقدار دیتای اضافه را ارسال کنید.\nمثال: 500MB یا 2GB",
+            text: "┘à┘é╪»╪º╪▒ ╪»█î╪¬╪º█î ╪º╪╢╪º┘ü┘ç ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 500MB █î╪º 2GB",
             reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
         });
         return null;
@@ -13445,13 +13326,13 @@ async function handleCallback(update) {
     if (data.startsWith("admin_lookup_set_data_")) {
         const inventoryId = Number(data.replace("admin_lookup_set_data_", ""));
         if (!Number.isFinite(inventoryId) || inventoryId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         await setState(userId, "admin_lookup_set_data", { inventoryId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "سقف دیتای جدید را ارسال کنید.\nمثال: 50GB یا 102400MB یا unlimited\nبرای نامحدود: unlimited یا 0",
+            text: "╪│┘é┘ü ╪»█î╪¬╪º█î ╪¼╪»█î╪» ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 50GB █î╪º 102400MB █î╪º unlimited\n╪¿╪▒╪º█î ┘å╪º┘à╪¡╪»┘ê╪»: unlimited █î╪º 0",
             reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
         });
         return null;
@@ -13464,18 +13345,18 @@ async function handleCallback(update) {
         }
         const inventoryId = Number(inventoryIdRaw);
         if (!Number.isFinite(inventoryId)) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         if (!isConfirmed) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `⚠️ آیا از ریست کردن مصرف کانفیگ #${inventoryId} اطمینان دارید؟\nاین عمل فقط مصرف کاربر را صفر می‌کند و سقف دیتا را تغییر نمی‌دهد.`,
+                text: `ΓÜá∩╕Å ╪ó█î╪º ╪º╪▓ ╪▒█î╪│╪¬ ┌⌐╪▒╪»┘å ┘à╪╡╪▒┘ü ┌⌐╪º┘å┘ü█î┌» #${inventoryId} ╪º╪╖┘à█î┘å╪º┘å ╪»╪º╪▒█î╪»╪ƒ\n╪º█î┘å ╪╣┘à┘ä ┘ü┘é╪╖ ┘à╪╡╪▒┘ü ┌⌐╪º╪▒╪¿╪▒ ╪▒╪º ╪╡┘ü╪▒ ┘à█îΓÇî┌⌐┘å╪» ┘ê ╪│┘é┘ü ╪»█î╪¬╪º ╪▒╪º ╪¬╪║█î█î╪▒ ┘å┘à█îΓÇî╪»┘ç╪».`,
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            confirmButton(`admin_lookup_reset_data_${inventoryId}_confirm`, "✅ ریست شود"),
-                            cb("❌ انصراف", "admin_lookup_action_cancel", "primary")
+                            confirmButton(`admin_lookup_reset_data_${inventoryId}_confirm`, "Γ£à ╪▒█î╪│╪¬ ╪┤┘ê╪»"),
+                            cb("Γ¥î ╪º┘å╪╡╪▒╪º┘ü", "admin_lookup_action_cancel", "primary")
                         ]
                     ]
                 }
@@ -13484,7 +13365,7 @@ async function handleCallback(update) {
         }
         const inventoryIdFinal = inventoryId;
         if (!Number.isFinite(inventoryIdFinal) || inventoryIdFinal <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         const rows = await sql `
@@ -13495,7 +13376,7 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const row = rows[0];
@@ -13503,7 +13384,7 @@ async function handleCallback(update) {
         const panelType = String(delivery.metadata?.panelType || "");
         const panelId = Number(row.panel_id || 0);
         if (!panelId || !panelType) {
-            await tg("sendMessage", { chat_id: chatId, text: "این کانفیگ پنلی نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌⌐╪º┘å┘ü█î┌» ┘╛┘å┘ä█î ┘å█î╪│╪¬." });
             return null;
         }
         const panelRows = await sql `
@@ -13513,14 +13394,14 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!panelRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "پنل مرتبط پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à╪▒╪¬╪¿╪╖ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
-        let result = { ok: false, message: "پنل پشتیبانی نمی‌شود." };
+        let result = { ok: false, message: "┘╛┘å┘ä ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘å┘à█îΓÇî╪┤┘ê╪»." };
         if (isMarzbanLike(panelType)) {
             const username = String(delivery.metadata?.username || "").trim();
             if (!username) {
-                await tg("sendMessage", { chat_id: chatId, text: "username پنل در متادیتا پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "username ┘╛┘å┘ä ╪»╪▒ ┘à╪¬╪º╪»█î╪¬╪º ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return null;
             }
             result = await applyAdminResetUsageOnMarzban(panelRows[0], username);
@@ -13529,13 +13410,13 @@ async function handleCallback(update) {
             const inboundId = parseMaybeNumber(delivery.metadata?.inboundId);
             const email = String(delivery.metadata?.email || "").trim();
             if (!inboundId || !email) {
-                await tg("sendMessage", { chat_id: chatId, text: "inbound/email در متادیتا کانفیگ ناقص است." });
+                await tg("sendMessage", { chat_id: chatId, text: "inbound/email ╪»╪▒ ┘à╪¬╪º╪»█î╪¬╪º ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘é╪╡ ╪º╪│╪¬." });
                 return null;
             }
             result = await applyAdminResetUsageOnSanaei(panelRows[0], inboundId, email);
         }
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `ریست دیتا انجام نشد.\n${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪▒█î╪│╪¬ ╪»█î╪¬╪º ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${result.message}` });
             return null;
         }
         await recordInventoryForensicEvent(inventoryId, "admin_lookup_reset_data", {
@@ -13544,7 +13425,7 @@ async function handleCallback(update) {
         });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `مصرف دیتای کانفیگ صفر شد ✅\n${result.message}`
+            text: `┘à╪╡╪▒┘ü ╪»█î╪¬╪º█î ┌⌐╪º┘å┘ü█î┌» ╪╡┘ü╪▒ ╪┤╪» Γ£à\n${result.message}`
         });
         return null;
     }
@@ -13554,7 +13435,7 @@ async function handleCallback(update) {
         const inventoryId = Number(inventoryRaw);
         const forcedDays = daysRaw !== undefined ? Number(daysRaw) : NaN;
         if (!Number.isFinite(inventoryId) || inventoryId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه کانفیگ نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┌⌐╪º┘å┘ü█î┌» ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         if (Number.isFinite(forcedDays) && forcedDays >= 0) {
@@ -13567,14 +13448,14 @@ async function handleCallback(update) {
         await setState(userId, "admin_lookup_set_expiry", { inventoryId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "چند روز انقضا تنظیم شود؟\n0 = بدون انقضا",
+            text: "┌å┘å╪» ╪▒┘ê╪▓ ╪º┘å┘é╪╢╪º ╪¬┘å╪╕█î┘à ╪┤┘ê╪»╪ƒ\n0 = ╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º",
             reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
         });
         return null;
     }
     if (data === "admin_lookup_action_cancel") {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "عملیات ابزار کانفیگ لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪╣┘à┘ä█î╪º╪¬ ╪º╪¿╪▓╪º╪▒ ┌⌐╪º┘å┘ü█î┌» ┘ä╪║┘ê ╪┤╪»." });
         return null;
     }
     if (data.startsWith("admin_panel_add_data_")) {
@@ -13583,13 +13464,13 @@ async function handleCallback(update) {
         const panelId = Number(firstUnderscore >= 0 ? payload.slice(0, firstUnderscore) : "0");
         const panelKey = decodeURIComponent(firstUnderscore >= 0 ? payload.slice(firstUnderscore + 1) : "");
         if (!Number.isFinite(panelId) || panelId <= 0 || !panelKey) {
-            await tg("sendMessage", { chat_id: chatId, text: "ورودی نامعتبر برای افزودن دیتا." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ê╪▒┘ê╪»█î ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪¿╪▒╪º█î ╪º┘ü╪▓┘ê╪»┘å ╪»█î╪¬╪º." });
             return null;
         }
         await setState(userId, "admin_panel_add_data", { panelId, panelKey });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "مقدار دیتای اضافه را ارسال کنید.\nمثال: 500MB یا 2GB",
+            text: "┘à┘é╪»╪º╪▒ ╪»█î╪¬╪º█î ╪º╪╢╪º┘ü┘ç ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 500MB █î╪º 2GB",
             reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
         });
         return null;
@@ -13600,13 +13481,13 @@ async function handleCallback(update) {
         const panelId = Number(firstUnderscore >= 0 ? payload.slice(0, firstUnderscore) : "0");
         const panelKey = decodeURIComponent(firstUnderscore >= 0 ? payload.slice(firstUnderscore + 1) : "");
         if (!Number.isFinite(panelId) || panelId <= 0 || !panelKey) {
-            await tg("sendMessage", { chat_id: chatId, text: "ورودی نامعتبر برای تنظیم سقف دیتا." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ê╪▒┘ê╪»█î ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪¿╪▒╪º█î ╪¬┘å╪╕█î┘à ╪│┘é┘ü ╪»█î╪¬╪º." });
             return null;
         }
         await setState(userId, "admin_panel_set_data", { panelId, panelKey });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "سقف دیتای جدید را ارسال کنید.\nمثال: 50GB یا 102400MB یا unlimited\nبرای نامحدود: unlimited یا 0",
+            text: "╪│┘é┘ü ╪»█î╪¬╪º█î ╪¼╪»█î╪» ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 50GB █î╪º 102400MB █î╪º unlimited\n╪¿╪▒╪º█î ┘å╪º┘à╪¡╪»┘ê╪»: unlimited █î╪º 0",
             reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
         });
         return null;
@@ -13617,7 +13498,7 @@ async function handleCallback(update) {
         const panelId = Number(firstUnderscore >= 0 ? payload.slice(0, firstUnderscore) : "0");
         const panelKey = decodeURIComponent(firstUnderscore >= 0 ? payload.slice(firstUnderscore + 1) : "");
         if (!Number.isFinite(panelId) || panelId <= 0 || !panelKey) {
-            await tg("sendMessage", { chat_id: chatId, text: "ورودی نامعتبر برای ریست دیتا." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ê╪▒┘ê╪»█î ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪¿╪▒╪º█î ╪▒█î╪│╪¬ ╪»█î╪¬╪º." });
             return null;
         }
         const panelRows = await sql `
@@ -13627,17 +13508,17 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!panelRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "پنل مرتبط پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘à╪▒╪¬╪¿╪╖ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const panel = panelRows[0];
         const panelType = String(panel.panel_type || "");
-        let result = { ok: false, message: "پنل پشتیبانی نمی‌شود." };
+        let result = { ok: false, message: "┘╛┘å┘ä ┘╛╪┤╪¬█î╪¿╪º┘å█î ┘å┘à█îΓÇî╪┤┘ê╪»." };
         let limitBytes = 0;
         if (isMarzbanLike(panelType)) {
             const found = await lookupMarzbanUser(panel, panelKey);
             if (!found.ok || !found.user) {
-                await tg("sendMessage", { chat_id: chatId, text: "کاربر روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¿╪▒ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return null;
             }
             limitBytes = Math.max(0, Math.round(Number(found.user.data_limit || 0)));
@@ -13647,19 +13528,19 @@ async function handleCallback(update) {
         else if (panelType === "sanaei") {
             const found = await findSanaeiClientByIdentifier(panel, panelKey);
             if (!found.ok || !found.client || !found.inboundId) {
-                await tg("sendMessage", { chat_id: chatId, text: "کلاینت روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä╪º█î┘å╪¬ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return null;
             }
             const email = String(found.client.email || "").trim();
             if (!email) {
-                await tg("sendMessage", { chat_id: chatId, text: "email کلاینت روی پنل پیدا نشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "email ┌⌐┘ä╪º█î┘å╪¬ ╪▒┘ê█î ┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
                 return null;
             }
             limitBytes = Math.max(0, Math.round(Number(found.client.totalGB || 0)));
             result = await applyAdminResetUsageOnSanaei(panel, Number(found.inboundId), email);
         }
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `ریست دیتا انجام نشد.\n${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪▒█î╪│╪¬ ╪»█î╪¬╪º ╪º┘å╪¼╪º┘à ┘å╪┤╪».\n${result.message}` });
             return null;
         }
         await recordForensicEvent({
@@ -13677,7 +13558,7 @@ async function handleCallback(update) {
         });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `مصرف کاربر ریست شد ✅\nسقف فعلی: ${limitBytes > 0 ? formatBytesShort(limitBytes) : "نامحدود"}`
+            text: `┘à╪╡╪▒┘ü ┌⌐╪º╪▒╪¿╪▒ ╪▒█î╪│╪¬ ╪┤╪» Γ£à\n╪│┘é┘ü ┘ü╪╣┘ä█î: ${limitBytes > 0 ? formatBytesShort(limitBytes) : "┘å╪º┘à╪¡╪»┘ê╪»"}`
         });
         return null;
     }
@@ -13693,7 +13574,7 @@ async function handleCallback(update) {
         const panelKeyEncoded = markerIndex >= 0 && Number.isFinite(maybeDays) ? rest.slice(0, markerIndex) : rest;
         const panelKey = decodeURIComponent(panelKeyEncoded);
         if (!Number.isFinite(panelId) || panelId <= 0 || !panelKey) {
-            await tg("sendMessage", { chat_id: chatId, text: "ورودی نامعتبر برای تنظیم انقضا." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ê╪▒┘ê╪»█î ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪¿╪▒╪º█î ╪¬┘å╪╕█î┘à ╪º┘å┘é╪╢╪º." });
             return null;
         }
         if (Number.isFinite(maybeDays) && maybeDays >= 0) {
@@ -13706,14 +13587,14 @@ async function handleCallback(update) {
         await setState(userId, "admin_panel_set_expiry", { panelId, panelKey });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "چند روز انقضا تنظیم شود؟\n0 = بدون انقضا",
+            text: "┌å┘å╪» ╪▒┘ê╪▓ ╪º┘å┘é╪╢╪º ╪¬┘å╪╕█î┘à ╪┤┘ê╪»╪ƒ\n0 = ╪¿╪»┘ê┘å ╪º┘å┘é╪╢╪º",
             reply_markup: { inline_keyboard: [[cancelButton("admin_lookup_action_cancel")]] }
         });
         return null;
     }
     // Toggle client on panel (admin_panel_toggle_{id}_{encodedKey}). Must run AFTER numeric
-    // admin_panel_toggle_{id}, admin_panel_toggle_move_, and admin_panel_toggle_sales_ — otherwise
-    // those callbacks are misparsed (panel id becomes 0 / key empty → «ورودی نامعتبر...»).
+    // admin_panel_toggle_{id}, admin_panel_toggle_move_, and admin_panel_toggle_sales_ ΓÇö otherwise
+    // those callbacks are misparsed (panel id becomes 0 / key empty ΓåÆ ┬½┘ê╪▒┘ê╪»█î ┘å╪º┘à╪╣╪¬╪¿╪▒...┬╗).
     if (data.startsWith("admin_panel_toggle_") &&
         !data.startsWith("admin_panel_toggle_move_") &&
         !data.startsWith("admin_panel_toggle_sales_") &&
@@ -13728,7 +13609,7 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!userToggleMatch || !Number.isFinite(panelId) || panelId <= 0 || !rows.length || !key) {
-            await tg("sendMessage", { chat_id: chatId, text: "ورودی نامعتبر برای تغییر وضعیت پنل." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ê╪▒┘ê╪»█î ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪¿╪▒╪º█î ╪¬╪║█î█î╪▒ ┘ê╪╢╪╣█î╪¬ ┘╛┘å┘ä." });
             return null;
         }
         const panelType = String(rows[0].panel_type || "");
@@ -13736,26 +13617,26 @@ async function handleCallback(update) {
         if (isMarzbanLike(panelType)) {
             const found = await lookupMarzbanUser(rows[0], key);
             if (!found.ok || !found.user) {
-                await tg("sendMessage", { chat_id: chatId, text: `پیدا نشد: ${found.message}` });
+                await tg("sendMessage", { chat_id: chatId, text: `┘╛█î╪»╪º ┘å╪┤╪»: ${found.message}` });
                 return null;
             }
             willEnable = found.user.status === "disabled";
             const result = await toggleMarzbanUser(rows[0], key, willEnable);
             if (!result.ok) {
-                await tg("sendMessage", { chat_id: chatId, text: `عملیات پنل ناموفق: ${result.message}` });
+                await tg("sendMessage", { chat_id: chatId, text: `╪╣┘à┘ä█î╪º╪¬ ┘╛┘å┘ä ┘å╪º┘à┘ê┘ü┘é: ${result.message}` });
                 return null;
             }
         }
         else {
             const found = await findSanaeiClientByIdentifier(rows[0], key);
             if (!found.ok || !found.client) {
-                await tg("sendMessage", { chat_id: chatId, text: `پیدا نشد: ${found.message}` });
+                await tg("sendMessage", { chat_id: chatId, text: `┘╛█î╪»╪º ┘å╪┤╪»: ${found.message}` });
                 return null;
             }
             willEnable = found.client.enable === false;
             const result = await toggleSanaeiClient(rows[0], key, willEnable);
             if (!result.ok) {
-                await tg("sendMessage", { chat_id: chatId, text: `عملیات پنل ناموفق: ${result.message}` });
+                await tg("sendMessage", { chat_id: chatId, text: `╪╣┘à┘ä█î╪º╪¬ ┘╛┘å┘ä ┘å╪º┘à┘ê┘ü┘é: ${result.message}` });
                 return null;
             }
         }
@@ -13772,7 +13653,7 @@ async function handleCallback(update) {
             configValue: null,
             metadata: { adminId: userId }
         });
-        await tg("sendMessage", { chat_id: chatId, text: `وضعیت کاربر در پنل تغییر یافت (${willEnable ? 'فعال' : 'غیرفعال'}) ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘ê╪╢╪╣█î╪¬ ┌⌐╪º╪▒╪¿╪▒ ╪»╪▒ ┘╛┘å┘ä ╪¬╪║█î█î╪▒ █î╪º┘ü╪¬ (${willEnable ? '┘ü╪╣╪º┘ä' : '╪║█î╪▒┘ü╪╣╪º┘ä'}) Γ£à` });
         return null;
     }
     if (data.startsWith("admin_panel_rv_")) {
@@ -13781,12 +13662,12 @@ async function handleCallback(update) {
         if (!isConfirmed) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `⚠️ آیا از بازسازی لینک این کاربر روی پنل اطمینان دارید؟`,
+                text: `ΓÜá∩╕Å ╪ó█î╪º ╪º╪▓ ╪¿╪º╪▓╪│╪º╪▓█î ┘ä█î┘å┌⌐ ╪º█î┘å ┌⌐╪º╪▒╪¿╪▒ ╪▒┘ê█î ┘╛┘å┘ä ╪º╪╖┘à█î┘å╪º┘å ╪»╪º╪▒█î╪»╪ƒ`,
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            cb("✅ تایید", `admin_panel_rv_${payloadRaw}_confirm`, "primary"),
-                            cb("❌ انصراف", "admin_lookup_action_cancel", "danger")
+                            cb("Γ£à ╪¬╪º█î█î╪»", `admin_panel_rv_${payloadRaw}_confirm`, "primary"),
+                            cb("Γ¥î ╪º┘å╪╡╪▒╪º┘ü", "admin_lookup_action_cancel", "danger")
                         ]
                     ]
                 }
@@ -13804,13 +13685,13 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length || !key) {
-            await tg("sendMessage", { chat_id: chatId, text: "ورودی نامعتبر برای بازسازی لینک پنل." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ê╪▒┘ê╪»█î ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪¿╪▒╪º█î ╪¿╪º╪▓╪│╪º╪▓█î ┘ä█î┘å┌⌐ ┘╛┘å┘ä." });
             return null;
         }
         const panelType = String(rows[0].panel_type || "");
         const result = isMarzbanLike(panelType) ? await regenerateMarzbanUserLink(rows[0], key) : await regenerateSanaeiClientLink(rows[0], key);
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `بازسازی لینک پنل ناموفق: ${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪¿╪º╪▓╪│╪º╪▓█î ┘ä█î┘å┌⌐ ┘╛┘å┘ä ┘å╪º┘à┘ê┘ü┘é: ${result.message}` });
             return null;
         }
         let newLinkMsg = "";
@@ -13848,7 +13729,7 @@ async function handleCallback(update) {
             configValue: null,
             metadata: { adminId: userId }
         });
-        await tg("sendMessage", { chat_id: chatId, text: `لینک جدید ساخته شد ✅\n\n${newLinkMsg}` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘ä█î┘å┌⌐ ╪¼╪»█î╪» ╪│╪º╪«╪¬┘ç ╪┤╪» Γ£à\n\n${newLinkMsg}` });
         return null;
     }
     if (data.startsWith("admin_panel_del_")) {
@@ -13857,12 +13738,12 @@ async function handleCallback(update) {
         if (!isConfirmed) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `🧨 خطر! آیا از حذف کامل این کاربر از پنل اطمینان دارید؟\nاین عمل قابل بازگشت نیست.`,
+                text: `≡ƒº¿ ╪«╪╖╪▒! ╪ó█î╪º ╪º╪▓ ╪¡╪░┘ü ┌⌐╪º┘à┘ä ╪º█î┘å ┌⌐╪º╪▒╪¿╪▒ ╪º╪▓ ┘╛┘å┘ä ╪º╪╖┘à█î┘å╪º┘å ╪»╪º╪▒█î╪»╪ƒ\n╪º█î┘å ╪╣┘à┘ä ┘é╪º╪¿┘ä ╪¿╪º╪▓┌»╪┤╪¬ ┘å█î╪│╪¬.`,
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            cb("🔥 حذف کامل", `admin_panel_del_${payloadRaw}_confirm`, "danger"),
-                            cb("❌ انصراف", "admin_lookup_action_cancel", "primary")
+                            cb("≡ƒöÑ ╪¡╪░┘ü ┌⌐╪º┘à┘ä", `admin_panel_del_${payloadRaw}_confirm`, "danger"),
+                            cb("Γ¥î ╪º┘å╪╡╪▒╪º┘ü", "admin_lookup_action_cancel", "primary")
                         ]
                     ]
                 }
@@ -13880,7 +13761,7 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length || !key) {
-            await tg("sendMessage", { chat_id: chatId, text: "ورودی نامعتبر برای حذف پنل." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ê╪▒┘ê╪»█î ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪¿╪▒╪º█î ╪¡╪░┘ü ┘╛┘å┘ä." });
             return null;
         }
         const panelType = String(rows[0].panel_type || "");
@@ -13893,7 +13774,7 @@ async function handleCallback(update) {
             result = isMarzbanLike(panelType) ? await deleteMarzbanUser(rows[0], key) : await revokeSanaeiClient(rows[0], key);
         }
         if (!result.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `حذف در پنل ناموفق: ${result.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪¡╪░┘ü ╪»╪▒ ┘╛┘å┘ä ┘å╪º┘à┘ê┘ü┘é: ${result.message}` });
             return null;
         }
         await recordForensicEvent({
@@ -13909,7 +13790,7 @@ async function handleCallback(update) {
             configValue: null,
             metadata: { adminId: userId }
         });
-        await tg("sendMessage", { chat_id: chatId, text: "حذف/غیرفعالسازی در پنل انجام شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪░┘ü/╪║█î╪▒┘ü╪╣╪º┘ä╪│╪º╪▓█î ╪»╪▒ ┘╛┘å┘ä ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_panel") {
@@ -13938,51 +13819,51 @@ async function handleCallback(update) {
     if (data.startsWith("admin_panel_set_subport_")) {
         const panelId = Number(data.replace("admin_panel_set_subport_", ""));
         if (!Number.isFinite(panelId) || panelId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         const panel = await getPanelById(panelId);
         if (!panel || String(panel.panel_type) !== "sanaei") {
-            await tg("sendMessage", { chat_id: chatId, text: "این گزینه فقط برای پنل Sanaei / 3x-ui است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌»╪▓█î┘å┘ç ┘ü┘é╪╖ ╪¿╪▒╪º█î ┘╛┘å┘ä Sanaei / 3x-ui ╪º╪│╪¬." });
             return null;
         }
         const cur = panel.subscription_public_port != null && Number(panel.subscription_public_port) > 0
             ? String(panel.subscription_public_port)
-            : "خودکار (پورت آدرس پنل)";
+            : "╪«┘ê╪»┌⌐╪º╪▒ (┘╛┘ê╪▒╪¬ ╪ó╪»╪▒╪│ ┘╛┘å┘ä)";
         await setState(userId, "admin_panel_subport_edit", { panelId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `🔢 پورت عمومی لینک سابسکریپشن\nپنل: ${panel.name}\nفعلی: ${cur}\n\n` +
-                `عدد ۱–۶۵۵۳۵ بفرستید (مثلاً 8080).\n0 یا auto = همان پورت آدرس پنل\n- = انصراف`,
-            reply_markup: { inline_keyboard: [[{ text: "❌ انصراف", callback_data: `admin_panel_open_${panelId}` }]] }
+            text: `≡ƒöó ┘╛┘ê╪▒╪¬ ╪╣┘à┘ê┘à█î ┘ä█î┘å┌⌐ ╪│╪º╪¿╪│┌⌐╪▒█î┘╛╪┤┘å\n┘╛┘å┘ä: ${panel.name}\n┘ü╪╣┘ä█î: ${cur}\n\n` +
+                `╪╣╪»╪» █▒ΓÇô█╢█╡█╡█│█╡ ╪¿┘ü╪▒╪│╪¬█î╪» (┘à╪½┘ä╪º┘ï 8080).\n0 █î╪º auto = ┘ç┘à╪º┘å ┘╛┘ê╪▒╪¬ ╪ó╪»╪▒╪│ ┘╛┘å┘ä\n- = ╪º┘å╪╡╪▒╪º┘ü`,
+            reply_markup: { inline_keyboard: [[{ text: "Γ¥î ╪º┘å╪╡╪▒╪º┘ü", callback_data: `admin_panel_open_${panelId}` }]] }
         });
         return null;
     }
     if (data.startsWith("admin_panel_set_suburl_")) {
         const panelId = Number(data.replace("admin_panel_set_suburl_", ""));
         if (!Number.isFinite(panelId) || panelId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         const panel = await getPanelById(panelId);
         if (!panel || String(panel.panel_type) !== "sanaei") {
-            await tg("sendMessage", { chat_id: chatId, text: "این گزینه فقط برای پنل Sanaei / 3x-ui است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌»╪▓█î┘å┘ç ┘ü┘é╪╖ ╪¿╪▒╪º█î ┘╛┘å┘ä Sanaei / 3x-ui ╪º╪│╪¬." });
             return null;
         }
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `🔗 دامنه و پروتکل لینک سابسکریپشن\nپنل: ${panel.name}\n\n` +
-                `۱) پروتکل را انتخاب کنید.\n` +
-                `۲) سپس فقط نام میزبان را بفرستید (مثال: sub.example.com).\n\n` +
-                `در مرحلهٔ دوم: 0 یا auto = همان hostname آدرس پنل\n- = انصراف`,
+            text: `≡ƒöù ╪»╪º┘à┘å┘ç ┘ê ┘╛╪▒┘ê╪¬┌⌐┘ä ┘ä█î┘å┌⌐ ╪│╪º╪¿╪│┌⌐╪▒█î┘╛╪┤┘å\n┘╛┘å┘ä: ${panel.name}\n\n` +
+                `█▒) ┘╛╪▒┘ê╪¬┌⌐┘ä ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪».\n` +
+                `█▓) ╪│┘╛╪│ ┘ü┘é╪╖ ┘å╪º┘à ┘à█î╪▓╪¿╪º┘å ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪» (┘à╪½╪º┘ä: sub.example.com).\n\n` +
+                `╪»╪▒ ┘à╪▒╪¡┘ä┘ç┘ö ╪»┘ê┘à: 0 █î╪º auto = ┘ç┘à╪º┘å hostname ╪ó╪»╪▒╪│ ┘╛┘å┘ä\n- = ╪º┘å╪╡╪▒╪º┘ü`,
             reply_markup: {
                 inline_keyboard: [
                     [
                         { text: "HTTPS", callback_data: `admin_panel_suburl_proto_${panelId}_https` },
                         { text: "HTTP", callback_data: `admin_panel_suburl_proto_${panelId}_http` }
                     ],
-                    [{ text: "همان پروتکل آدرس پنل", callback_data: `admin_panel_suburl_proto_${panelId}_def` }],
-                    [{ text: "❌ انصراف", callback_data: `admin_panel_open_${panelId}` }]
+                    [{ text: "┘ç┘à╪º┘å ┘╛╪▒┘ê╪¬┌⌐┘ä ╪ó╪»╪▒╪│ ┘╛┘å┘ä", callback_data: `admin_panel_suburl_proto_${panelId}_def` }],
+                    [{ text: "Γ¥î ╪º┘å╪╡╪▒╪º┘ü", callback_data: `admin_panel_open_${panelId}` }]
                 ]
             }
         });
@@ -13993,56 +13874,56 @@ async function handleCallback(update) {
         const panelId = Number(suburlProtoMatch[1]);
         const protoKey = suburlProtoMatch[2];
         if (!Number.isFinite(panelId) || panelId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         const panel = await getPanelById(panelId);
         if (!panel || String(panel.panel_type) !== "sanaei") {
-            await tg("sendMessage", { chat_id: chatId, text: "این گزینه فقط برای پنل Sanaei / 3x-ui است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌»╪▓█î┘å┘ç ┘ü┘é╪╖ ╪¿╪▒╪º█î ┘╛┘å┘ä Sanaei / 3x-ui ╪º╪│╪¬." });
             return null;
         }
         const subscriptionLinkProtocol = protoKey === "def" ? null : protoKey;
         await setState(userId, "admin_panel_suburl_host_edit", { panelId, subscriptionLinkProtocol });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `نام میزبان لینک ساب را بفرستید (بدون https://).\n` +
-                `پروتکل انتخاب‌شده: ${protoKey === "def" ? "همان آدرس پنل" : protoKey.toUpperCase()}\n\n` +
-                `0 یا auto = همان hostname آدرس پنل\n- = انصراف`,
-            reply_markup: { inline_keyboard: [[{ text: "❌ انصراف", callback_data: `admin_panel_open_${panelId}` }]] }
+            text: `┘å╪º┘à ┘à█î╪▓╪¿╪º┘å ┘ä█î┘å┌⌐ ╪│╪º╪¿ ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪» (╪¿╪»┘ê┘å https://).\n` +
+                `┘╛╪▒┘ê╪¬┌⌐┘ä ╪º┘å╪¬╪«╪º╪¿ΓÇî╪┤╪»┘ç: ${protoKey === "def" ? "┘ç┘à╪º┘å ╪ó╪»╪▒╪│ ┘╛┘å┘ä" : protoKey.toUpperCase()}\n\n` +
+                `0 █î╪º auto = ┘ç┘à╪º┘å hostname ╪ó╪»╪▒╪│ ┘╛┘å┘ä\n- = ╪º┘å╪╡╪▒╪º┘ü`,
+            reply_markup: { inline_keyboard: [[{ text: "Γ¥î ╪º┘å╪╡╪▒╪º┘ü", callback_data: `admin_panel_open_${panelId}` }]] }
         });
         return null;
     }
     if (data.startsWith("admin_panel_set_confighost_")) {
         const panelId = Number(data.replace("admin_panel_set_confighost_", ""));
         if (!Number.isFinite(panelId) || panelId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         const panel = await getPanelById(panelId);
         if (!panel || String(panel.panel_type) !== "sanaei") {
-            await tg("sendMessage", { chat_id: chatId, text: "این گزینه فقط برای پنل Sanaei / 3x-ui است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌»╪▓█î┘å┘ç ┘ü┘é╪╖ ╪¿╪▒╪º█î ┘╛┘å┘ä Sanaei / 3x-ui ╪º╪│╪¬." });
             return null;
         }
-        const cur = String(panel.config_public_host || "").trim() || "تشخیص خودکار (محصول/پنل)";
+        const cur = String(panel.config_public_host || "").trim() || "╪¬╪┤╪«█î╪╡ ╪«┘ê╪»┌⌐╪º╪▒ (┘à╪¡╪╡┘ê┘ä/┘╛┘å┘ä)";
         await setState(userId, "admin_panel_confighost_edit", { panelId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `🌐 دامنهٔ نمایش در لینک کانفیگ (vless/vmess/…)\nپنل: ${panel.name}\nفعلی: ${cur}\n\n` +
-                `فقط نام میزبان بفرستید (مثال: v-panel.example.com)\n` +
-                `0 یا auto = تشخیص خودکار\n- = انصراف`,
-            reply_markup: { inline_keyboard: [[{ text: "❌ انصراف", callback_data: `admin_panel_open_${panelId}` }]] }
+            text: `≡ƒîÉ ╪»╪º┘à┘å┘ç┘ö ┘å┘à╪º█î╪┤ ╪»╪▒ ┘ä█î┘å┌⌐ ┌⌐╪º┘å┘ü█î┌» (vless/vmess/ΓÇª)\n┘╛┘å┘ä: ${panel.name}\n┘ü╪╣┘ä█î: ${cur}\n\n` +
+                `┘ü┘é╪╖ ┘å╪º┘à ┘à█î╪▓╪¿╪º┘å ╪¿┘ü╪▒╪│╪¬█î╪» (┘à╪½╪º┘ä: v-panel.example.com)\n` +
+                `0 █î╪º auto = ╪¬╪┤╪«█î╪╡ ╪«┘ê╪»┌⌐╪º╪▒\n- = ╪º┘å╪╡╪▒╪º┘ü`,
+            reply_markup: { inline_keyboard: [[{ text: "Γ¥î ╪º┘å╪╡╪▒╪º┘ü", callback_data: `admin_panel_open_${panelId}` }]] }
         });
         return null;
     }
     if (data.startsWith("admin_panel_import_sanaei_backup_")) {
         const panelId = Number(data.replace("admin_panel_import_sanaei_backup_", ""));
         if (!Number.isFinite(panelId) || panelId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         const panel = await getPanelById(panelId);
         if (!panel || String(panel.panel_type) !== "sanaei") {
-            await tg("sendMessage", { chat_id: chatId, text: "این گزینه فقط برای پنل Sanaei / 3x-ui است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ┌»╪▓█î┘å┘ç ┘ü┘é╪╖ ╪¿╪▒╪º█î ┘╛┘å┘ä Sanaei / 3x-ui ╪º╪│╪¬." });
             return null;
         }
         const existing = await getSetting(`sanaei_inbound_backup_${panelId}`);
@@ -14056,10 +13937,10 @@ async function handleCallback(update) {
                     const s = toJsonObject(parseSanaeiNested(ibObj.settings)) || {};
                     clientCount += Array.isArray(s.clients) ? s.clients.length : 0;
                 }
-                existingInfo = `\n\nبکاپ فعلی: ${arr.length} inbound | ${clientCount} کلاینت`;
+                existingInfo = `\n\n╪¿┌⌐╪º┘╛ ┘ü╪╣┘ä█î: ${arr.length} inbound | ${clientCount} ┌⌐┘ä╪º█î┘å╪¬`;
             }
             catch {
-                existingInfo = "\n\nبکاپ فعلی: موجود (نامعتبر)";
+                existingInfo = "\n\n╪¿┌⌐╪º┘╛ ┘ü╪╣┘ä█î: ┘à┘ê╪¼┘ê╪» (┘å╪º┘à╪╣╪¬╪¿╪▒)";
             }
         }
         const token = generateAdminToken(userId);
@@ -14069,12 +13950,12 @@ async function handleCallback(update) {
         await tg("sendMessage", {
             chat_id: chatId,
             parse_mode: "HTML",
-            text: `📥 وارد کردن بکاپ inbound برای پنل: ${escapeHtml(String(panel.name || ""))}${escapeHtml(existingInfo)}\n\n` +
-                `گزینه ۱ — صفحه وب (توصیه شده برای فایل‌های بزرگ):\n<code>${escapeHtml(webLink)}</code>\n\n` +
-                `گزینه ۲ — ارسال JSON مستقیم در همین چت (برای فایل‌های کوچک)\n` +
-                `(از مسیر Inbounds → Export یا API /panel/api/inbounds/list)\n` +
-                `- = انصراف`,
-            reply_markup: { inline_keyboard: [[{ text: "❌ انصراف", callback_data: `admin_panel_open_${panelId}` }]] }
+            text: `≡ƒôÑ ┘ê╪º╪▒╪» ┌⌐╪▒╪»┘å ╪¿┌⌐╪º┘╛ inbound ╪¿╪▒╪º█î ┘╛┘å┘ä: ${escapeHtml(String(panel.name || ""))}${escapeHtml(existingInfo)}\n\n` +
+                `┌»╪▓█î┘å┘ç █▒ ΓÇö ╪╡┘ü╪¡┘ç ┘ê╪¿ (╪¬┘ê╪╡█î┘ç ╪┤╪»┘ç ╪¿╪▒╪º█î ┘ü╪º█î┘äΓÇî┘ç╪º█î ╪¿╪▓╪▒┌»):\n<code>${escapeHtml(webLink)}</code>\n\n` +
+                `┌»╪▓█î┘å┘ç █▓ ΓÇö ╪º╪▒╪│╪º┘ä JSON ┘à╪│╪¬┘é█î┘à ╪»╪▒ ┘ç┘à█î┘å ┌å╪¬ (╪¿╪▒╪º█î ┘ü╪º█î┘äΓÇî┘ç╪º█î ┌⌐┘ê┌å┌⌐)\n` +
+                `(╪º╪▓ ┘à╪│█î╪▒ Inbounds ΓåÆ Export █î╪º API /panel/api/inbounds/list)\n` +
+                `- = ╪º┘å╪╡╪▒╪º┘ü`,
+            reply_markup: { inline_keyboard: [[{ text: "Γ¥î ╪º┘å╪╡╪▒╪º┘ü", callback_data: `admin_panel_open_${panelId}` }]] }
         });
         return null;
     }
@@ -14082,7 +13963,7 @@ async function handleCallback(update) {
         const panelId = Number(data.replace("admin_panel_edit_", ""));
         const panel = await getPanelById(panelId);
         if (!panel) {
-            await tg("sendMessage", { chat_id: chatId, text: "پنل پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         await promptPanelTypePicker(chatId, "edit", panelId);
@@ -14090,19 +13971,19 @@ async function handleCallback(update) {
     }
     if (data === "admin_panel_wizard_cancel") {
         await clearState(userId);
-        await showPanelAdminMenu(chatId, "ثبت پنل لغو شد.");
+        await showPanelAdminMenu(chatId, "╪½╪¿╪¬ ┘╛┘å┘ä ┘ä╪║┘ê ╪┤╪».");
         return null;
     }
     if (data.startsWith("admin_panel_wizard_cancel_")) {
         const panelId = Number(data.replace("admin_panel_wizard_cancel_", ""));
         await clearState(userId);
-        await showPanelDetails(chatId, panelId, "ویرایش پنل لغو شد.");
+        await showPanelDetails(chatId, panelId, "┘ê█î╪▒╪º█î╪┤ ┘╛┘å┘ä ┘ä╪║┘ê ╪┤╪».");
         return null;
     }
     if (data.startsWith("admin_panel_pick_type_add_")) {
         const panelType = parsePanelType(data.replace("admin_panel_pick_type_add_", ""));
         if (!panelType) {
-            await tg("sendMessage", { chat_id: chatId, text: "نوع پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘å┘ê╪╣ ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         await startPanelWizard(chatId, userId, "add", panelType);
@@ -14114,7 +13995,7 @@ async function handleCallback(update) {
         const panelId = Number(panelIdRaw);
         const panelType = parsePanelType(panelTypeRaw || "");
         if (!Number.isFinite(panelId) || panelId <= 0 || !panelType) {
-            await tg("sendMessage", { chat_id: chatId, text: "اطلاعات ویرایش پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º╪╖┘ä╪º╪╣╪º╪¬ ┘ê█î╪▒╪º█î╪┤ ┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         await startPanelWizard(chatId, userId, "edit", panelType, panelId);
@@ -14123,19 +14004,19 @@ async function handleCallback(update) {
     if (/^admin_panel_toggle_\d+$/.test(data)) {
         const panelId = Number(data.replace("admin_panel_toggle_", ""));
         await sql `UPDATE panels SET active = NOT active WHERE id = ${panelId};`;
-        await showPanelDetails(chatId, panelId, "وضعیت پنل تغی��ر کرد ✅");
+        await showPanelDetails(chatId, panelId, "┘ê╪╢╪╣█î╪¬ ┘╛┘å┘ä ╪¬╪║█î∩┐╜∩┐╜╪▒ ┌⌐╪▒╪» Γ£à");
         return null;
     }
     if (data.startsWith("admin_panel_toggle_move_")) {
         const panelId = Number(data.replace("admin_panel_toggle_move_", ""));
         await sql `UPDATE panels SET allow_customer_migration = NOT allow_customer_migration WHERE id = ${panelId};`;
-        await showPanelDetails(chatId, panelId, "وضعیت مهاجرت کاربر تغییر کرد ✅");
+        await showPanelDetails(chatId, panelId, "┘ê╪╢╪╣█î╪¬ ┘à┘ç╪º╪¼╪▒╪¬ ┌⌐╪º╪▒╪¿╪▒ ╪¬╪║█î█î╪▒ ┌⌐╪▒╪» Γ£à");
         return null;
     }
     if (data.startsWith("admin_panel_toggle_sales_")) {
         const panelId = Number(data.replace("admin_panel_toggle_sales_", ""));
         await sql `UPDATE panels SET allow_new_sales = NOT allow_new_sales WHERE id = ${panelId};`;
-        await showPanelDetails(chatId, panelId, "وضعیت فروش جدید این پنل تغییر کرد ✅");
+        await showPanelDetails(chatId, panelId, "┘ê╪╢╪╣█î╪¬ ┘ü╪▒┘ê╪┤ ╪¼╪»█î╪» ╪º█î┘å ┘╛┘å┘ä ╪¬╪║█î█î╪▒ ┌⌐╪▒╪» Γ£à");
         return null;
     }
     if (data === "admin_panel_test_all") {
@@ -14145,7 +14026,7 @@ async function handleCallback(update) {
       ORDER BY priority DESC, id ASC;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "هنوز هیچ پنلی ثبت نشده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ç┘å┘ê╪▓ ┘ç█î┌å ┘╛┘å┘ä█î ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         const results = [];
@@ -14154,9 +14035,9 @@ async function handleCallback(update) {
             const result = await testPanelConnection(Number(row.id));
             if (result.ok)
                 okCount += 1;
-            results.push(`${row.name}: ${result.ok ? "✅" : "❌"}`);
+            results.push(`${row.name}: ${result.ok ? "Γ£à" : "Γ¥î"}`);
         }
-        await showPanelAdminMenu(chatId, `تست همه پنل‌ها انجام شد.\nموفق: ${okCount}/${rows.length}\n${results.join("\n")}`);
+        await showPanelAdminMenu(chatId, `╪¬╪│╪¬ ┘ç┘à┘ç ┘╛┘å┘äΓÇî┘ç╪º ╪º┘å╪¼╪º┘à ╪┤╪».\n┘à┘ê┘ü┘é: ${okCount}/${rows.length}\n${results.join("\n")}`);
         return null;
     }
     if (data.startsWith("admin_panel_test_")) {
@@ -14174,19 +14055,19 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "پنل پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const p = rows[0];
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `کش پنل: ${p.name}\n` +
-                `آخرین تست: ${p.last_check_at || "-"}\n` +
-                `نتیجه: ${panelResultLabel(p.last_check_ok)}\n` +
-                `پیام: ${p.last_check_message || "-"}\n` +
+            text: `┌⌐╪┤ ┘╛┘å┘ä: ${p.name}\n` +
+                `╪ó╪«╪▒█î┘å ╪¬╪│╪¬: ${p.last_check_at || "-"}\n` +
+                `┘å╪¬█î╪¼┘ç: ${panelResultLabel(p.last_check_ok)}\n` +
+                `┘╛█î╪º┘à: ${p.last_check_message || "-"}\n` +
                 `meta: ${JSON.stringify(p.cached_meta || {}, null, 2)}`,
             reply_markup: {
-                inline_keyboard: [[backButton(`admin_panel_open_${panelId}`, "🔙 بازگشت به پنل")]]
+                inline_keyboard: [[backButton(`admin_panel_open_${panelId}`, "≡ƒöÖ ╪¿╪º╪▓┌»╪┤╪¬ ╪¿┘ç ┘╛┘å┘ä")]]
             }
         });
         return null;
@@ -14195,11 +14076,11 @@ async function handleCallback(update) {
         const panelId = Number(data.replace("admin_panel_remove_yes_", ""));
         try {
             await sql `DELETE FROM panels WHERE id = ${panelId};`;
-            await showPanelAdminMenu(chatId, "پنل حذف شد ✅");
+            await showPanelAdminMenu(chatId, "┘╛┘å┘ä ╪¡╪░┘ü ╪┤╪» Γ£à");
         }
         catch (err) {
             logError("admin_panel_delete_failed", err, { panelId, adminId: userId });
-            await tg("sendMessage", { chat_id: chatId, text: `❌ حذف پنل با خطا مواجه شد. ممکن است کانفیگ‌ها یا محصولاتی به آن متصل باشند.\n${err.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `Γ¥î ╪¡╪░┘ü ┘╛┘å┘ä ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪». ┘à┘à┌⌐┘å ╪º╪│╪¬ ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º █î╪º ┘à╪¡╪╡┘ê┘ä╪º╪¬█î ╪¿┘ç ╪ó┘å ┘à╪¬╪╡┘ä ╪¿╪º╪┤┘å╪».\n${err.message}` });
         }
         return null;
     }
@@ -14207,12 +14088,12 @@ async function handleCallback(update) {
         const panelId = Number(data.replace("admin_panel_remove_", ""));
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "از حذف این پنل مطمئن هستید؟",
+            text: "╪º╪▓ ╪¡╪░┘ü ╪º█î┘å ┘╛┘å┘ä ┘à╪╖┘à╪ª┘å ┘ç╪│╪¬█î╪»╪ƒ",
             reply_markup: {
                 inline_keyboard: [
                     [
-                        cb("🗑 حذف", `admin_panel_remove_yes_${panelId}`, "danger"),
-                        cb("❌ خیر", `admin_panel_open_${panelId}`, "primary")
+                        cb("≡ƒùæ ╪¡╪░┘ü", `admin_panel_remove_yes_${panelId}`, "danger"),
+                        cb("Γ¥î ╪«█î╪▒", `admin_panel_open_${panelId}`, "primary")
                     ]
                 ]
             }
@@ -14226,10 +14107,10 @@ async function handleCallback(update) {
         const link = `${protocol}://${domain}/cleanup.html?token=${token}`;
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `🔎 یافتن کانفیگ‌های مرده\n\n` +
-                `این ابزار فقط کانفیگ‌ها را در پنل‌های شما جستجو می‌کند و تغییری ایجاد نمی‌کند.\n` +
-                `برای جلوگیری از تایم‌اوت، اسکن از طریق مرورگر انجام می‌شود.\n` +
-                `لینک زیر فقط تا ۲ ساعت اعتبار دارد:\n\n` +
+            text: `≡ƒöÄ █î╪º┘ü╪¬┘å ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î ┘à╪▒╪»┘ç\n\n` +
+                `╪º█î┘å ╪º╪¿╪▓╪º╪▒ ┘ü┘é╪╖ ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º ╪▒╪º ╪»╪▒ ┘╛┘å┘äΓÇî┘ç╪º█î ╪┤┘à╪º ╪¼╪│╪¬╪¼┘ê ┘à█îΓÇî┌⌐┘å╪» ┘ê ╪¬╪║█î█î╪▒█î ╪º█î╪¼╪º╪» ┘å┘à█îΓÇî┌⌐┘å╪».\n` +
+                `╪¿╪▒╪º█î ╪¼┘ä┘ê┌»█î╪▒█î ╪º╪▓ ╪¬╪º█î┘àΓÇî╪º┘ê╪¬╪î ╪º╪│┌⌐┘å ╪º╪▓ ╪╖╪▒█î┘é ┘à╪▒┘ê╪▒┌»╪▒ ╪º┘å╪¼╪º┘à ┘à█îΓÇî╪┤┘ê╪».\n` +
+                `┘ä█î┘å┌⌐ ╪▓█î╪▒ ┘ü┘é╪╖ ╪¬╪º █▓ ╪│╪º╪╣╪¬ ╪º╪╣╪¬╪¿╪º╪▒ ╪»╪º╪▒╪»:\n\n` +
                 `<code>${escapeHtml(link)}</code>`,
             parse_mode: "HTML"
         });
@@ -14245,17 +14126,17 @@ async function handleCallback(update) {
       LIMIT 30;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "درخواست انتقال باز وجود ندارد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘å╪¬┘é╪º┘ä ╪¿╪º╪▓ ┘ê╪¼┘ê╪» ┘å╪»╪º╪▒╪»." });
             return null;
         }
         const keyboard = rows.map((m) => [
             {
-                text: `#${m.id} | کاربر ${m.requested_for} | ${m.target_panel_name} | ${m.requested_by_role}`,
+                text: `#${m.id} | ┌⌐╪º╪▒╪¿╪▒ ${m.requested_for} | ${m.target_panel_name} | ${m.requested_by_role}`,
                 callback_data: `admin_migration_open_${m.id}`
             }
         ]);
         keyboard.push([backButton("admin_panels")]);
-        await tg("sendMessage", { chat_id: chatId, text: "صف انتقال‌ها:", reply_markup: { inline_keyboard: keyboard } });
+        await tg("sendMessage", { chat_id: chatId, text: "╪╡┘ü ╪º┘å╪¬┘é╪º┘äΓÇî┘ç╪º:", reply_markup: { inline_keyboard: keyboard } });
         return null;
     }
     if (data.startsWith("admin_migration_open_")) {
@@ -14274,24 +14155,24 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "درخواست یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪»╪▒╪«┘ê╪º╪│╪¬ █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const r = rows[0];
         await tg("sendMessage", {
             chat_id: chatId,
             parse_mode: "HTML",
-            text: `درخواست #${r.id}\n` +
-                `وضعیت: ${r.status}\n` +
-                `کاربر: ${r.requested_for}\n` +
-                `کانفیگ مبدا: ${r.source_inventory_id}\n` +
-                `پنل مقصد: ${r.target_panel_name}\n\n` +
+            text: `╪»╪▒╪«┘ê╪º╪│╪¬ #${r.id}\n` +
+                `┘ê╪╢╪╣█î╪¬: ${r.status}\n` +
+                `┌⌐╪º╪▒╪¿╪▒: ${r.requested_for}\n` +
+                `┌⌐╪º┘å┘ü█î┌» ┘à╪¿╪»╪º: ${r.source_inventory_id}\n` +
+                `┘╛┘å┘ä ┘à┘é╪╡╪»: ${r.target_panel_name}\n\n` +
                 `${escapeHtml(String(r.source_config_snapshot || "-"))}`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("⚡ انتقال با همان کانفیگ", `admin_migration_auto_${r.id}`, "success")],
-                    [cb("✍️ ثبت کانفیگ جدید", `admin_migration_manual_${r.id}`, "primary")],
-                    [cb("❌ رد درخواست", `admin_migration_reject_${r.id}`, "danger")],
+                    [cb("ΓÜí ╪º┘å╪¬┘é╪º┘ä ╪¿╪º ┘ç┘à╪º┘å ┌⌐╪º┘å┘ü█î┌»", `admin_migration_auto_${r.id}`, "success")],
+                    [cb("Γ£ì∩╕Å ╪½╪¿╪¬ ┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪»", `admin_migration_manual_${r.id}`, "primary")],
+                    [cb("Γ¥î ╪▒╪» ╪»╪▒╪«┘ê╪º╪│╪¬", `admin_migration_reject_${r.id}`, "danger")],
                     [backButton("admin_migrations")]
                 ]
             }
@@ -14301,13 +14182,13 @@ async function handleCallback(update) {
     if (data.startsWith("admin_migration_auto_")) {
         const migrationId = Number(data.replace("admin_migration_auto_", ""));
         const result = await completeMigration(migrationId, userId, null);
-        await tg("sendMessage", { chat_id: chatId, text: result.ok ? "انتقال انجام شد ✅" : `خطا: ${result.reason}` });
+        await tg("sendMessage", { chat_id: chatId, text: result.ok ? "╪º┘å╪¬┘é╪º┘ä ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à" : `╪«╪╖╪º: ${result.reason}` });
         return null;
     }
     if (data.startsWith("admin_migration_manual_")) {
         const migrationId = Number(data.replace("admin_migration_manual_", ""));
         await setState(userId, "admin_complete_migration_config", { migrationId });
-        await tg("sendMessage", { chat_id: chatId, text: "کانفیگ جدید مقصد را ارسال کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ╪¼╪»█î╪» ┘à┘é╪╡╪» ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
         return null;
     }
     if (data.startsWith("admin_migration_reject_")) {
@@ -14319,11 +14200,11 @@ async function handleCallback(update) {
       RETURNING requested_for;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "این درخواست قابل رد نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪»╪▒╪«┘ê╪º╪│╪¬ ┘é╪º╪¿┘ä ╪▒╪» ┘å█î╪│╪¬." });
             return null;
         }
-        await tg("sendMessage", { chat_id: Number(rows[0].requested_for), text: `درخواست انتقال #${migrationId} رد شد ❌` });
-        await tg("sendMessage", { chat_id: chatId, text: "درخواست رد شد ✅" });
+        await tg("sendMessage", { chat_id: Number(rows[0].requested_for), text: `╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘å╪¬┘é╪º┘ä #${migrationId} ╪▒╪» ╪┤╪» Γ¥î` });
+        await tg("sendMessage", { chat_id: chatId, text: "╪»╪▒╪«┘ê╪º╪│╪¬ ╪▒╪» ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_products" || data.startsWith("admin_products_page_")) {
@@ -14355,7 +14236,7 @@ async function handleCallback(update) {
     }
     if (data.startsWith("admin_product_wizard_cancel_")) {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "ثبت/ویرایش محصول لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪½╪¿╪¬/┘ê█î╪▒╪º█î╪┤ ┘à╪¡╪╡┘ê┘ä ┘ä╪║┘ê ╪┤╪»." });
         await listProductsForAdmin(chatId, userId);
         return null;
     }
@@ -14416,7 +14297,7 @@ async function handleCallback(update) {
         if (!state || state.state !== "admin_product_wizard")
             return null;
         if (parseProductKind(state.payload.productKind) === "account") {
-            await tg("sendMessage", { chat_id: chatId, text: "برای محصول اکانتی، فروش از پنل غیرفعال است و فقط فروش دستی قابل انتخاب است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ┘à╪¡╪╡┘ê┘ä ╪º┌⌐╪º┘å╪¬█î╪î ┘ü╪▒┘ê╪┤ ╪º╪▓ ┘╛┘å┘ä ╪║█î╪▒┘ü╪╣╪º┘ä ╪º╪│╪¬ ┘ê ┘ü┘é╪╖ ┘ü╪▒┘ê╪┤ ╪»╪│╪¬█î ┘é╪º╪¿┘ä ╪º┘å╪¬╪«╪º╪¿ ╪º╪│╪¬." });
             return null;
         }
         const payload = { ...state.payload, sellMode: "panel", step: "panel_id" };
@@ -14463,7 +14344,7 @@ async function handleCallback(update) {
         const panelDeliveryMode = parseDeliveryMode(data.replace("admin_product_wizard_delivery_", ""));
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_wizard") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه افزودن/ویرایش محصول منقضی شده. دوباره از اول شروع کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪º┘ü╪▓┘ê╪»┘å/┘ê█î╪▒╪º█î╪┤ ┘à╪¡╪╡┘ê┘ä ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ╪º┘ê┘ä ╪┤╪▒┘ê╪╣ ┌⌐┘å█î╪»." });
             return null;
         }
         const payload = { ...state.payload, panelDeliveryMode };
@@ -14490,7 +14371,7 @@ async function handleCallback(update) {
     if (data.startsWith("admin_toggle_product_infinite_")) {
         const productId = Number(data.replace("admin_toggle_product_infinite_", ""));
         await sql `UPDATE products SET is_infinite = NOT is_infinite WHERE id = ${productId};`;
-        await tg("sendMessage", { chat_id: chatId, text: "حالت بینهایت محصول تغییر کرد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪º┘ä╪¬ ╪¿█î┘å┘ç╪º█î╪¬ ┘à╪¡╪╡┘ê┘ä ╪¬╪║█î█î╪▒ ┌⌐╪▒╪» Γ£à" });
         return null;
     }
     if (data.startsWith("admin_toggle_product_sell_mode_")) {
@@ -14504,7 +14385,7 @@ async function handleCallback(update) {
     `;
         await tg("sendMessage", {
             chat_id: chatId,
-            text: rows.length ? `حالت فروش محصول روی ${rows[0].sell_mode === "panel" ? "فروش از پنل" : "فروش دستی"} قرار گرفت ✅` : "محصول پیدا نشد."
+            text: rows.length ? `╪¡╪º┘ä╪¬ ┘ü╪▒┘ê╪┤ ┘à╪¡╪╡┘ê┘ä ╪▒┘ê█î ${rows[0].sell_mode === "panel" ? "┘ü╪▒┘ê╪┤ ╪º╪▓ ┘╛┘å┘ä" : "┘ü╪▒┘ê╪┤ ╪»╪│╪¬█î"} ┘é╪▒╪º╪▒ ┌»╪▒┘ü╪¬ Γ£à` : "┘à╪¡╪╡┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪»."
         });
         return null;
     }
@@ -14512,7 +14393,7 @@ async function handleCallback(update) {
         const productId = Number(data.replace("admin_configure_product_panel_", ""));
         const product = await getProductForPanelWizard(productId);
         if (!product) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const payload = productPanelWizardPayload(product);
@@ -14522,7 +14403,7 @@ async function handleCallback(update) {
     }
     if (data.startsWith("admin_product_panel_wizard_cancel_")) {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "تنظیم فروش پنل لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¬┘å╪╕█î┘à ┘ü╪▒┘ê╪┤ ┘╛┘å┘ä ┘ä╪║┘ê ╪┤╪»." });
         await listProductsForAdmin(chatId, userId);
         return null;
     }
@@ -14530,11 +14411,11 @@ async function handleCallback(update) {
         const panelId = Number(data.replace("admin_product_panel_pick_", ""));
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_panel_wizard") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه تنظیم منقضی شده. دوباره از لیست محصولات شروع کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪¬┘å╪╕█î┘à ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪º╪▓ ┘ä█î╪│╪¬ ┘à╪¡╪╡┘ê┘ä╪º╪¬ ╪┤╪▒┘ê╪╣ ┌⌐┘å█î╪»." });
             return null;
         }
         if (!Number.isFinite(panelId) || panelId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         const payload = { ...state.payload, panelId, step: "mode" };
@@ -14545,7 +14426,7 @@ async function handleCallback(update) {
     if (data === "admin_product_panel_quick") {
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_panel_wizard") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه تنظیم منقضی شده. دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪¬┘å╪╕█î┘à ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
             return null;
         }
         const result = await saveProductPanelWizard(state.payload, true);
@@ -14559,7 +14440,7 @@ async function handleCallback(update) {
     if (data === "admin_product_panel_custom") {
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_panel_wizard") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه تنظیم منقضی شده. دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪¬┘å╪╕█î┘à ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
             return null;
         }
         const payload = { ...state.payload, step: "sell_limit" };
@@ -14571,7 +14452,7 @@ async function handleCallback(update) {
         const mode = data.replace("admin_product_panel_delivery_", "");
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_panel_wizard") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه تنظیم منقضی شده. دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪¬┘å╪╕█î┘à ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
             return null;
         }
         const panelDeliveryMode = parseDeliveryMode(mode);
@@ -14584,11 +14465,11 @@ async function handleCallback(update) {
         const protocol = data.replace("admin_product_panel_protocol_", "").trim().toLowerCase();
         const state = await getState(userId);
         if (!state || state.state !== "admin_product_panel_wizard") {
-            await tg("sendMessage", { chat_id: chatId, text: "جلسه تنظیم منقضی شده. دوباره تلاش کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¼┘ä╪│┘ç ╪¬┘å╪╕█î┘à ┘à┘å┘é╪╢█î ╪┤╪»┘ç. ╪»┘ê╪¿╪º╪▒┘ç ╪¬┘ä╪º╪┤ ┌⌐┘å█î╪»." });
             return null;
         }
         if (!protocol) {
-            await tg("sendMessage", { chat_id: chatId, text: "پروتکل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛╪▒┘ê╪¬┌⌐┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         const payload = { ...state.payload, protocol, step: "expire_days" };
@@ -14615,11 +14496,11 @@ async function handleCallback(update) {
       `;
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "این محصول قبلاً فروش داشته و حذف کامل باعث از دست رفتن اتصال به سوابق می‌شود.\n" +
-                    "پس به‌صورت خودکار آرشیو/غیرفعال شد تا کاربران کانفیگ‌های فروخته‌شده را از دست ندهند ✅\n" +
+                text: "╪º█î┘å ┘à╪¡╪╡┘ê┘ä ┘é╪¿┘ä╪º┘ï ┘ü╪▒┘ê╪┤ ╪»╪º╪┤╪¬┘ç ┘ê ╪¡╪░┘ü ┌⌐╪º┘à┘ä ╪¿╪º╪╣╪½ ╪º╪▓ ╪»╪│╪¬ ╪▒┘ü╪¬┘å ╪º╪¬╪╡╪º┘ä ╪¿┘ç ╪│┘ê╪º╪¿┘é ┘à█îΓÇî╪┤┘ê╪».\n" +
+                    "┘╛╪│ ╪¿┘çΓÇî╪╡┘ê╪▒╪¬ ╪«┘ê╪»┌⌐╪º╪▒ ╪ó╪▒╪┤█î┘ê/╪║█î╪▒┘ü╪╣╪º┘ä ╪┤╪» ╪¬╪º ┌⌐╪º╪▒╪¿╪▒╪º┘å ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î ┘ü╪▒┘ê╪«╪¬┘çΓÇî╪┤╪»┘ç ╪▒╪º ╪º╪▓ ╪»╪│╪¬ ┘å╪»┘ç┘å╪» Γ£à\n" +
                     `inventory: ${inventoryCount}\n` +
                     `orders: ${ordersCount}\n` +
-                    (archived.length ? `نام جدید: ${archived[0].name}` : "")
+                    (archived.length ? `┘å╪º┘à ╪¼╪»█î╪»: ${archived[0].name}` : "")
             });
             await listProductsForAdmin(chatId, userId);
             return null;
@@ -14631,15 +14512,15 @@ async function handleCallback(update) {
         RETURNING name;
       `;
             if (!deleted.length) {
-                await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد یا قبلاً حذف شده است." });
+                await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪» █î╪º ┘é╪¿┘ä╪º┘ï ╪¡╪░┘ü ╪┤╪»┘ç ╪º╪│╪¬." });
                 return null;
             }
-            await tg("sendMessage", { chat_id: chatId, text: `محصول «${deleted[0].name}» حذف شد ✅` });
+            await tg("sendMessage", { chat_id: chatId, text: `┘à╪¡╪╡┘ê┘ä ┬½${deleted[0].name}┬╗ ╪¡╪░┘ü ╪┤╪» Γ£à` });
             await listProductsForAdmin(chatId, userId);
         }
         catch (err) {
             logError("admin_delete_product_failed", err, { productId, adminId: userId });
-            await tg("sendMessage", { chat_id: chatId, text: `❌ حذف محصول با خطا مواجه شد. ممکن است دیتایی به آن وابسته باشد.\n${err.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `Γ¥î ╪¡╪░┘ü ┘à╪¡╪╡┘ê┘ä ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪». ┘à┘à┌⌐┘å ╪º╪│╪¬ ╪»█î╪¬╪º█î█î ╪¿┘ç ╪ó┘å ┘ê╪º╪¿╪│╪¬┘ç ╪¿╪º╪┤╪».\n${err.message}` });
         }
         return null;
     }
@@ -14647,17 +14528,17 @@ async function handleCallback(update) {
         const productId = Number(data.replace("admin_remove_product_", ""));
         const rows = await sql `SELECT name FROM products WHERE id = ${productId} LIMIT 1;`;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `از حذف محصول «${rows[0].name}» مطمئن هستید؟`,
+            text: `╪º╪▓ ╪¡╪░┘ü ┘à╪¡╪╡┘ê┘ä ┬½${rows[0].name}┬╗ ┘à╪╖┘à╪ª┘å ┘ç╪│╪¬█î╪»╪ƒ`,
             reply_markup: {
                 inline_keyboard: [
                     [
-                        cb("🗑 حذف", `admin_remove_product_yes_${productId}`, "danger"),
-                        cb("❌ خیر", "admin_products", "primary")
+                        cb("≡ƒùæ ╪¡╪░┘ü", `admin_remove_product_yes_${productId}`, "danger"),
+                        cb("Γ¥î ╪«█î╪▒", "admin_products", "primary")
                     ]
                 ]
             }
@@ -14667,7 +14548,7 @@ async function handleCallback(update) {
     if (data.startsWith("admin_toggle_product_")) {
         const productId = Number(data.replace("admin_toggle_product_", ""));
         await sql `UPDATE products SET is_active = NOT is_active WHERE id = ${productId};`;
-        await tg("sendMessage", { chat_id: chatId, text: "وضعیت محصول تغییر کرد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ê╪╢╪╣█î╪¬ ┘à╪¡╪╡┘ê┘ä ╪¬╪║█î█î╪▒ ┌⌐╪▒╪» Γ£à" });
         return null;
     }
     if (data === "admin_inventory" || data.startsWith("admin_inv_")) {
@@ -14691,12 +14572,12 @@ async function handleCallback(update) {
         const soldCount = Number(countRows[0].sold_count || 0);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `موجودی محصول:\nآزاد: ${availableCount}\nفروخته‌شده: ${soldCount}`,
+            text: `┘à┘ê╪¼┘ê╪»█î ┘à╪¡╪╡┘ê┘ä:\n╪ó╪▓╪º╪»: ${availableCount}\n┘ü╪▒┘ê╪«╪¬┘çΓÇî╪┤╪»┘ç: ${soldCount}`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("➕ افزودن به انبار (Storage)", `admin_add_stock_${productId}`, "success")],
-                    [cb("🗑 لیست قابل حذف", `admin_available_list_${productId}`, "primary")],
-                    [cb("📦 لیست فروخته‌شده‌ها", `admin_sold_list_${productId}`, "primary")],
+                    [cb("Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ╪¿┘ç ╪º┘å╪¿╪º╪▒ (Storage)", `admin_add_stock_${productId}`, "success")],
+                    [cb("≡ƒùæ ┘ä█î╪│╪¬ ┘é╪º╪¿┘ä ╪¡╪░┘ü", `admin_available_list_${productId}`, "primary")],
+                    [cb("≡ƒôª ┘ä█î╪│╪¬ ┘ü╪▒┘ê╪«╪¬┘çΓÇî╪┤╪»┘çΓÇî┘ç╪º", `admin_sold_list_${productId}`, "primary")],
                     [backButton("admin_inventory")]
                 ]
             }
@@ -14708,9 +14589,9 @@ async function handleCallback(update) {
         await setState(userId, "admin_add_stock", { productId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "🗂 افزودن به انبار\n" +
-                "هر کانفیگ را در یک خط Paste کنید.\n" +
-                "نمونه:\n" +
+            text: "≡ƒùé ╪º┘ü╪▓┘ê╪»┘å ╪¿┘ç ╪º┘å╪¿╪º╪▒\n" +
+                "┘ç╪▒ ┌⌐╪º┘å┘ü█î┌» ╪▒╪º ╪»╪▒ █î┌⌐ ╪«╪╖ Paste ┌⌐┘å█î╪».\n" +
+                "┘å┘à┘ê┘å┘ç:\n" +
                 "vmess://...\n" +
                 "vless://...\n" +
                 "trojan://..."
@@ -14728,7 +14609,7 @@ async function handleCallback(update) {
       LIMIT 20;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "لیست فروش خالی است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä█î╪│╪¬ ┘ü╪▒┘ê╪┤ ╪«╪º┘ä█î ╪º╪│╪¬." });
             return null;
         }
         for (const row of rows) {
@@ -14737,15 +14618,15 @@ async function handleCallback(update) {
             await tg("sendMessage", {
                 chat_id: chatId,
                 parse_mode: "HTML",
-                text: `#${row.id} | کاربر: ${row.owner_telegram_id || "-"} | خرید: ${row.purchase_id || "-"}${revoked ? " | 🚫" : ""}\n` +
+                text: `#${row.id} | ┌⌐╪º╪▒╪¿╪▒: ${row.owner_telegram_id || "-"} | ╪«╪▒█î╪»: ${row.purchase_id || "-"}${revoked ? " | ≡ƒÜ½" : ""}\n` +
                     `${escapeHtml(responseSnippet(String(row.config_value), 450))}`,
                 reply_markup: {
                     inline_keyboard: [
                         [
                             revoked
-                                ? confirmButton(`admin_inv_revoke_${row.id}`, "✅ فعال")
-                                : cb("🚫 غیرفعال", `admin_inv_revoke_${row.id}`, "danger"),
-                            cb("✏️ نام", `admin_inv_rename_${row.id}`, "primary")
+                                ? confirmButton(`admin_inv_revoke_${row.id}`, "Γ£à ┘ü╪╣╪º┘ä")
+                                : cb("≡ƒÜ½ ╪║█î╪▒┘ü╪╣╪º┘ä", `admin_inv_revoke_${row.id}`, "danger"),
+                            cb("Γ£Å∩╕Å ┘å╪º┘à", `admin_inv_rename_${row.id}`, "primary")
                         ]
                     ]
                 }
@@ -14757,7 +14638,7 @@ async function handleCallback(update) {
         const inventoryId = Number(data.replace("admin_inv_revoke_", ""));
         const rows = await sql `SELECT delivery_payload, owner_telegram_id FROM inventory WHERE id = ${inventoryId} LIMIT 1;`;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کانفیگ پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         const payload = parseDeliveryPayload(rows[0].delivery_payload);
@@ -14775,19 +14656,19 @@ async function handleCallback(update) {
         try {
             const owner = Number(rows[0].owner_telegram_id || 0);
             if (owner) {
-                await tg("sendMessage", { chat_id: owner, text: !revoked ? "کانفیگ شما توسط ادمین غیرفعال شد." : "کانفیگ شما دوباره فعال شد ✅" });
+                await tg("sendMessage", { chat_id: owner, text: !revoked ? "┌⌐╪º┘å┘ü█î┌» ╪┤┘à╪º ╪¬┘ê╪│╪╖ ╪º╪»┘à█î┘å ╪║█î╪▒┘ü╪╣╪º┘ä ╪┤╪»." : "┌⌐╪º┘å┘ü█î┌» ╪┤┘à╪º ╪»┘ê╪¿╪º╪▒┘ç ┘ü╪╣╪º┘ä ╪┤╪» Γ£à" });
             }
         }
         catch (error) {
             logError("inventory_revoke_notify_failed", error, { inventoryId });
         }
-        await tg("sendMessage", { chat_id: chatId, text: !revoked ? "غیرفعال شد ✅" : "فعال شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: !revoked ? "╪║█î╪▒┘ü╪╣╪º┘ä ╪┤╪» Γ£à" : "┘ü╪╣╪º┘ä ╪┤╪» Γ£à" });
         return null;
     }
     if (data.startsWith("admin_inv_rename_")) {
         const inventoryId = Number(data.replace("admin_inv_rename_", ""));
         await setState(userId, "admin_inv_rename", { inventoryId });
-        await tg("sendMessage", { chat_id: chatId, text: "نام جدید کانفیگ را ارسال کنید. (برای حذف نام: -)" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ╪¼╪»█î╪» ┌⌐╪º┘å┘ü█î┌» ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». (╪¿╪▒╪º█î ╪¡╪░┘ü ┘å╪º┘à: -)" });
         return null;
     }
     if (data.startsWith("admin_available_list_")) {
@@ -14800,17 +14681,17 @@ async function handleCallback(update) {
       LIMIT 30;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "موردی برای حذف وجود ندارد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à┘ê╪▒╪»█î ╪¿╪▒╪º█î ╪¡╪░┘ü ┘ê╪¼┘ê╪» ┘å╪»╪º╪▒╪»." });
             return null;
         }
-        await tg("sendMessage", { chat_id: chatId, text: "برای حذف هر کانفیگ روی دکمه «حذف» بزنید:" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¿╪▒╪º█î ╪¡╪░┘ü ┘ç╪▒ ┌⌐╪º┘å┘ü█î┌» ╪▒┘ê█î ╪»┌⌐┘à┘ç ┬½╪¡╪░┘ü┬╗ ╪¿╪▓┘å█î╪»:" });
         for (const row of rows) {
             await tg("sendMessage", {
                 chat_id: chatId,
                 parse_mode: "HTML",
                 text: `#${row.id}\n${escapeHtml(String(row.config_value))}`,
                 reply_markup: {
-                    inline_keyboard: [[cb("🗑 حذف", `admin_delete_inventory_${row.id}`, "danger")]]
+                    inline_keyboard: [[cb("≡ƒùæ ╪¡╪░┘ü", `admin_delete_inventory_${row.id}`, "danger")]]
                 }
             });
         }
@@ -14837,28 +14718,28 @@ async function handleCallback(update) {
             await sql `UPDATE orders SET inventory_id = NULL WHERE inventory_id = ${inventoryId}`;
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "کانفیگ حذف شد ✅",
+                text: "┌⌐╪º┘å┘ü█î┌» ╪¡╪░┘ü ╪┤╪» Γ£à",
             });
         }
         catch (err) {
             logError("admin_delete_available_inventory_failed", err, { inventoryId, adminId: userId });
-            await tg("sendMessage", { chat_id: chatId, text: `❌ حذف کانفیگ با خطا مواجه شد.\n${err.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `Γ¥î ╪¡╪░┘ü ┌⌐╪º┘å┘ü█î┌» ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪».\n${err.message}` });
         }
         return null;
     }
     if (data === "admin_discounts") {
         const rows = await sql `SELECT id, code, type, amount, active, usage_limit, used_count FROM discounts ORDER BY id DESC LIMIT 30;`;
         const keyboard = rows.flatMap((d) => [
-            [cb(`${d.code} | ${d.type} ${d.amount} | مصرف ${d.used_count}/${d.usage_limit ?? "∞"}`, `admin_edit_discount_${d.id}`, "primary")],
+            [cb(`${d.code} | ${d.type} ${d.amount} | ┘à╪╡╪▒┘ü ${d.used_count}/${d.usage_limit ?? "Γê₧"}`, `admin_edit_discount_${d.id}`, "primary")],
             [
-                cb("ویرایش", `admin_edit_discount_${d.id}`, "primary"),
-                cb(d.active ? "غیرفعال" : "فعال", `admin_toggle_discount_${d.id}`, d.active ? "danger" : "success"),
-                cb("🗑 حذف", `admin_delete_discount_${d.id}`, "danger")
+                cb("┘ê█î╪▒╪º█î╪┤", `admin_edit_discount_${d.id}`, "primary"),
+                cb(d.active ? "╪║█î╪▒┘ü╪╣╪º┘ä" : "┘ü╪╣╪º┘ä", `admin_toggle_discount_${d.id}`, d.active ? "danger" : "success"),
+                cb("≡ƒùæ ╪¡╪░┘ü", `admin_delete_discount_${d.id}`, "danger")
             ]
         ]);
-        keyboard.push([cb("➕ افزودن تخفیف", "admin_add_discount", "success")]);
+        keyboard.push([cb("Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ╪¬╪«┘ü█î┘ü", "admin_add_discount", "success")]);
         keyboard.push([backButton("admin_panel")]);
-        await tg("sendMessage", { chat_id: chatId, text: "مدیریت تخفیف:", reply_markup: { inline_keyboard: keyboard } });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪»█î╪▒█î╪¬ ╪¬╪«┘ü█î┘ü:", reply_markup: { inline_keyboard: keyboard } });
         return null;
     }
     if (data === "admin_add_discount") {
@@ -14872,7 +14753,7 @@ async function handleCallback(update) {
     }
     if (data.startsWith("admin_discount_wizard_cancel_")) {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "ثبت/ویرایش تخفیف لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪½╪¿╪¬/┘ê█î╪▒╪º█î╪┤ ╪¬╪«┘ü█î┘ü ┘ä╪║┘ê ╪┤╪»." });
         return null;
     }
     if (data === "admin_discount_wizard_code_random") {
@@ -14907,31 +14788,31 @@ async function handleCallback(update) {
         const discountId = Number(data.replace("admin_delete_discount_", ""));
         try {
             await sql `DELETE FROM discounts WHERE id = ${discountId};`;
-            await tg("sendMessage", { chat_id: chatId, text: "تخفیف حذف شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪¬╪«┘ü█î┘ü ╪¡╪░┘ü ╪┤╪» Γ£à" });
         }
         catch (err) {
             logError("admin_delete_discount_failed", err, { discountId, adminId: userId });
-            await tg("sendMessage", { chat_id: chatId, text: `❌ حذف تخفیف با خطا مواجه شد.\n${err.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `Γ¥î ╪¡╪░┘ü ╪¬╪«┘ü█î┘ü ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪».\n${err.message}` });
         }
         return null;
     }
     if (data.startsWith("admin_toggle_discount_")) {
         const discountId = Number(data.replace("admin_toggle_discount_", ""));
         await sql `UPDATE discounts SET active = NOT active WHERE id = ${discountId};`;
-        await tg("sendMessage", { chat_id: chatId, text: "وضعیت تخفیف تغییر کرد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ê╪╢╪╣█î╪¬ ╪¬╪«┘ü█î┘ü ╪¬╪║█î█î╪▒ ┌⌐╪▒╪» Γ£à" });
         return null;
     }
     if (data === "admin_payment_methods") {
         const rows = await sql `SELECT code, title, active FROM payment_methods ORDER BY code ASC;`;
-        const keyboard = rows.map((m) => [cb(`${m.title} | ${m.active ? "فعال" : "غیرفعال"}`, `admin_toggle_method_${m.code}`, m.active ? "danger" : "success")]);
+        const keyboard = rows.map((m) => [cb(`${m.title} | ${m.active ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"}`, `admin_toggle_method_${m.code}`, m.active ? "danger" : "success")]);
         keyboard.push([backButton("admin_panel")]);
-        await tg("sendMessage", { chat_id: chatId, text: "مدیریت روش‌های پرداخت:", reply_markup: { inline_keyboard: keyboard } });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪»█î╪▒█î╪¬ ╪▒┘ê╪┤ΓÇî┘ç╪º█î ┘╛╪▒╪»╪º╪«╪¬:", reply_markup: { inline_keyboard: keyboard } });
         return null;
     }
     if (data.startsWith("admin_toggle_method_")) {
         const code = data.replace("admin_toggle_method_", "");
         await sql `UPDATE payment_methods SET active = NOT active WHERE code = ${code};`;
-        await tg("sendMessage", { chat_id: chatId, text: "روش پرداخت بروزرسانی شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪▒┘ê╪┤ ┘╛╪▒╪»╪º╪«╪¬ ╪¿╪▒┘ê╪▓╪▒╪│╪º┘å█î ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_cards") {
@@ -14956,23 +14837,23 @@ async function handleCallback(update) {
         const keyboard = rows.flatMap((c) => [
             [
                 {
-                    text: `${Number(c.id) === mainCardId ? "⭐ " : ""}${c.label} | ${c.card_number} | ${c.active ? "فعال" : "غیرفعال"}\n` +
-                        `فروش: ${Number(c.sold_count || 0)} | کل سفارش: ${Number(c.total_orders || 0)}`,
+                    text: `${Number(c.id) === mainCardId ? "Γ¡É " : ""}${c.label} | ${c.card_number} | ${c.active ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"}\n` +
+                        `┘ü╪▒┘ê╪┤: ${Number(c.sold_count || 0)} | ┌⌐┘ä ╪│┘ü╪º╪▒╪┤: ${Number(c.total_orders || 0)}`,
                     callback_data: `admin_edit_card_${c.id}`,
                     style: "primary"
                 }
             ],
             [
-                cb("ویرایش", `admin_edit_card_${c.id}`, "primary"),
-                cb(c.active ? "غیرفعال" : "فعال", `admin_toggle_card_${c.id}`, c.active ? "danger" : "success"),
-                cb("⭐ کارت اصلی", `admin_set_main_card_${c.id}`, "success"),
-                cb("🗑 حذف", `admin_remove_card_${c.id}`, "danger")
+                cb("┘ê█î╪▒╪º█î╪┤", `admin_edit_card_${c.id}`, "primary"),
+                cb(c.active ? "╪║█î╪▒┘ü╪╣╪º┘ä" : "┘ü╪╣╪º┘ä", `admin_toggle_card_${c.id}`, c.active ? "danger" : "success"),
+                cb("Γ¡É ┌⌐╪º╪▒╪¬ ╪º╪╡┘ä█î", `admin_set_main_card_${c.id}`, "success"),
+                cb("≡ƒùæ ╪¡╪░┘ü", `admin_remove_card_${c.id}`, "danger")
             ]
         ]);
-        keyboard.push([cb("➕ افزودن کارت", "admin_add_card", "success")]);
-        keyboard.push([cb(randomMode ? "🎲 پخش رندوم: روشن" : "🎲 پخش رندوم: خاموش", "admin_toggle_random_cards", randomMode ? "success" : "primary")]);
+        keyboard.push([cb("Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ┌⌐╪º╪▒╪¬", "admin_add_card", "success")]);
+        keyboard.push([cb(randomMode ? "≡ƒÄ▓ ┘╛╪«╪┤ ╪▒┘å╪»┘ê┘à: ╪▒┘ê╪┤┘å" : "≡ƒÄ▓ ┘╛╪«╪┤ ╪▒┘å╪»┘ê┘à: ╪«╪º┘à┘ê╪┤", "admin_toggle_random_cards", randomMode ? "success" : "primary")]);
         keyboard.push([backButton("admin_panel")]);
-        await tg("sendMessage", { chat_id: chatId, text: "مدیریت کارت‌ها:", reply_markup: { inline_keyboard: keyboard } });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪»█î╪▒█î╪¬ ┌⌐╪º╪▒╪¬ΓÇî┘ç╪º:", reply_markup: { inline_keyboard: keyboard } });
         return null;
     }
     if (data === "admin_add_card") {
@@ -14986,42 +14867,42 @@ async function handleCallback(update) {
     }
     if (data.startsWith("admin_card_wizard_cancel_")) {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "ثبت/ویرایش کارت لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪½╪¿╪¬/┘ê█î╪▒╪º█î╪┤ ┌⌐╪º╪▒╪¬ ┘ä╪║┘ê ╪┤╪»." });
         return null;
     }
     if (data.startsWith("admin_toggle_card_")) {
         const cardId = Number(data.replace("admin_toggle_card_", ""));
         await sql `UPDATE cards SET active = NOT active WHERE id = ${cardId};`;
-        await tg("sendMessage", { chat_id: chatId, text: "وضعیت کارت تغییر کرد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ê╪╢╪╣█î╪¬ ┌⌐╪º╪▒╪¬ ╪¬╪║█î█î╪▒ ┌⌐╪▒╪» Γ£à" });
         return null;
     }
     if (data.startsWith("admin_set_main_card_")) {
         const cardId = Number(data.replace("admin_set_main_card_", ""));
         const rows = await sql `SELECT id FROM cards WHERE id = ${cardId} AND active = TRUE LIMIT 1;`;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "فقط کارت فعال می‌تواند کارت اصلی باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ü┘é╪╖ ┌⌐╪º╪▒╪¬ ┘ü╪╣╪º┘ä ┘à█îΓÇî╪¬┘ê╪º┘å╪» ┌⌐╪º╪▒╪¬ ╪º╪╡┘ä█î ╪¿╪º╪┤╪»." });
             return null;
         }
         await setSetting("main_card_id", String(cardId));
-        await tg("sendMessage", { chat_id: chatId, text: "کارت اصلی تعیین شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¬ ╪º╪╡┘ä█î ╪¬╪╣█î█î┘å ╪┤╪» Γ£à" });
         return null;
     }
     if (data.startsWith("admin_remove_card_")) {
         const cardId = Number(data.replace("admin_remove_card_", ""));
         try {
             await sql `DELETE FROM cards WHERE id = ${cardId};`;
-            await tg("sendMessage", { chat_id: chatId, text: "کارت حذف شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¬ ╪¡╪░┘ü ╪┤╪» Γ£à" });
         }
         catch (err) {
             logError("admin_remove_card_failed", err, { cardId, adminId: userId });
-            await tg("sendMessage", { chat_id: chatId, text: `❌ حذف کارت با خطا مواجه شد.\n${err.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `Γ¥î ╪¡╪░┘ü ┌⌐╪º╪▒╪¬ ╪¿╪º ╪«╪╖╪º ┘à┘ê╪º╪¼┘ç ╪┤╪».\n${err.message}` });
         }
         return null;
     }
     if (data === "admin_toggle_random_cards") {
         const current = await getBoolSetting("random_card_distribution", false);
         await setSetting("random_card_distribution", (!current).toString());
-        await tg("sendMessage", { chat_id: chatId, text: `پخش رندوم کارت ${!current ? "فعال" : "غیرفعال"} شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘╛╪«╪┤ ╪▒┘å╪»┘ê┘à ┌⌐╪º╪▒╪¬ ${!current ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"} ╪┤╪» Γ£à` });
         return null;
     }
     if (data.startsWith("wallet_accept_")) {
@@ -15033,7 +14914,7 @@ async function handleCallback(update) {
       RETURNING telegram_id, amount;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "این درخواست قابل تایید نیست یا قبلاً بررسی شده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪»╪▒╪«┘ê╪º╪│╪¬ ┘é╪º╪¿┘ä ╪¬╪º█î█î╪» ┘å█î╪│╪¬ █î╪º ┘é╪¿┘ä╪º┘ï ╪¿╪▒╪▒╪│█î ╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         await sql `
@@ -15043,13 +14924,13 @@ async function handleCallback(update) {
     `;
         await sql `
       INSERT INTO wallet_transactions (telegram_id, amount, type, description)
-      VALUES (${rows[0].telegram_id}, ${rows[0].amount}, 'charge', 'شارژ از طریق کارت‌به‌کارت');
+      VALUES (${rows[0].telegram_id}, ${rows[0].amount}, 'charge', '╪┤╪º╪▒┌ÿ ╪º╪▓ ╪╖╪▒█î┘é ┌⌐╪º╪▒╪¬ΓÇî╪¿┘çΓÇî┌⌐╪º╪▒╪¬');
     `;
         await tg("sendMessage", {
             chat_id: Number(rows[0].telegram_id),
-            text: `رسید شارژ کیف پول تایید شد ✅\nمبلغ ${formatPriceToman(Number(rows[0].amount))} تومان به کیف پول شما اضافه شد.`
+            text: `╪▒╪│█î╪» ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ╪¬╪º█î█î╪» ╪┤╪» Γ£à\n┘à╪¿┘ä╪║ ${formatPriceToman(Number(rows[0].amount))} ╪¬┘ê┘à╪º┘å ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪º╪╢╪º┘ü┘ç ╪┤╪».`
         });
-        await tg("sendMessage", { chat_id: chatId, text: "رسید تایید شد و کیف پول کاربر شارژ شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪▒╪│█î╪» ╪¬╪º█î█î╪» ╪┤╪» ┘ê ┌⌐█î┘ü ┘╛┘ê┘ä ┌⌐╪º╪▒╪¿╪▒ ╪┤╪º╪▒┌ÿ ╪┤╪» Γ£à" });
         return null;
     }
     if (data.startsWith("wallet_deny_")) {
@@ -15061,18 +14942,18 @@ async function handleCallback(update) {
       RETURNING telegram_id;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "این درخواست قابل رد نیست یا قبلاً بررسی شده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪»╪▒╪«┘ê╪º╪│╪¬ ┘é╪º╪¿┘ä ╪▒╪» ┘å█î╪│╪¬ █î╪º ┘é╪¿┘ä╪º┘ï ╪¿╪▒╪▒╪│█î ╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
-        await tg("sendMessage", { chat_id: Number(rows[0].telegram_id), text: `رسید شارژ کیف پول شما رد شد ❌` });
-        await tg("sendMessage", { chat_id: chatId, text: "رد شد ✅" });
+        await tg("sendMessage", { chat_id: Number(rows[0].telegram_id), text: `╪▒╪│█î╪» ╪┤╪º╪▒┌ÿ ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪▒╪» ╪┤╪» Γ¥î` });
+        await tg("sendMessage", { chat_id: chatId, text: "╪▒╪» ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_manage_users") {
         await setState(userId, "admin_manage_users");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "لطفاً آیدی عددی (Telegram ID) یا یوزرنیم (با @ یا بدون @) کاربر موردنظر را ارسال کنید:",
+            text: "┘ä╪╖┘ü╪º┘ï ╪ó█î╪»█î ╪╣╪»╪»█î (Telegram ID) █î╪º █î┘ê╪▓╪▒┘å█î┘à (╪¿╪º @ █î╪º ╪¿╪»┘ê┘å @) ┌⌐╪º╪▒╪¿╪▒ ┘à┘ê╪▒╪»┘å╪╕╪▒ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»:",
             reply_markup: { inline_keyboard: [[backButton("admin_panel")]] }
         });
         return null;
@@ -15082,7 +14963,7 @@ async function handleCallback(update) {
         await setState(userId, "admin_wallet_add", { targetUserId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "مبلغی که می‌خواهید به کیف پول این کاربر اضافه کنید را به تومان وارد کنید:",
+            text: "┘à╪¿┘ä╪║█î ┌⌐┘ç ┘à█îΓÇî╪«┘ê╪º┘ç█î╪» ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ╪º█î┘å ┌⌐╪º╪▒╪¿╪▒ ╪º╪╢╪º┘ü┘ç ┌⌐┘å█î╪» ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ┘ê╪º╪▒╪» ┌⌐┘å█î╪»:",
             reply_markup: { inline_keyboard: [[backButton("admin_manage_users")]] }
         });
         return null;
@@ -15092,7 +14973,7 @@ async function handleCallback(update) {
         await setState(userId, "admin_wallet_sub", { targetUserId });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "مبلغی که می‌خواهید از کیف پول این کاربر کم کنید را به تومان وارد کنید:",
+            text: "┘à╪¿┘ä╪║█î ┌⌐┘ç ┘à█îΓÇî╪«┘ê╪º┘ç█î╪» ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä ╪º█î┘å ┌⌐╪º╪▒╪¿╪▒ ┌⌐┘à ┌⌐┘å█î╪» ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ┘ê╪º╪▒╪» ┌⌐┘å█î╪»:",
             reply_markup: { inline_keyboard: [[backButton("admin_manage_users")]] }
         });
         return null;
@@ -15143,27 +15024,27 @@ async function handleCallback(update) {
         const totalEarning = Math.max(0, Math.round(soldGb * productRate));
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `📊 آمار کلی (همه زمان‌ها):\n\n` +
-                `دیتای فروخته‌شده: ${totalMb}MB (${totalGb}GB)\n` +
-                `درآمد کل: ${formatPriceToman(totalEarning)} تومان\n` +
-                `کل کاربران: ${Number(m3[0].total_users || 0)}\n` +
-                `تعداد مشتریان: ${Number(m4[0].customers || 0)}\n` +
-                `دعوت‌های ثبت‌شده: ${Number(m6[0].referral_leads || 0)}\n` +
-                `دعوت‌های تاییدشده: ${Number(m6[0].referral_qualified || 0)}\n` +
-                `جوایز دعوت پرداخت‌شده: ${Number(m7[0].referral_rewards || 0)}\n` +
-                `انتقال‌های انجام‌شده: ${Number(m5[0].migrations_done || 0)}\n` +
-                `انتقال‌های در صف: ${Number(m5[0].migrations_pending || 0)}`,
+            text: `≡ƒôè ╪ó┘à╪º╪▒ ┌⌐┘ä█î (┘ç┘à┘ç ╪▓┘à╪º┘åΓÇî┘ç╪º):\n\n` +
+                `╪»█î╪¬╪º█î ┘ü╪▒┘ê╪«╪¬┘çΓÇî╪┤╪»┘ç: ${totalMb}MB (${totalGb}GB)\n` +
+                `╪»╪▒╪ó┘à╪» ┌⌐┘ä: ${formatPriceToman(totalEarning)} ╪¬┘ê┘à╪º┘å\n` +
+                `┌⌐┘ä ┌⌐╪º╪▒╪¿╪▒╪º┘å: ${Number(m3[0].total_users || 0)}\n` +
+                `╪¬╪╣╪»╪º╪» ┘à╪┤╪¬╪▒█î╪º┘å: ${Number(m4[0].customers || 0)}\n` +
+                `╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪½╪¿╪¬ΓÇî╪┤╪»┘ç: ${Number(m6[0].referral_leads || 0)}\n` +
+                `╪»╪╣┘ê╪¬ΓÇî┘ç╪º█î ╪¬╪º█î█î╪»╪┤╪»┘ç: ${Number(m6[0].referral_qualified || 0)}\n` +
+                `╪¼┘ê╪º█î╪▓ ╪»╪╣┘ê╪¬ ┘╛╪▒╪»╪º╪«╪¬ΓÇî╪┤╪»┘ç: ${Number(m7[0].referral_rewards || 0)}\n` +
+                `╪º┘å╪¬┘é╪º┘äΓÇî┘ç╪º█î ╪º┘å╪¼╪º┘àΓÇî╪┤╪»┘ç: ${Number(m5[0].migrations_done || 0)}\n` +
+                `╪º┘å╪¬┘é╪º┘äΓÇî┘ç╪º█î ╪»╪▒ ╪╡┘ü: ${Number(m5[0].migrations_pending || 0)}`,
             reply_markup: {
                 inline_keyboard: [
                     [
-                        cb("📅 امروز", "admin_stats_period_today", "primary"),
-                        cb("📅 دیروز", "admin_stats_period_yesterday", "primary"),
+                        cb("≡ƒôà ╪º┘à╪▒┘ê╪▓", "admin_stats_period_today", "primary"),
+                        cb("≡ƒôà ╪»█î╪▒┘ê╪▓", "admin_stats_period_yesterday", "primary"),
                     ],
                     [
-                        cb("📅 هفته اخیر", "admin_stats_period_week", "primary"),
-                        cb("📅 ماه اخیر", "admin_stats_period_month", "primary"),
+                        cb("≡ƒôà ┘ç┘ü╪¬┘ç ╪º╪«█î╪▒", "admin_stats_period_week", "primary"),
+                        cb("≡ƒôà ┘à╪º┘ç ╪º╪«█î╪▒", "admin_stats_period_month", "primary"),
                     ],
-                    [cb("👥 مشتریان هر محصول", "admin_stats_buyers", "primary")],
+                    [cb("≡ƒæÑ ┘à╪┤╪¬╪▒█î╪º┘å ┘ç╪▒ ┘à╪¡╪╡┘ê┘ä", "admin_stats_buyers", "primary")],
                     [backButton("admin_panel")]
                 ]
             }
@@ -15174,13 +15055,13 @@ async function handleCallback(update) {
         const period = data.replace("admin_stats_period_", "");
         let label = "";
         if (period === "today")
-            label = "امروز";
+            label = "╪º┘à╪▒┘ê╪▓";
         else if (period === "yesterday")
-            label = "دیروز";
+            label = "╪»█î╪▒┘ê╪▓";
         else if (period === "week")
-            label = "۷ روز اخیر";
+            label = "█╖ ╪▒┘ê╪▓ ╪º╪«█î╪▒";
         else if (period === "month")
-            label = "۳۰ روز اخیر";
+            label = "█│█░ ╪▒┘ê╪▓ ╪º╪«█î╪▒";
         else
             return null;
         const ordersStats = period === "today"
@@ -15270,38 +15151,38 @@ async function handleCallback(update) {
         const walletUsedToman = Number(stats.wallet_used_toman || 0);
         const totalRevenue = revenueToman + walletUsedToman;
         const productLines = topProducts.length
-            ? topProducts.map((p, i) => `  ${i + 1}. ${String(p.name || "-")} (${Number(p.cnt || 0)} سفارش)`).join("\n")
-            : "  —";
+            ? topProducts.map((p, i) => `  ${i + 1}. ${String(p.name || "-")} (${Number(p.cnt || 0)} ╪│┘ü╪º╪▒╪┤)`).join("\n")
+            : "  ΓÇö";
         const paymentLines = paymentMethods.length
             ? paymentMethods.map((m) => `  ${formatPaymentMethodTitle(m.payment_method)}: ${Number(m.cnt || 0)}`).join("\n")
-            : "  —";
+            : "  ΓÇö";
         const lines = [
-            `📊 آمار بازه: ${label}`,
+            `≡ƒôè ╪ó┘à╪º╪▒ ╪¿╪º╪▓┘ç: ${label}`,
             ``,
-            `💰 درآمد`,
-            `  پرداخت نقدی: ${formatPriceToman(revenueToman)} تومان`,
-            `  از کیف پول: ${formatPriceToman(walletUsedToman)} تومان`,
-            `  جمع کل: ${formatPriceToman(totalRevenue)} تومان`,
+            `≡ƒÆ░ ╪»╪▒╪ó┘à╪»`,
+            `  ┘╛╪▒╪»╪º╪«╪¬ ┘å┘é╪»█î: ${formatPriceToman(revenueToman)} ╪¬┘ê┘à╪º┘å`,
+            `  ╪º╪▓ ┌⌐█î┘ü ┘╛┘ê┘ä: ${formatPriceToman(walletUsedToman)} ╪¬┘ê┘à╪º┘å`,
+            `  ╪¼┘à╪╣ ┌⌐┘ä: ${formatPriceToman(totalRevenue)} ╪¬┘ê┘à╪º┘å`,
             ``,
-            `📦 سفارش‌ها`,
-            `  کل: ${Number(stats.total_orders || 0)}`,
-            `  موفق: ${Number(stats.successful_orders || 0)}`,
-            `  در انتظار: ${Number(stats.pending_orders || 0)}`,
-            `  رد/لغو: ${Number(stats.failed_orders || 0)}`,
+            `≡ƒôª ╪│┘ü╪º╪▒╪┤ΓÇî┘ç╪º`,
+            `  ┌⌐┘ä: ${Number(stats.total_orders || 0)}`,
+            `  ┘à┘ê┘ü┘é: ${Number(stats.successful_orders || 0)}`,
+            `  ╪»╪▒ ╪º┘å╪¬╪╕╪º╪▒: ${Number(stats.pending_orders || 0)}`,
+            `  ╪▒╪»/┘ä╪║┘ê: ${Number(stats.failed_orders || 0)}`,
             ``,
-            `📶 دیتا`,
-            `  فروش محصول: ${soldMbPeriod}MB (${(soldMbPeriod / 1024).toFixed(2)}GB)`,
-            `  افزایش دیتا: ${topupMbPeriod}MB`,
-            `  جمع: ${totalMbPeriod}MB (${(totalMbPeriod / 1024).toFixed(2)}GB)`,
+            `≡ƒô╢ ╪»█î╪¬╪º`,
+            `  ┘ü╪▒┘ê╪┤ ┘à╪¡╪╡┘ê┘ä: ${soldMbPeriod}MB (${(soldMbPeriod / 1024).toFixed(2)}GB)`,
+            `  ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º: ${topupMbPeriod}MB`,
+            `  ╪¼┘à╪╣: ${totalMbPeriod}MB (${(totalMbPeriod / 1024).toFixed(2)}GB)`,
             ``,
-            `👥 کاربران`,
-            `  مشتریان منحصربفرد: ${Number(stats.unique_customers || 0)}`,
-            `  کاربران جدید: ${Number(newUsers[0]?.cnt || 0)}`,
+            `≡ƒæÑ ┌⌐╪º╪▒╪¿╪▒╪º┘å`,
+            `  ┘à╪┤╪¬╪▒█î╪º┘å ┘à┘å╪¡╪╡╪▒╪¿┘ü╪▒╪»: ${Number(stats.unique_customers || 0)}`,
+            `  ┌⌐╪º╪▒╪¿╪▒╪º┘å ╪¼╪»█î╪»: ${Number(newUsers[0]?.cnt || 0)}`,
             ``,
-            `🏆 پرفروش‌ترین محصولات`,
+            `≡ƒÅå ┘╛╪▒┘ü╪▒┘ê╪┤ΓÇî╪¬╪▒█î┘å ┘à╪¡╪╡┘ê┘ä╪º╪¬`,
             productLines,
             ``,
-            `💳 روش‌های پرداخت`,
+            `≡ƒÆ│ ╪▒┘ê╪┤ΓÇî┘ç╪º█î ┘╛╪▒╪»╪º╪«╪¬`,
             paymentLines,
         ];
         await tg("sendMessage", {
@@ -15310,14 +15191,14 @@ async function handleCallback(update) {
             reply_markup: {
                 inline_keyboard: [
                     [
-                        cb("📅 امروز", "admin_stats_period_today", period === "today" ? "success" : "primary"),
-                        cb("📅 دیروز", "admin_stats_period_yesterday", period === "yesterday" ? "success" : "primary"),
+                        cb("≡ƒôà ╪º┘à╪▒┘ê╪▓", "admin_stats_period_today", period === "today" ? "success" : "primary"),
+                        cb("≡ƒôà ╪»█î╪▒┘ê╪▓", "admin_stats_period_yesterday", period === "yesterday" ? "success" : "primary"),
                     ],
                     [
-                        cb("📅 هفته اخیر", "admin_stats_period_week", period === "week" ? "success" : "primary"),
-                        cb("📅 ماه اخیر", "admin_stats_period_month", period === "month" ? "success" : "primary"),
+                        cb("≡ƒôà ┘ç┘ü╪¬┘ç ╪º╪«█î╪▒", "admin_stats_period_week", period === "week" ? "success" : "primary"),
+                        cb("≡ƒôà ┘à╪º┘ç ╪º╪«█î╪▒", "admin_stats_period_month", period === "month" ? "success" : "primary"),
                     ],
-                    [backButton("admin_stats", "🔙 آمار کلی")]
+                    [backButton("admin_stats", "≡ƒöÖ ╪ó┘à╪º╪▒ ┌⌐┘ä█î")]
                 ]
             }
         });
@@ -15333,11 +15214,11 @@ async function handleCallback(update) {
       GROUP BY p.id, p.name
       ORDER BY p.id ASC;
     `;
-        const keyboard = rows.map((p) => [cb(`${p.name} | مشتری: ${Number(p.buyers || 0)}`, `admin_stats_buyers_product_${p.id}`, "primary")]);
-        keyboard.push([backButton("admin_stats", "🔙 بازگشت به آمار")]);
+        const keyboard = rows.map((p) => [cb(`${p.name} | ┘à╪┤╪¬╪▒█î: ${Number(p.buyers || 0)}`, `admin_stats_buyers_product_${p.id}`, "primary")]);
+        keyboard.push([backButton("admin_stats", "≡ƒöÖ ╪¿╪º╪▓┌»╪┤╪¬ ╪¿┘ç ╪ó┘à╪º╪▒")]);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "یک محصول را انتخاب کنید:",
+            text: "█î┌⌐ ┘à╪¡╪╡┘ê┘ä ╪▒╪º ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:",
             reply_markup: { inline_keyboard: keyboard }
         });
         return null;
@@ -15346,7 +15227,7 @@ async function handleCallback(update) {
         const productId = Number(data.replace("admin_stats_buyers_product_", ""));
         const productRows = await sql `SELECT name FROM products WHERE id = ${productId} LIMIT 1;`;
         if (!productRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const rows = await sql `
@@ -15367,7 +15248,7 @@ async function handleCallback(update) {
         if (!rows.length) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `برای محصول «${productRows[0].name}» هنوز مشتری ثبت نشده است.`,
+                text: `╪¿╪▒╪º█î ┘à╪¡╪╡┘ê┘ä ┬½${productRows[0].name}┬╗ ┘ç┘å┘ê╪▓ ┘à╪┤╪¬╪▒█î ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬.`,
                 reply_markup: { inline_keyboard: [[backButton("admin_stats_buyers")]] }
             });
             return null;
@@ -15375,11 +15256,11 @@ async function handleCallback(update) {
         const lines = rows.map((r, idx) => {
             const username = r.username ? `@${String(r.username)}` : "-";
             const fullName = [r.first_name ? String(r.first_name) : "", r.last_name ? String(r.last_name) : ""].filter(Boolean).join(" ").trim() || "-";
-            return `${idx + 1}) ID: ${r.telegram_id} | ${username} | ${fullName} | خرید: ${Number(r.buy_count || 0)}`;
+            return `${idx + 1}) ID: ${r.telegram_id} | ${username} | ${fullName} | ╪«╪▒█î╪»: ${Number(r.buy_count || 0)}`;
         });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `مشتریان محصول: ${productRows[0].name}\n\n${lines.join("\n")}`,
+            text: `┘à╪┤╪¬╪▒█î╪º┘å ┘à╪¡╪╡┘ê┘ä: ${productRows[0].name}\n\n${lines.join("\n")}`,
             reply_markup: { inline_keyboard: [[backButton("admin_stats_buyers")]] }
         });
         return null;
@@ -15388,20 +15269,20 @@ async function handleCallback(update) {
         const currentAdmins = await getAdminIds();
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `ابزارهای سریع ادمین:\n\nادمین‌های فعلی: ${currentAdmins.length > 0 ? currentAdmins.join(", ") : "ندارد"}`,
+            text: `╪º╪¿╪▓╪º╪▒┘ç╪º█î ╪│╪▒█î╪╣ ╪º╪»┘à█î┘å:\n\n╪º╪»┘à█î┘åΓÇî┘ç╪º█î ┘ü╪╣┘ä█î: ${currentAdmins.length > 0 ? currentAdmins.join(", ") : "┘å╪»╪º╪▒╪»"}`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("👑 افزودن ادمین", "admin_tool_add_admin", "success"), cb("🚫 حذف ادمین", "admin_tool_remove_admin", "danger")],
-                    [cb("⛔ بن با یوزرنیم", "admin_tool_ban_username", "danger")],
-                    [cb("📢 پیام همگانی", "admin_broadcast_message", "primary")],
-                    [cb("✉️ ارسال پیام به کاربر", "admin_tool_message_user", "primary")],
-                    [cb("🔎 جستجوی شماره سفارش", "admin_tool_lookup_purchase", "primary")],
-                    [cb("🧾 جستجوی کانفیگ/UUID", "admin_tool_lookup_config", "primary")],
-                    [cb("🛠 ساخت کانفیگ سفارشی", "admin_tool_create_config", "primary")],
-                    [cb("🔎 یافتن کانفیگ‌های مرده", "admin_dead_configs", "primary")],
-                    [cb("🚫 لیست بن‌شده‌ها", "admin_banned_list_1", "primary")],
-                    [cb("🔁 انتقال مستقیم کانفیگ", "admin_tool_direct_migrate", "primary")],
-                    [cb("🧨 پاک‌سازی همه داده‌ها", "admin_reset_all_prompt", "danger")],
+                    [cb("≡ƒææ ╪º┘ü╪▓┘ê╪»┘å ╪º╪»┘à█î┘å", "admin_tool_add_admin", "success"), cb("≡ƒÜ½ ╪¡╪░┘ü ╪º╪»┘à█î┘å", "admin_tool_remove_admin", "danger")],
+                    [cb("Γ¢ö ╪¿┘å ╪¿╪º █î┘ê╪▓╪▒┘å█î┘à", "admin_tool_ban_username", "danger")],
+                    [cb("≡ƒôó ┘╛█î╪º┘à ┘ç┘à┌»╪º┘å█î", "admin_broadcast_message", "primary")],
+                    [cb("Γ£ë∩╕Å ╪º╪▒╪│╪º┘ä ┘╛█î╪º┘à ╪¿┘ç ┌⌐╪º╪▒╪¿╪▒", "admin_tool_message_user", "primary")],
+                    [cb("≡ƒöÄ ╪¼╪│╪¬╪¼┘ê█î ╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤", "admin_tool_lookup_purchase", "primary")],
+                    [cb("≡ƒº╛ ╪¼╪│╪¬╪¼┘ê█î ┌⌐╪º┘å┘ü█î┌»/UUID", "admin_tool_lookup_config", "primary")],
+                    [cb("≡ƒ¢á ╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î", "admin_tool_create_config", "primary")],
+                    [cb("≡ƒöÄ █î╪º┘ü╪¬┘å ┌⌐╪º┘å┘ü█î┌»ΓÇî┘ç╪º█î ┘à╪▒╪»┘ç", "admin_dead_configs", "primary")],
+                    [cb("≡ƒÜ½ ┘ä█î╪│╪¬ ╪¿┘åΓÇî╪┤╪»┘çΓÇî┘ç╪º", "admin_banned_list_1", "primary")],
+                    [cb("≡ƒöü ╪º┘å╪¬┘é╪º┘ä ┘à╪│╪¬┘é█î┘à ┌⌐╪º┘å┘ü█î┌»", "admin_tool_direct_migrate", "primary")],
+                    [cb("≡ƒº¿ ┘╛╪º┌⌐ΓÇî╪│╪º╪▓█î ┘ç┘à┘ç ╪»╪º╪»┘çΓÇî┘ç╪º", "admin_reset_all_prompt", "danger")],
                     [backButton("admin_panel")]
                 ]
             }
@@ -15412,7 +15293,7 @@ async function handleCallback(update) {
         await setState(userId, "admin_add_admin");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "لطفاً آیدی عددی (Telegram ID) کاربری که می‌خواهید ادمین کنید را ارسال کنید:",
+            text: "┘ä╪╖┘ü╪º┘ï ╪ó█î╪»█î ╪╣╪»╪»█î (Telegram ID) ┌⌐╪º╪▒╪¿╪▒█î ┌⌐┘ç ┘à█îΓÇî╪«┘ê╪º┘ç█î╪» ╪º╪»┘à█î┘å ┌⌐┘å█î╪» ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»:",
             reply_markup: { inline_keyboard: [[backButton("admin_tools")]] }
         });
         return null;
@@ -15428,16 +15309,16 @@ async function handleCallback(update) {
         if (removableAdmins.length === 0) {
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "هیچ ادمین قابل حذفی وجود ندارد.\n(ادمین‌های تعریف شده در ADMIN_IDS قابل حذف از اینجا نیستند)",
+                text: "┘ç█î┌å ╪º╪»┘à█î┘å ┘é╪º╪¿┘ä ╪¡╪░┘ü█î ┘ê╪¼┘ê╪» ┘å╪»╪º╪▒╪».\n(╪º╪»┘à█î┘åΓÇî┘ç╪º█î ╪¬╪╣╪▒█î┘ü ╪┤╪»┘ç ╪»╪▒ ADMIN_IDS ┘é╪º╪¿┘ä ╪¡╪░┘ü ╪º╪▓ ╪º█î┘å╪¼╪º ┘å█î╪│╪¬┘å╪»)",
                 reply_markup: { inline_keyboard: [[backButton("admin_tools")]] }
             });
             return null;
         }
-        const keyboard = removableAdmins.map(id => [cb(`حذف ${id}`, `admin_confirm_remove_admin_${id}`, "danger")]);
+        const keyboard = removableAdmins.map(id => [cb(`╪¡╪░┘ü ${id}`, `admin_confirm_remove_admin_${id}`, "danger")]);
         keyboard.push([backButton("admin_tools")]);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "کدام ادمین را می‌خواهید حذف کنید؟",
+            text: "┌⌐╪»╪º┘à ╪º╪»┘à█î┘å ╪▒╪º ┘à█îΓÇî╪«┘ê╪º┘ç█î╪» ╪¡╪░┘ü ┌⌐┘å█î╪»╪ƒ",
             reply_markup: { inline_keyboard: keyboard }
         });
         return null;
@@ -15445,7 +15326,7 @@ async function handleCallback(update) {
     if (data.startsWith("admin_confirm_remove_admin_")) {
         const adminIdToRemove = Number(data.replace("admin_confirm_remove_admin_", ""));
         if (!Number.isFinite(adminIdToRemove) || adminIdToRemove <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "آیدی نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪ó█î╪»█î ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         // Get current admin_ids from settings
@@ -15457,14 +15338,14 @@ async function handleCallback(update) {
         await setSetting("admin_ids", currentIds.join(","));
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `ادمین ${adminIdToRemove} حذف شد ✅`,
+            text: `╪º╪»┘à█î┘å ${adminIdToRemove} ╪¡╪░┘ü ╪┤╪» Γ£à`,
             reply_markup: { inline_keyboard: [[backButton("admin_tools")]] }
         });
         return null;
     }
     if (data === "admin_tool_ban_username") {
         await setState(userId, "admin_ban_username");
-        await tg("sendMessage", { chat_id: chatId, text: "یوزرنیم را با یا بدون @ ارسال کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "█î┘ê╪▓╪▒┘å█î┘à ╪▒╪º ╪¿╪º █î╪º ╪¿╪»┘ê┘å @ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
         return null;
     }
     if (data === "admin_tool_message_user") {
@@ -15475,33 +15356,33 @@ async function handleCallback(update) {
         await setState(userId, "admin_broadcast_message_wizard", { step: "compose" });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "پیام همگانی\n\nمتن پیامی که می‌خواهید به همه کاربران ارسال شود را بنویسید:",
+            text: "┘╛█î╪º┘à ┘ç┘à┌»╪º┘å█î\n\n┘à╪¬┘å ┘╛█î╪º┘à█î ┌⌐┘ç ┘à█îΓÇî╪«┘ê╪º┘ç█î╪» ╪¿┘ç ┘ç┘à┘ç ┌⌐╪º╪▒╪¿╪▒╪º┘å ╪º╪▒╪│╪º┘ä ╪┤┘ê╪» ╪▒╪º ╪¿┘å┘ê█î╪│█î╪»:",
             reply_markup: { inline_keyboard: [[cancelButton("admin_broadcast_cancel")]] }
         });
         return null;
     }
     if (data === "admin_broadcast_cancel") {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "ارسال پیام همگانی لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪º╪▒╪│╪º┘ä ┘╛█î╪º┘à ┘ç┘à┌»╪º┘å█î ┘ä╪║┘ê ╪┤╪»." });
         return null;
     }
     if (data === "admin_message_user_wizard_cancel") {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "ارسال پیام لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪º╪▒╪│╪º┘ä ┘╛█î╪º┘à ┘ä╪║┘ê ╪┤╪»." });
         return null;
     }
     if (data === "admin_tool_lookup_purchase") {
         await setState(userId, "admin_lookup_purchase");
-        await tg("sendMessage", { chat_id: chatId, text: "شماره سفارش را ارسال کنید. مثال: P123... یا T123..." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». ┘à╪½╪º┘ä: P123... █î╪º T123..." });
         return null;
     }
     if (data === "admin_tool_lookup_config") {
         await setState(userId, "admin_lookup_config");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "کانفیگ کامل، UUID، نام کاربر (تلگرام یا پنل) یا نام محصول را ارسال کنید.\n" +
-                "بعد از پیدا شدن نتیجه می‌توانید از همان پیام:\n" +
-                "➕ افزودن دیتا | ♻️ ریست دیتا | 📅 تنظیم/حذف انقضا | 🚫 لغو دسترسی | 🗑 حذف کامل"
+            text: "┌⌐╪º┘å┘ü█î┌» ┌⌐╪º┘à┘ä╪î UUID╪î ┘å╪º┘à ┌⌐╪º╪▒╪¿╪▒ (╪¬┘ä┌»╪▒╪º┘à █î╪º ┘╛┘å┘ä) █î╪º ┘å╪º┘à ┘à╪¡╪╡┘ê┘ä ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n" +
+                "╪¿╪╣╪» ╪º╪▓ ┘╛█î╪»╪º ╪┤╪»┘å ┘å╪¬█î╪¼┘ç ┘à█îΓÇî╪¬┘ê╪º┘å█î╪» ╪º╪▓ ┘ç┘à╪º┘å ┘╛█î╪º┘à:\n" +
+                "Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ╪»█î╪¬╪º | ΓÖ╗∩╕Å ╪▒█î╪│╪¬ ╪»█î╪¬╪º | ≡ƒôà ╪¬┘å╪╕█î┘à/╪¡╪░┘ü ╪º┘å┘é╪╢╪º | ≡ƒÜ½ ┘ä╪║┘ê ╪»╪│╪¬╪▒╪│█î | ≡ƒùæ ╪¡╪░┘ü ┌⌐╪º┘à┘ä"
         });
         return null;
     }
@@ -15511,7 +15392,7 @@ async function handleCallback(update) {
     }
     if (data === "admin_config_builder_cancel") {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "ساخت کانفیگ سفارشی لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î ┘ä╪║┘ê ╪┤╪»." });
         return null;
     }
     if (data.startsWith("admin_config_builder_panel_")) {
@@ -15520,7 +15401,7 @@ async function handleCallback(update) {
         if (!state || state.state !== "admin_config_builder_wizard")
             return null;
         if (!Number.isFinite(panelId) || panelId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "پنل نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘╛┘å┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         const payload = {
@@ -15531,7 +15412,7 @@ async function handleCallback(update) {
         await setState(userId, "admin_config_builder_wizard", payload);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "ساخت کانفیگ سفارشی - مرحله 3 از 5\nنام ��انفیگ را بفرستید. (اختیاری)\nبرای ردشدن: -",
+            text: "╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤█î - ┘à╪▒╪¡┘ä┘ç 3 ╪º╪▓ 5\n┘å╪º┘à ∩┐╜∩┐╜╪º┘å┘ü█î┌» ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪». (╪º╪«╪¬█î╪º╪▒█î)\n╪¿╪▒╪º█î ╪▒╪»╪┤╪»┘å: -",
             reply_markup: { inline_keyboard: [[cancelButton("admin_config_builder_cancel")]] }
         });
         return null;
@@ -15539,7 +15420,7 @@ async function handleCallback(update) {
     if (data.startsWith("admin_open_purchase_")) {
         const purchaseId = data.replace("admin_open_purchase_", "").trim();
         if (!purchaseId) {
-            await tg("sendMessage", { chat_id: chatId, text: "شماره سفارش نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         await sendPurchaseLookupResult(chatId, purchaseId);
@@ -15558,7 +15439,7 @@ async function handleCallback(update) {
       LIMIT ${pageSize};
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "لیست بن‌شده‌ها خالی است.", reply_markup: { inline_keyboard: [[backButton("admin_tools")]] } });
+            await tg("sendMessage", { chat_id: chatId, text: "┘ä█î╪│╪¬ ╪¿┘åΓÇî╪┤╪»┘çΓÇî┘ç╪º ╪«╪º┘ä█î ╪º╪│╪¬.", reply_markup: { inline_keyboard: [[backButton("admin_tools")]] } });
             return null;
         }
         const lines = rows.map((r) => {
@@ -15568,17 +15449,17 @@ async function handleCallback(update) {
         });
         const keyboard = [];
         keyboard.push([
-            cb("⬅️ قبلی", `admin_banned_list_${Math.max(1, page - 1)}`, "primary"),
-            cb("بعدی ➡️", `admin_banned_list_${page + 1}`, "primary")
+            cb("Γ¼à∩╕Å ┘é╪¿┘ä█î", `admin_banned_list_${Math.max(1, page - 1)}`, "primary"),
+            cb("╪¿╪╣╪»█î Γ₧í∩╕Å", `admin_banned_list_${page + 1}`, "primary")
         ]);
-        keyboard.push([cb("🔓 آنبن کاربر", "admin_unban_prompt", "success")]);
+        keyboard.push([cb("≡ƒöô ╪ó┘å╪¿┘å ┌⌐╪º╪▒╪¿╪▒", "admin_unban_prompt", "success")]);
         keyboard.push([backButton("admin_tools")]);
-        await tg("sendMessage", { chat_id: chatId, text: `لیست بن‌شده‌ها (صفحه ${page})\n\n${lines.join("\n")}`, reply_markup: { inline_keyboard: keyboard } });
+        await tg("sendMessage", { chat_id: chatId, text: `┘ä█î╪│╪¬ ╪¿┘åΓÇî╪┤╪»┘çΓÇî┘ç╪º (╪╡┘ü╪¡┘ç ${page})\n\n${lines.join("\n")}`, reply_markup: { inline_keyboard: keyboard } });
         return null;
     }
     if (data === "admin_unban_prompt") {
         await setState(userId, "admin_unban_user");
-        await tg("sendMessage", { chat_id: chatId, text: "telegram_id کاربر را برای آنبن ارسال کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "telegram_id ┌⌐╪º╪▒╪¿╪▒ ╪▒╪º ╪¿╪▒╪º█î ╪ó┘å╪¿┘å ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
         return null;
     }
     if (data === "admin_tool_direct_migrate") {
@@ -15589,14 +15470,14 @@ async function handleCallback(update) {
         await clearState(userId);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "⚠️ هشدار پاک‌سازی کامل\n\n" +
-                "این عملیات همه داده‌های عملیاتی ربات را حذف می‌کند:\n" +
-                "کاربران، سفارش‌ها، کیف پول‌ها، محصولات، موجودی، پنل‌ها، کارت‌ها، تخفیف‌ها، تنظیمات، داده‌های دعوت و تراکنش‌ها.\n\n" +
-                "فقط داده‌های کش مثل نرخ ارز حفظ می‌شود.\n" +
-                "این عملیات قابل بازگشت نیست.",
+            text: "ΓÜá∩╕Å ┘ç╪┤╪»╪º╪▒ ┘╛╪º┌⌐ΓÇî╪│╪º╪▓█î ┌⌐╪º┘à┘ä\n\n" +
+                "╪º█î┘å ╪╣┘à┘ä█î╪º╪¬ ┘ç┘à┘ç ╪»╪º╪»┘çΓÇî┘ç╪º█î ╪╣┘à┘ä█î╪º╪¬█î ╪▒╪¿╪º╪¬ ╪▒╪º ╪¡╪░┘ü ┘à█îΓÇî┌⌐┘å╪»:\n" +
+                "┌⌐╪º╪▒╪¿╪▒╪º┘å╪î ╪│┘ü╪º╪▒╪┤ΓÇî┘ç╪º╪î ┌⌐█î┘ü ┘╛┘ê┘äΓÇî┘ç╪º╪î ┘à╪¡╪╡┘ê┘ä╪º╪¬╪î ┘à┘ê╪¼┘ê╪»█î╪î ┘╛┘å┘äΓÇî┘ç╪º╪î ┌⌐╪º╪▒╪¬ΓÇî┘ç╪º╪î ╪¬╪«┘ü█î┘üΓÇî┘ç╪º╪î ╪¬┘å╪╕█î┘à╪º╪¬╪î ╪»╪º╪»┘çΓÇî┘ç╪º█î ╪»╪╣┘ê╪¬ ┘ê ╪¬╪▒╪º┌⌐┘å╪┤ΓÇî┘ç╪º.\n\n" +
+                "┘ü┘é╪╖ ╪»╪º╪»┘çΓÇî┘ç╪º█î ┌⌐╪┤ ┘à╪½┘ä ┘å╪▒╪« ╪º╪▒╪▓ ╪¡┘ü╪╕ ┘à█îΓÇî╪┤┘ê╪».\n" +
+                "╪º█î┘å ╪╣┘à┘ä█î╪º╪¬ ┘é╪º╪¿┘ä ╪¿╪º╪▓┌»╪┤╪¬ ┘å█î╪│╪¬.",
             reply_markup: {
                 inline_keyboard: [
-                    [cb("✍️ ادامه با تایید نوشتاری", "admin_reset_all_begin", "danger")],
+                    [cb("Γ£ì∩╕Å ╪º╪»╪º┘à┘ç ╪¿╪º ╪¬╪º█î█î╪» ┘å┘ê╪┤╪¬╪º╪▒█î", "admin_reset_all_begin", "danger")],
                     [backButton("admin_tools")]
                 ]
             }
@@ -15607,15 +15488,15 @@ async function handleCallback(update) {
         await setState(userId, "admin_reset_all_data");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "برای تایید نهایی، عبارت زیر را دقیقاً ارسال کنید:\n\n" +
+            text: "╪¿╪▒╪º█î ╪¬╪º█î█î╪» ┘å┘ç╪º█î█î╪î ╪╣╪¿╪º╪▒╪¬ ╪▓█î╪▒ ╪▒╪º ╪»┘é█î┘é╪º┘ï ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»:\n\n" +
                 "RESET ALL DATA\n\n" +
-                "بعد از ارسال این عبارت، همه داده‌های عملیاتی حذف می‌شوند و فقط کش حفظ خواهد شد."
+                "╪¿╪╣╪» ╪º╪▓ ╪º╪▒╪│╪º┘ä ╪º█î┘å ╪╣╪¿╪º╪▒╪¬╪î ┘ç┘à┘ç ╪»╪º╪»┘çΓÇî┘ç╪º█î ╪╣┘à┘ä█î╪º╪¬█î ╪¡╪░┘ü ┘à█îΓÇî╪┤┘ê┘å╪» ┘ê ┘ü┘é╪╖ ┌⌐╪┤ ╪¡┘ü╪╕ ╪«┘ê╪º┘ç╪» ╪┤╪»."
         });
         return null;
     }
     if (data === "admin_direct_migrate_wizard_cancel") {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "انتقال مستقیم لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪º┘å╪¬┘é╪º┘ä ┘à╪│╪¬┘é█î┘à ┘ä╪║┘ê ╪┤╪»." });
         return null;
     }
     if (data.startsWith("admin_direct_migrate_panel_")) {
@@ -15627,7 +15508,7 @@ async function handleCallback(update) {
         await setState(userId, "admin_direct_migrate_wizard", payload);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "انتقال مستقیم - مرحله 3 از 4\ntelegram id کاربر مقصد را بفرستید.",
+            text: "╪º┘å╪¬┘é╪º┘ä ┘à╪│╪¬┘é█î┘à - ┘à╪▒╪¡┘ä┘ç 3 ╪º╪▓ 4\ntelegram id ┌⌐╪º╪▒╪¿╪▒ ┘à┘é╪╡╪» ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪».",
             reply_markup: { inline_keyboard: [[cancelButton("admin_direct_migrate_wizard_cancel")]] }
         });
         return null;
@@ -15658,7 +15539,7 @@ async function handleCallback(update) {
             getNumberSetting("test_config_mb"),
             getNumberSetting("test_config_hours")
         ]);
-        const wallet = walletRaw || env.BUSINESS_WALLET_ADDRESS || "تنظیم نشده";
+        const wallet = walletRaw || env.BUSINESS_WALLET_ADDRESS || "╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç";
         const topupPricePerGb = normalizePricePerGb(topupPriceRaw);
         const productPricePerGb = normalizePricePerGb(productPriceRaw, topupPricePerGb);
         const customExtraDayPriceFmt = Math.max(0, Math.round(Number(customExtraDayPrice) || 0));
@@ -15679,42 +15560,42 @@ async function handleCallback(update) {
         const bonusMax = Math.round(purchaseBonusMax ?? 10000);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `تنظیمات فعلی:\n` +
-                `پشتیبانی: ${support ? `@${support}` : "تنظیم نشده"}\n` +
-                `کیف پول مقصد: ${wallet}\n` +
-                `آدرس سایت (Callback Base): ${publicBaseUrl || "تنظیم نشده"}\n` +
-                `کلید Tronado: ${tronadoKeyMasked}\n` +
-                `کلید TetraPay: ${tetrapayKeyMasked}\n` +
-                `کلید Plisio: ${plisioKeyMasked}\n` +
-                `کلید SwapWallet: ${swapwalletKeyMasked}${swapwalletShopFmt ? ` | ${swapwalletShopFmt}` : ""}\n` +
-                `نرخ Plisio: ${plisioAutoRate ? "خودکار (USDT)" : "دستی"}\n` +
-                `حاشیه تومان/USDT: ${plisioExtra || "0"}\n` +
-                `${plisioFallback ? `نرخ دستی (fallback): ${plisioFallback}\n` : ""}` +
-                `مدیای شروع: ${startMediaTitle(startMediaKindFmt, startMediaValueFmt)}\n` +
-                `سیستم دعوت: ${referralSettings.enabled ? "فعال" : "غیرفعال"} | هر ${referralSettings.threshold} دعوت = ${describeReferralReward(referralSettings, referralProductName || null)}\n` +
-                `بینهایت سراسری: ${infiniteMode ? "روشن" : "خاموش"}\n` +
-                `قیمت افزایش هر 1GB: ${formatPriceToman(topupPricePerGb)} تومان\n` +
-                `قیمت پیشفرض هر 1GB محصول: ${formatPriceToman(productPricePerGb)} تومان\n` +
-                `قیمت هر روز (سفارشی): ${formatPriceToman(customExtraDayPriceFmt)} تومان\n` +
-                `مبلغ تصادفی خرید: ${purchaseBonusEnabled ? `✅ فعال (${formatPriceToman(bonusMin)}~${formatPriceToman(bonusMax)} تومان)` : "❌ غیرفعال"}\n` +
-                `کانفیگ تست: ${testConfigEnabled ? `✅ فعال (${Math.round(testConfigMb ?? 100)}MB | ${Math.round(testConfigHours ?? 24)} ساعت)` : "❌ غیرفعال"}`,
+            text: `╪¬┘å╪╕█î┘à╪º╪¬ ┘ü╪╣┘ä█î:\n` +
+                `┘╛╪┤╪¬█î╪¿╪º┘å█î: ${support ? `@${support}` : "╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç"}\n` +
+                `┌⌐█î┘ü ┘╛┘ê┘ä ┘à┘é╪╡╪»: ${wallet}\n` +
+                `╪ó╪»╪▒╪│ ╪│╪º█î╪¬ (Callback Base): ${publicBaseUrl || "╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç"}\n` +
+                `┌⌐┘ä█î╪» Tronado: ${tronadoKeyMasked}\n` +
+                `┌⌐┘ä█î╪» TetraPay: ${tetrapayKeyMasked}\n` +
+                `┌⌐┘ä█î╪» Plisio: ${plisioKeyMasked}\n` +
+                `┌⌐┘ä█î╪» SwapWallet: ${swapwalletKeyMasked}${swapwalletShopFmt ? ` | ${swapwalletShopFmt}` : ""}\n` +
+                `┘å╪▒╪« Plisio: ${plisioAutoRate ? "╪«┘ê╪»┌⌐╪º╪▒ (USDT)" : "╪»╪│╪¬█î"}\n` +
+                `╪¡╪º╪┤█î┘ç ╪¬┘ê┘à╪º┘å/USDT: ${plisioExtra || "0"}\n` +
+                `${plisioFallback ? `┘å╪▒╪« ╪»╪│╪¬█î (fallback): ${plisioFallback}\n` : ""}` +
+                `┘à╪»█î╪º█î ╪┤╪▒┘ê╪╣: ${startMediaTitle(startMediaKindFmt, startMediaValueFmt)}\n` +
+                `╪│█î╪│╪¬┘à ╪»╪╣┘ê╪¬: ${referralSettings.enabled ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"} | ┘ç╪▒ ${referralSettings.threshold} ╪»╪╣┘ê╪¬ = ${describeReferralReward(referralSettings, referralProductName || null)}\n` +
+                `╪¿█î┘å┘ç╪º█î╪¬ ╪│╪▒╪º╪│╪▒█î: ${infiniteMode ? "╪▒┘ê╪┤┘å" : "╪«╪º┘à┘ê╪┤"}\n` +
+                `┘é█î┘à╪¬ ╪º┘ü╪▓╪º█î╪┤ ┘ç╪▒ 1GB: ${formatPriceToman(topupPricePerGb)} ╪¬┘ê┘à╪º┘å\n` +
+                `┘é█î┘à╪¬ ┘╛█î╪┤┘ü╪▒╪╢ ┘ç╪▒ 1GB ┘à╪¡╪╡┘ê┘ä: ${formatPriceToman(productPricePerGb)} ╪¬┘ê┘à╪º┘å\n` +
+                `┘é█î┘à╪¬ ┘ç╪▒ ╪▒┘ê╪▓ (╪│┘ü╪º╪▒╪┤█î): ${formatPriceToman(customExtraDayPriceFmt)} ╪¬┘ê┘à╪º┘å\n` +
+                `┘à╪¿┘ä╪║ ╪¬╪╡╪º╪»┘ü█î ╪«╪▒█î╪»: ${purchaseBonusEnabled ? `Γ£à ┘ü╪╣╪º┘ä (${formatPriceToman(bonusMin)}~${formatPriceToman(bonusMax)} ╪¬┘ê┘à╪º┘å)` : "Γ¥î ╪║█î╪▒┘ü╪╣╪º┘ä"}\n` +
+                `┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬: ${testConfigEnabled ? `Γ£à ┘ü╪╣╪º┘ä (${Math.round(testConfigMb ?? 100)}MB | ${Math.round(testConfigHours ?? 24)} ╪│╪º╪╣╪¬)` : "Γ¥î ╪║█î╪▒┘ü╪╣╪º┘ä"}`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("📢 کانال‌های اجباری", "admin_set_mandatory_channels", "primary")],
-                    [cb("🆘 یوزرنیم پشتیبانی", "admin_set_support", "primary")],
-                    [cb("👛 کیف پول مقصد", "admin_set_wallet", "primary")],
-                    [cb("🎁 سیستم دعوت", "admin_referral_settings", "primary")],
-                    [cb("🔑 تنظیمات درگاه‌ها", "admin_gateway_settings", "primary")],
-                    [cb("🎬 مدیای شروع", "admin_start_media", "primary")],
-                    [cb("📈 قیمت افزایش هر 1GB", "admin_set_topup_price", "primary")],
-                    [cb("🏷 قیمت پیشفرض هر 1GB محصول", "admin_set_product_price", "primary")],
-                    [cb("🎛 محصول سفارشی", "admin_custom_v2ray_menu", "primary")],
-                    [cb("🎲 مبلغ تصادفی خرید", "admin_purchase_bonus_settings", "primary")],
-                    [cb("🧪 کانفیگ تست رایگان", "admin_test_config_settings", "primary")],
+                    [cb("≡ƒôó ┌⌐╪º┘å╪º┘äΓÇî┘ç╪º█î ╪º╪¼╪¿╪º╪▒█î", "admin_set_mandatory_channels", "primary")],
+                    [cb("≡ƒåÿ █î┘ê╪▓╪▒┘å█î┘à ┘╛╪┤╪¬█î╪¿╪º┘å█î", "admin_set_support", "primary")],
+                    [cb("≡ƒæ¢ ┌⌐█î┘ü ┘╛┘ê┘ä ┘à┘é╪╡╪»", "admin_set_wallet", "primary")],
+                    [cb("≡ƒÄü ╪│█î╪│╪¬┘à ╪»╪╣┘ê╪¬", "admin_referral_settings", "primary")],
+                    [cb("≡ƒöæ ╪¬┘å╪╕█î┘à╪º╪¬ ╪»╪▒┌»╪º┘çΓÇî┘ç╪º", "admin_gateway_settings", "primary")],
+                    [cb("≡ƒÄ¼ ┘à╪»█î╪º█î ╪┤╪▒┘ê╪╣", "admin_start_media", "primary")],
+                    [cb("≡ƒôê ┘é█î┘à╪¬ ╪º┘ü╪▓╪º█î╪┤ ┘ç╪▒ 1GB", "admin_set_topup_price", "primary")],
+                    [cb("≡ƒÅ╖ ┘é█î┘à╪¬ ┘╛█î╪┤┘ü╪▒╪╢ ┘ç╪▒ 1GB ┘à╪¡╪╡┘ê┘ä", "admin_set_product_price", "primary")],
+                    [cb("≡ƒÄ¢ ┘à╪¡╪╡┘ê┘ä ╪│┘ü╪º╪▒╪┤█î", "admin_custom_v2ray_menu", "primary")],
+                    [cb("≡ƒÄ▓ ┘à╪¿┘ä╪║ ╪¬╪╡╪º╪»┘ü█î ╪«╪▒█î╪»", "admin_purchase_bonus_settings", "primary")],
+                    [cb("≡ƒº¬ ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪▒╪º█î┌»╪º┘å", "admin_test_config_settings", "primary")],
                     [
-                        cb(infiniteMode ? "♾️ خاموش‌کردن حالت بینهایت" : "♾️ روشن‌کردن حالت بینهایت", "admin_toggle_global_infinite", infiniteMode ? "danger" : "success")
+                        cb(infiniteMode ? "ΓÖ╛∩╕Å ╪«╪º┘à┘ê╪┤ΓÇî┌⌐╪▒╪»┘å ╪¡╪º┘ä╪¬ ╪¿█î┘å┘ç╪º█î╪¬" : "ΓÖ╛∩╕Å ╪▒┘ê╪┤┘åΓÇî┌⌐╪▒╪»┘å ╪¡╪º┘ä╪¬ ╪¿█î┘å┘ç╪º█î╪¬", "admin_toggle_global_infinite", infiniteMode ? "danger" : "success")
                     ],
-                    [cb("💾 پشتیبان‌گیری و بازیابی داده", "admin_backup_menu", "primary")],
+                    [cb("≡ƒÆ╛ ┘╛╪┤╪¬█î╪¿╪º┘åΓÇî┌»█î╪▒█î ┘ê ╪¿╪º╪▓█î╪º╪¿█î ╪»╪º╪»┘ç", "admin_backup_menu", "primary")],
                     [backButton("admin_panel")]
                 ]
             }
@@ -15724,15 +15605,15 @@ async function handleCallback(update) {
     if (data === "admin_backup_menu") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "💾 پشتیبان‌گیری و بازیابی داده\n\n" +
-                "• پشتیبان‌گیری: تمام جداول پایگاه داده (تنظیمات، کاربران، محصولات، سفارشات و ...) را به صورت یک فایل JSON صادر می‌کند.\n" +
-                "• بازیابی: فایل JSON بکاپ را دریافت کرده و تمام داده‌ها را جایگزین می‌کند.\n\n" +
-                "⚠️ بازیابی تمام داده‌های فعلی را پاک کرده و با داده‌های بکاپ جایگزین می‌کند.",
+            text: "≡ƒÆ╛ ┘╛╪┤╪¬█î╪¿╪º┘åΓÇî┌»█î╪▒█î ┘ê ╪¿╪º╪▓█î╪º╪¿█î ╪»╪º╪»┘ç\n\n" +
+                "ΓÇó ┘╛╪┤╪¬█î╪¿╪º┘åΓÇî┌»█î╪▒█î: ╪¬┘à╪º┘à ╪¼╪»╪º┘ê┘ä ┘╛╪º█î┌»╪º┘ç ╪»╪º╪»┘ç (╪¬┘å╪╕█î┘à╪º╪¬╪î ┌⌐╪º╪▒╪¿╪▒╪º┘å╪î ┘à╪¡╪╡┘ê┘ä╪º╪¬╪î ╪│┘ü╪º╪▒╪┤╪º╪¬ ┘ê ...) ╪▒╪º ╪¿┘ç ╪╡┘ê╪▒╪¬ █î┌⌐ ┘ü╪º█î┘ä JSON ╪╡╪º╪»╪▒ ┘à█îΓÇî┌⌐┘å╪».\n" +
+                "ΓÇó ╪¿╪º╪▓█î╪º╪¿█î: ┘ü╪º█î┘ä JSON ╪¿┌⌐╪º┘╛ ╪▒╪º ╪»╪▒█î╪º┘ü╪¬ ┌⌐╪▒╪»┘ç ┘ê ╪¬┘à╪º┘à ╪»╪º╪»┘çΓÇî┘ç╪º ╪▒╪º ╪¼╪º█î┌»╪▓█î┘å ┘à█îΓÇî┌⌐┘å╪».\n\n" +
+                "ΓÜá∩╕Å ╪¿╪º╪▓█î╪º╪¿█î ╪¬┘à╪º┘à ╪»╪º╪»┘çΓÇî┘ç╪º█î ┘ü╪╣┘ä█î ╪▒╪º ┘╛╪º┌⌐ ┌⌐╪▒╪»┘ç ┘ê ╪¿╪º ╪»╪º╪»┘çΓÇî┘ç╪º█î ╪¿┌⌐╪º┘╛ ╪¼╪º█î┌»╪▓█î┘å ┘à█îΓÇî┌⌐┘å╪».",
             reply_markup: {
                 inline_keyboard: [
-                    [cb("📤 گرفتن بکاپ الان", "admin_trigger_backup", "success")],
-                    [cb("📥 بازیابی از فایل بکاپ", "admin_trigger_restore", "danger")],
-                    [cb("تنظیمات پینگچی (Pingchi)", "admin_pingchi_settings", "primary")],
+                    [cb("≡ƒôñ ┌»╪▒┘ü╪¬┘å ╪¿┌⌐╪º┘╛ ╪º┘ä╪º┘å", "admin_trigger_backup", "success")],
+                    [cb("≡ƒôÑ ╪¿╪º╪▓█î╪º╪¿█î ╪º╪▓ ┘ü╪º█î┘ä ╪¿┌⌐╪º┘╛", "admin_trigger_restore", "danger")],
+                    [cb("╪¬┘å╪╕█î┘à╪º╪¬ ┘╛█î┘å┌»┌å█î (Pingchi)", "admin_pingchi_settings", "primary")],
                     [backButton("admin_settings")]
                 ]
             }
@@ -15745,12 +15626,12 @@ async function handleCallback(update) {
         const link = `${callbackBase}/backup.html?token=${encodeURIComponent(token)}`;
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `💾 پشتیبان‌گیری از ربات\n\n` +
-                `روی لینک زیر کلیک کنید تا صفحه بکاپ باز شود.\n` +
-                `در آن صفحه دکمه 📥 Download Backup را بزنید.\n\n` +
-                `این لینک تا ۲ ساعت معتبر است:\n\n` +
+            text: `≡ƒÆ╛ ┘╛╪┤╪¬█î╪¿╪º┘åΓÇî┌»█î╪▒█î ╪º╪▓ ╪▒╪¿╪º╪¬\n\n` +
+                `╪▒┘ê█î ┘ä█î┘å┌⌐ ╪▓█î╪▒ ┌⌐┘ä█î┌⌐ ┌⌐┘å█î╪» ╪¬╪º ╪╡┘ü╪¡┘ç ╪¿┌⌐╪º┘╛ ╪¿╪º╪▓ ╪┤┘ê╪».\n` +
+                `╪»╪▒ ╪ó┘å ╪╡┘ü╪¡┘ç ╪»┌⌐┘à┘ç ≡ƒôÑ Download Backup ╪▒╪º ╪¿╪▓┘å█î╪».\n\n` +
+                `╪º█î┘å ┘ä█î┘å┌⌐ ╪¬╪º █▓ ╪│╪º╪╣╪¬ ┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬:\n\n` +
                 `<code>${escapeHtml(link)}</code>\n\n` +
-                `نکته: بکاپ جدول به جدول دریافت می‌شود تا از تایم‌اوت جلوگیری شود.`,
+                `┘å┌⌐╪¬┘ç: ╪¿┌⌐╪º┘╛ ╪¼╪»┘ê┘ä ╪¿┘ç ╪¼╪»┘ê┘ä ╪»╪▒█î╪º┘ü╪¬ ┘à█îΓÇî╪┤┘ê╪» ╪¬╪º ╪º╪▓ ╪¬╪º█î┘àΓÇî╪º┘ê╪¬ ╪¼┘ä┘ê┌»█î╪▒█î ╪┤┘ê╪».`,
             parse_mode: "HTML",
             reply_markup: {
                 inline_keyboard: [[backButton("admin_backup_menu")]]
@@ -15765,32 +15646,32 @@ async function handleCallback(update) {
         await setState(userId, "admin_awaiting_restore_file");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `📥 بازیابی از بکاپ\n\n` +
-                `⚠️ این عملیات تمام داده‌های فعلی را پاک کرده و با داده‌های بکاپ جایگزین می‌کند.\n\n` +
-                `گزینه ۱ — صفحه وب (توصیه شده):\n<code>${escapeHtml(link)}</code>\n\n` +
-                `گزینه ۲ — ارسال فایل JSON بکاپ مستقیم در همین چت\n` +
-                `- = لغو`,
+            text: `≡ƒôÑ ╪¿╪º╪▓█î╪º╪¿█î ╪º╪▓ ╪¿┌⌐╪º┘╛\n\n` +
+                `ΓÜá∩╕Å ╪º█î┘å ╪╣┘à┘ä█î╪º╪¬ ╪¬┘à╪º┘à ╪»╪º╪»┘çΓÇî┘ç╪º█î ┘ü╪╣┘ä█î ╪▒╪º ┘╛╪º┌⌐ ┌⌐╪▒╪»┘ç ┘ê ╪¿╪º ╪»╪º╪»┘çΓÇî┘ç╪º█î ╪¿┌⌐╪º┘╛ ╪¼╪º█î┌»╪▓█î┘å ┘à█îΓÇî┌⌐┘å╪».\n\n` +
+                `┌»╪▓█î┘å┘ç █▒ ΓÇö ╪╡┘ü╪¡┘ç ┘ê╪¿ (╪¬┘ê╪╡█î┘ç ╪┤╪»┘ç):\n<code>${escapeHtml(link)}</code>\n\n` +
+                `┌»╪▓█î┘å┘ç █▓ ΓÇö ╪º╪▒╪│╪º┘ä ┘ü╪º█î┘ä JSON ╪¿┌⌐╪º┘╛ ┘à╪│╪¬┘é█î┘à ╪»╪▒ ┘ç┘à█î┘å ┌å╪¬\n` +
+                `- = ┘ä╪║┘ê`,
             parse_mode: "HTML",
             reply_markup: {
-                inline_keyboard: [[{ text: "❌ لغو", callback_data: "admin_cancel_restore" }]]
+                inline_keyboard: [[{ text: "Γ¥î ┘ä╪║┘ê", callback_data: "admin_cancel_restore" }]]
             }
         });
         return null;
     }
     if (data === "admin_cancel_restore") {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "بازیابی لغو شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¿╪º╪▓█î╪º╪¿█î ┘ä╪║┘ê ╪┤╪»." });
         return null;
     }
     if (data === "admin_pingchi_settings") {
         const key = await getPingchiKey();
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `تنظیمات پینگچی (Pingchi)\n\nکلید وب‌سرویس: ${key ? "تنظیم شده ✅" : "تنظیم نشده ❌"}\n\nاز گزینه‌های زیر استفاده کنید:`,
+            text: `╪¬┘å╪╕█î┘à╪º╪¬ ┘╛█î┘å┌»┌å█î (Pingchi)\n\n┌⌐┘ä█î╪» ┘ê╪¿ΓÇî╪│╪▒┘ê█î╪│: ${key ? "╪¬┘å╪╕█î┘à ╪┤╪»┘ç Γ£à" : "╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç Γ¥î"}\n\n╪º╪▓ ┌»╪▓█î┘å┘çΓÇî┘ç╪º█î ╪▓█î╪▒ ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å█î╪»:`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("🔑 تنظیم کلید دسترسی (API Key)", "admin_pingchi_set_key", "primary")],
-                    [cb("🗑 حذف کلید دسترسی", "admin_pingchi_clear_key", "danger")],
+                    [cb("≡ƒöæ ╪¬┘å╪╕█î┘à ┌⌐┘ä█î╪» ╪»╪│╪¬╪▒╪│█î (API Key)", "admin_pingchi_set_key", "primary")],
+                    [cb("≡ƒùæ ╪¡╪░┘ü ┌⌐┘ä█î╪» ╪»╪│╪¬╪▒╪│█î", "admin_pingchi_clear_key", "danger")],
                     [backButton("admin_settings")]
                 ]
             }
@@ -15799,12 +15680,12 @@ async function handleCallback(update) {
     }
     if (data === "admin_pingchi_clear_key") {
         await sql `DELETE FROM settings WHERE key = 'pingchi_api_key'`;
-        await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی حذف شد." });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» ╪»╪│╪¬╪▒╪│█î ┘╛█î┘å┌»┌å█î ╪¡╪░┘ü ╪┤╪»." });
         return null;
     }
     if (data === "admin_pingchi_set_key") {
         await setState(userId, "admin_pingchi_set_key");
-        await tg("sendMessage", { chat_id: chatId, text: "لطفاً کلید دسترسی (API Key) پینگچی را بفرستید:" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘ä╪╖┘ü╪º┘ï ┌⌐┘ä█î╪» ╪»╪│╪¬╪▒╪│█î (API Key) ┘╛█î┘å┌»┌å█î ╪▒╪º ╪¿┘ü╪▒╪│╪¬█î╪»:" });
         return null;
     }
     if (data === "admin_referral_settings") {
@@ -15814,45 +15695,45 @@ async function handleCallback(update) {
     if (data === "admin_toggle_referral_enabled") {
         const current = await getBoolSetting("referral_enabled", false);
         await setSetting("referral_enabled", (!current).toString());
-        await tg("sendMessage", { chat_id: chatId, text: `سیستم دعوت ${!current ? "فعال" : "غیرفعال"} شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪│█î╪│╪¬┘à ╪»╪╣┘ê╪¬ ${!current ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"} ╪┤╪» Γ£à` });
         return null;
     }
     if (data === "admin_set_referral_threshold") {
         await setState(userId, "admin_set_referral_threshold");
-        await tg("sendMessage", { chat_id: chatId, text: "تعداد دعوت لازم برای هر جایزه را ارسال کنید.\nمثال: 5" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¬╪╣╪»╪º╪» ╪»╪╣┘ê╪¬ ┘ä╪º╪▓┘à ╪¿╪▒╪º█î ┘ç╪▒ ╪¼╪º█î╪▓┘ç ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 5" });
         return null;
     }
     if (data === "admin_set_referral_wallet_amount") {
         await setState(userId, "admin_set_referral_wallet_amount");
-        await tg("sendMessage", { chat_id: chatId, text: "مبلغ جایزه کیف پول را به تومان ارسال کنید.\nمثال: 50000" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¿┘ä╪║ ╪¼╪º█î╪▓┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 50000" });
         return null;
     }
     if (data === "admin_referral_reward_wallet") {
         await setSetting("referral_reward_type", "wallet");
-        await tg("sendMessage", { chat_id: chatId, text: "نوع جایزه دعوت روی اعتبار کیف پول تنظیم شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å┘ê╪╣ ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪▒┘ê█î ╪º╪╣╪¬╪¿╪º╪▒ ┌⌐█î┘ü ┘╛┘ê┘ä ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_referral_reward_config") {
         await setSetting("referral_reward_type", "config");
-        await tg("sendMessage", { chat_id: chatId, text: "نوع جایزه دعوت روی کانفیگ تنظیم شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å┘ê╪╣ ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪▒┘ê█î ┌⌐╪º┘å┘ü█î┌» ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_referral_delivery_panel") {
         await setSetting("referral_config_delivery_mode", "panel");
-        await tg("sendMessage", { chat_id: chatId, text: "روش تحویل جایزه کانفیگ روی پنل تنظیم شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪▒┘ê╪┤ ╪¬╪¡┘ê█î┘ä ╪¼╪º█î╪▓┘ç ┌⌐╪º┘å┘ü█î┌» ╪▒┘ê█î ┘╛┘å┘ä ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_referral_delivery_storage") {
         await setSetting("referral_config_delivery_mode", "admin");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "این گزینه به حالت جدید منتقل شد ✅\nروش تحویل: دستی (اولویت انبار، در صورت خالی بودن تحویل دستی ادمین)"
+            text: "╪º█î┘å ┌»╪▓█î┘å┘ç ╪¿┘ç ╪¡╪º┘ä╪¬ ╪¼╪»█î╪» ┘à┘å╪¬┘é┘ä ╪┤╪» Γ£à\n╪▒┘ê╪┤ ╪¬╪¡┘ê█î┘ä: ╪»╪│╪¬█î (╪º┘ê┘ä┘ê█î╪¬ ╪º┘å╪¿╪º╪▒╪î ╪»╪▒ ╪╡┘ê╪▒╪¬ ╪«╪º┘ä█î ╪¿┘ê╪»┘å ╪¬╪¡┘ê█î┘ä ╪»╪│╪¬█î ╪º╪»┘à█î┘å)"
         });
         return null;
     }
     if (data === "admin_referral_delivery_admin") {
         await setSetting("referral_config_delivery_mode", "admin");
-        await tg("sendMessage", { chat_id: chatId, text: "روش تحویل جایزه کانفیگ روی تحویل دستی ادمین تنظیم شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪▒┘ê╪┤ ╪¬╪¡┘ê█î┘ä ╪¼╪º█î╪▓┘ç ┌⌐╪º┘å┘ü█î┌» ╪▒┘ê█î ╪¬╪¡┘ê█î┘ä ╪»╪│╪¬█î ╪º╪»┘à█î┘å ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_referral_pick_product") {
@@ -15861,19 +15742,19 @@ async function handleCallback(update) {
     }
     if (data === "admin_referral_clear_product") {
         await setSetting("referral_reward_product_id", "");
-        await tg("sendMessage", { chat_id: chatId, text: "محصول جایزه دعوت پاک شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
         return null;
     }
     if (data.startsWith("admin_referral_product_")) {
         const productId = Number(data.replace("admin_referral_product_", ""));
         const rows = await sql `SELECT name FROM products WHERE id = ${productId} LIMIT 1;`;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول موردنظر پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ┘à┘ê╪▒╪»┘å╪╕╪▒ ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         await setSetting("referral_reward_type", "config");
         await setSetting("referral_reward_product_id", String(productId));
-        await tg("sendMessage", { chat_id: chatId, text: `محصول جایزه دعوت تنظیم شد ✅\n${String(rows[0].name)}` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘à╪¡╪╡┘ê┘ä ╪¼╪º█î╪▓┘ç ╪»╪╣┘ê╪¬ ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à\n${String(rows[0].name)}` });
         return null;
     }
     if (data === "admin_start_media") {
@@ -15884,17 +15765,17 @@ async function handleCallback(update) {
             : "none";
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `🎬 مدیای شروع\n\n` +
-                `وضعیت فعلی: ${startMediaTitle(kind, value)}\n\n` +
-                `نکته: این مدیا فقط هنگام /start قبل از منوی اصلی ارسال می‌شود.`,
+            text: `≡ƒÄ¼ ┘à╪»█î╪º█î ╪┤╪▒┘ê╪╣\n\n` +
+                `┘ê╪╢╪╣█î╪¬ ┘ü╪╣┘ä█î: ${startMediaTitle(kind, value)}\n\n` +
+                `┘å┌⌐╪¬┘ç: ╪º█î┘å ┘à╪»█î╪º ┘ü┘é╪╖ ┘ç┘å┌»╪º┘à /start ┘é╪¿┘ä ╪º╪▓ ┘à┘å┘ê█î ╪º╪╡┘ä█î ╪º╪▒╪│╪º┘ä ┘à█îΓÇî╪┤┘ê╪».`,
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "🙂 ایموجی/متن", callback_data: "admin_start_media_set_text" }],
-                    [{ text: "🧩 استیکر", callback_data: "admin_start_media_set_sticker" }],
-                    [{ text: "🎞 گیف", callback_data: "admin_start_media_set_animation" }],
-                    [{ text: "🖼 عکس", callback_data: "admin_start_media_set_photo" }],
-                    [{ text: "🚫 خاموش", callback_data: "admin_start_media_disable" }],
-                    [{ text: "🔙 بازگشت", callback_data: "admin_settings" }]
+                    [{ text: "≡ƒÖé ╪º█î┘à┘ê╪¼█î/┘à╪¬┘å", callback_data: "admin_start_media_set_text" }],
+                    [{ text: "≡ƒº⌐ ╪º╪│╪¬█î┌⌐╪▒", callback_data: "admin_start_media_set_sticker" }],
+                    [{ text: "≡ƒÄ₧ ┌»█î┘ü", callback_data: "admin_start_media_set_animation" }],
+                    [{ text: "≡ƒû╝ ╪╣┌⌐╪│", callback_data: "admin_start_media_set_photo" }],
+                    [{ text: "≡ƒÜ½ ╪«╪º┘à┘ê╪┤", callback_data: "admin_start_media_disable" }],
+                    [{ text: "≡ƒöÖ ╪¿╪º╪▓┌»╪┤╪¬", callback_data: "admin_settings" }]
                 ]
             }
         });
@@ -15918,28 +15799,28 @@ async function handleCallback(update) {
         const sellMode = productRows.length ? parseSellMode(String(productRows[0].sell_mode || "")) : "manual";
         const isActive = productRows.length ? Boolean(productRows[0].is_active) : false;
         const keyboard = [];
-        keyboard.push([cb(enabled ? "🚫 خاموش‌کردن سفارشی" : "✅ روشن‌کردن سفارشی", "admin_custom_v2ray_toggle", enabled ? "danger" : "success")]);
-        keyboard.push([cb("📅 قیمت هر روز (سفارشی)", "admin_set_custom_v2ray_extra_day", "primary")]);
+        keyboard.push([cb(enabled ? "≡ƒÜ½ ╪«╪º┘à┘ê╪┤ΓÇî┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤█î" : "Γ£à ╪▒┘ê╪┤┘åΓÇî┌⌐╪▒╪»┘å ╪│┘ü╪º╪▒╪┤█î", "admin_custom_v2ray_toggle", enabled ? "danger" : "success")]);
+        keyboard.push([cb("≡ƒôà ┘é█î┘à╪¬ ┘ç╪▒ ╪▒┘ê╪▓ (╪│┘ü╪º╪▒╪┤█î)", "admin_set_custom_v2ray_extra_day", "primary")]);
         keyboard.push([
-            cb("حداقل حجم", "admin_set_custom_v2ray_min_gb", "primary"),
-            cb("حداقل زمان", "admin_set_custom_v2ray_min_days", "primary")
+            cb("╪¡╪»╪º┘é┘ä ╪¡╪¼┘à", "admin_set_custom_v2ray_min_gb", "primary"),
+            cb("╪¡╪»╪º┘é┘ä ╪▓┘à╪º┘å", "admin_set_custom_v2ray_min_days", "primary")
         ]);
         if (productId) {
-            keyboard.push([cb("✏️ ویرایش محصول سفارشی", `admin_edit_product_${productId}`, "primary")]);
-            keyboard.push([cb(sellMode === "panel" ? "⚙️ حالت فروش: پنل" : "⚙️ حالت فروش: دستی", `admin_toggle_product_sell_mode_${productId}`, "primary")]);
-            keyboard.push([cb("🧩 تنظیم فروش پنل", `admin_configure_product_panel_${productId}`, "primary")]);
+            keyboard.push([cb("Γ£Å∩╕Å ┘ê█î╪▒╪º█î╪┤ ┘à╪¡╪╡┘ê┘ä ╪│┘ü╪º╪▒╪┤█î", `admin_edit_product_${productId}`, "primary")]);
+            keyboard.push([cb(sellMode === "panel" ? "ΓÜÖ∩╕Å ╪¡╪º┘ä╪¬ ┘ü╪▒┘ê╪┤: ┘╛┘å┘ä" : "ΓÜÖ∩╕Å ╪¡╪º┘ä╪¬ ┘ü╪▒┘ê╪┤: ╪»╪│╪¬█î", `admin_toggle_product_sell_mode_${productId}`, "primary")]);
+            keyboard.push([cb("≡ƒº⌐ ╪¬┘å╪╕█î┘à ┘ü╪▒┘ê╪┤ ┘╛┘å┘ä", `admin_configure_product_panel_${productId}`, "primary")]);
         }
         keyboard.push([backButton("admin_settings")]);
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `🎛 محصول سفارشی\n\n` +
-                `وضعیت: ${enabled ? "روشن ✅" : "خاموش 🚫"}\n` +
-                `محصول: ${productId ? `${productName} (#${productId})${!isActive ? " (مخفی)" : ""}` : "ساخته نشده"}\n` +
-                `شروع خرید: حداقل ${minGb}GB / حداقل ${minDays} روز\n` +
-                `قیمت هر 1GB: ${formatPriceToman(pricePerGb)} تومان\n` +
-                `قیمت هر روز: ${formatPriceToman(dayPrice)} تومان\n` +
-                `حداقل مبلغ شروع: ${formatPriceToman(minPrice)} تومان\n\n` +
-                `نکته: نوع تحویل (فروش از پنل یا دستی) از طریق ویرایش همین محصول تعیین می‌شود.`,
+            text: `≡ƒÄ¢ ┘à╪¡╪╡┘ê┘ä ╪│┘ü╪º╪▒╪┤█î\n\n` +
+                `┘ê╪╢╪╣█î╪¬: ${enabled ? "╪▒┘ê╪┤┘å Γ£à" : "╪«╪º┘à┘ê╪┤ ≡ƒÜ½"}\n` +
+                `┘à╪¡╪╡┘ê┘ä: ${productId ? `${productName} (#${productId})${!isActive ? " (┘à╪«┘ü█î)" : ""}` : "╪│╪º╪«╪¬┘ç ┘å╪┤╪»┘ç"}\n` +
+                `╪┤╪▒┘ê╪╣ ╪«╪▒█î╪»: ╪¡╪»╪º┘é┘ä ${minGb}GB / ╪¡╪»╪º┘é┘ä ${minDays} ╪▒┘ê╪▓\n` +
+                `┘é█î┘à╪¬ ┘ç╪▒ 1GB: ${formatPriceToman(pricePerGb)} ╪¬┘ê┘à╪º┘å\n` +
+                `┘é█î┘à╪¬ ┘ç╪▒ ╪▒┘ê╪▓: ${formatPriceToman(dayPrice)} ╪¬┘ê┘à╪º┘å\n` +
+                `╪¡╪»╪º┘é┘ä ┘à╪¿┘ä╪║ ╪┤╪▒┘ê╪╣: ${formatPriceToman(minPrice)} ╪¬┘ê┘à╪º┘å\n\n` +
+                `┘å┌⌐╪¬┘ç: ┘å┘ê╪╣ ╪¬╪¡┘ê█î┘ä (┘ü╪▒┘ê╪┤ ╪º╪▓ ┘╛┘å┘ä █î╪º ╪»╪│╪¬█î) ╪º╪▓ ╪╖╪▒█î┘é ┘ê█î╪▒╪º█î╪┤ ┘ç┘à█î┘å ┘à╪¡╪╡┘ê┘ä ╪¬╪╣█î█î┘å ┘à█îΓÇî╪┤┘ê╪».`,
             reply_markup: { inline_keyboard: keyboard }
         });
         return null;
@@ -15949,12 +15830,12 @@ async function handleCallback(update) {
         if (!current) {
             const ensured = await ensureCustomV2rayProduct();
             if (!ensured.ok) {
-                await tg("sendMessage", { chat_id: chatId, text: "خطا در ساخت/آماده‌سازی محصول سفارشی." });
+                await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪│╪º╪«╪¬/╪ó┘à╪º╪»┘çΓÇî╪│╪º╪▓█î ┘à╪¡╪╡┘ê┘ä ╪│┘ü╪º╪▒╪┤█î." });
                 return null;
             }
             await sql `UPDATE products SET is_active = TRUE WHERE id = ${ensured.productId};`;
             await setSetting("custom_v2ray_enabled", "true");
-            await tg("sendMessage", { chat_id: chatId, text: "سفارشی روشن شد ✅" });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤█î ╪▒┘ê╪┤┘å ╪┤╪» Γ£à" });
             return null;
         }
         const productId = Number((await getSetting("custom_v2ray_product_id")) || 0);
@@ -15962,30 +15843,30 @@ async function handleCallback(update) {
             await sql `UPDATE products SET is_active = FALSE WHERE id = ${productId};`;
         }
         await setSetting("custom_v2ray_enabled", "false");
-        await tg("sendMessage", { chat_id: chatId, text: "سفارشی خاموش شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤█î ╪«╪º┘à┘ê╪┤ ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_start_media_disable") {
         await setSetting("start_media_kind", "none");
         await setSetting("start_media_value", "");
-        await tg("sendMessage", { chat_id: chatId, text: "مدیای شروع خاموش شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪»█î╪º█î ╪┤╪▒┘ê╪╣ ╪«╪º┘à┘ê╪┤ ╪┤╪» Γ£à" });
         return null;
     }
     if (data.startsWith("admin_start_media_set_")) {
         const kind = data.replace("admin_start_media_set_", "").trim();
         if (kind !== "text" && kind !== "sticker" && kind !== "animation" && kind !== "photo") {
-            await tg("sendMessage", { chat_id: chatId, text: "گزینه نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌»╪▓█î┘å┘ç ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         await setState(userId, "admin_set_start_media", { kind });
         const hints = kind === "text"
-            ? "متن/ایموجی را ارسال کن.\nبرای پاک‌کردن: -"
+            ? "┘à╪¬┘å/╪º█î┘à┘ê╪¼█î ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å.\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -"
             : kind === "sticker"
-                ? "استیکر را ارسال کن.\nبرای پاک‌کردن: -"
+                ? "╪º╪│╪¬█î┌⌐╪▒ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å.\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -"
                 : kind === "animation"
-                    ? "گیف را ارسال کن.\nبرای پاک‌کردن: -"
-                    : "عکس را ارسال کن.\nبرای پاک‌کردن: -";
-        await tg("sendMessage", { chat_id: chatId, text: `🎬 تنظیم مدیای شروع\n\n${hints}` });
+                    ? "┌»█î┘ü ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å.\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -"
+                    : "╪╣┌⌐╪│ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å.\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -";
+        await tg("sendMessage", { chat_id: chatId, text: `≡ƒÄ¼ ╪¬┘å╪╕█î┘à ┘à╪»█î╪º█î ╪┤╪▒┘ê╪╣\n\n${hints}` });
         return null;
     }
     if (data === "admin_set_mandatory_channels") {
@@ -15993,23 +15874,23 @@ async function handleCallback(update) {
         const current = await getSetting("mandatory_channels");
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `لیست کانال‌های اجباری را ارسال کنید.\n\n` +
-                `هر کانال در یک خط یا جدا شده با ویرگول.\n` +
-                `مثال:\n<code>@channel1</code>\n<code>@channel2</code>\n\n` +
-                `برای غیرفعال کردن: <code>خاموش</code>\n\n` +
-                `وضعیت فعلی:\n<code>${escapeHtml(current || "خاموش")}</code>`,
+            text: `┘ä█î╪│╪¬ ┌⌐╪º┘å╪º┘äΓÇî┘ç╪º█î ╪º╪¼╪¿╪º╪▒█î ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n\n` +
+                `┘ç╪▒ ┌⌐╪º┘å╪º┘ä ╪»╪▒ █î┌⌐ ╪«╪╖ █î╪º ╪¼╪»╪º ╪┤╪»┘ç ╪¿╪º ┘ê█î╪▒┌»┘ê┘ä.\n` +
+                `┘à╪½╪º┘ä:\n<code>@channel1</code>\n<code>@channel2</code>\n\n` +
+                `╪¿╪▒╪º█î ╪║█î╪▒┘ü╪╣╪º┘ä ┌⌐╪▒╪»┘å: <code>╪«╪º┘à┘ê╪┤</code>\n\n` +
+                `┘ê╪╢╪╣█î╪¬ ┘ü╪╣┘ä█î:\n<code>${escapeHtml(current || "╪«╪º┘à┘ê╪┤")}</code>`,
             parse_mode: "HTML"
         });
         return null;
     }
     if (data === "admin_set_support") {
         await setState(userId, "admin_set_support");
-        await tg("sendMessage", { chat_id: chatId, text: "یوزرنیم پشتیبانی را بدون @ ارسال کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "█î┘ê╪▓╪▒┘å█î┘à ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪▒╪º ╪¿╪»┘ê┘å @ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
         return null;
     }
     if (data === "admin_set_wallet") {
         await setState(userId, "admin_set_wallet");
-        await tg("sendMessage", { chat_id: chatId, text: "آدرس کیف پول مقصد را ارسال کنید." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ┌⌐█î┘ü ┘╛┘ê┘ä ┘à┘é╪╡╪» ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
         return null;
     }
     if (data === "admin_gateway_settings") {
@@ -16026,31 +15907,31 @@ async function handleCallback(update) {
         const plisioFallback = (await getSetting("plisio_usdt_rate_fallback_toman")) || (await getSetting("plisio_usd_rate_toman")) || "";
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `تنظیمات درگاه‌ها:\n` +
-                `آدرس سایت (Callback Base): ${publicBaseUrl || "تنظیم نشده"}\n` +
+            text: `╪¬┘å╪╕█î┘à╪º╪¬ ╪»╪▒┌»╪º┘çΓÇî┘ç╪º:\n` +
+                `╪ó╪»╪▒╪│ ╪│╪º█î╪¬ (Callback Base): ${publicBaseUrl || "╪¬┘å╪╕█î┘à ┘å╪┤╪»┘ç"}\n` +
                 `Tronado: ${tronadoKeyMasked}\n` +
                 `TetraPay: ${tetrapayKeyMasked}\n` +
                 `Plisio: ${plisioKeyMasked}\n` +
                 `SwapWallet: ${swapwalletKeyMasked}${swapwalletShop ? ` | ${swapwalletShop}` : ""}\n` +
-                `نرخ USDT: ${usdtAutoRate ? "خودکار (CoinGecko)" : "دستی"}${usdtManual ? ` | ${usdtManual} تومان` : ""}\n` +
-                `نرخ Plisio: ${plisioAutoRate ? "خودکار (IRR→USDT)" : "دستی"}\n` +
-                `حاشیه تومان/USDT: ${plisioExtra}\n` +
-                `${plisioFallback ? `نرخ دستی (fallback): ${plisioFallback}\n` : ""}\n` +
-                `برای پاک‌کردن هر مورد: -`,
+                `┘å╪▒╪« USDT: ${usdtAutoRate ? "╪«┘ê╪»┌⌐╪º╪▒ (CoinGecko)" : "╪»╪│╪¬█î"}${usdtManual ? ` | ${usdtManual} ╪¬┘ê┘à╪º┘å` : ""}\n` +
+                `┘å╪▒╪« Plisio: ${plisioAutoRate ? "╪«┘ê╪»┌⌐╪º╪▒ (IRRΓåÆUSDT)" : "╪»╪│╪¬█î"}\n` +
+                `╪¡╪º╪┤█î┘ç ╪¬┘ê┘à╪º┘å/USDT: ${plisioExtra}\n` +
+                `${plisioFallback ? `┘å╪▒╪« ╪»╪│╪¬█î (fallback): ${plisioFallback}\n` : ""}\n` +
+                `╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å ┘ç╪▒ ┘à┘ê╪▒╪»: -`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("🌐 آدرس سایت", "admin_set_public_base_url", "primary")],
-                    [cb("🔑 کلید Tronado", "admin_set_tronado_api_key", "primary")],
-                    [cb("🔑 کلید TetraPay", "admin_set_tetrapay_api_key", "primary")],
-                    [cb("🔑 کلید Plisio", "admin_set_plisio_api_key", "primary")],
-                    [cb("🔑 کلید SwapWallet", "admin_set_swapwallet_api_key", "primary")],
-                    [cb("🏷 Shop SwapWallet", "admin_set_swapwallet_shop_username", "primary")],
-                    [cb("🪙 کیف پول‌های کریپتو", "admin_crypto_wallets", "primary")],
-                    [cb(usdtAutoRate ? "✅ نرخ خودکار USDT" : "❌ نرخ خودکار USDT", "admin_toggle_usdt_auto_rate", usdtAutoRate ? "success" : "danger")],
-                    [cb("💱 نرخ دستی USDT", "admin_set_usdt_toman_rate", "primary")],
-                    [cb(plisioAutoRate ? "✅ نرخ خودکار Plisio" : "❌ نرخ خودکار Plisio", "admin_toggle_plisio_auto_rate", plisioAutoRate ? "success" : "danger")],
-                    [cb("➕ حاشیه تومان/USDT", "admin_set_plisio_extra_toman", "primary")],
-                    [cb("🛟 نرخ دستی (fallback)", "admin_set_plisio_fallback_rate", "primary")],
+                    [cb("≡ƒîÉ ╪ó╪»╪▒╪│ ╪│╪º█î╪¬", "admin_set_public_base_url", "primary")],
+                    [cb("≡ƒöæ ┌⌐┘ä█î╪» Tronado", "admin_set_tronado_api_key", "primary")],
+                    [cb("≡ƒöæ ┌⌐┘ä█î╪» TetraPay", "admin_set_tetrapay_api_key", "primary")],
+                    [cb("≡ƒöæ ┌⌐┘ä█î╪» Plisio", "admin_set_plisio_api_key", "primary")],
+                    [cb("≡ƒöæ ┌⌐┘ä█î╪» SwapWallet", "admin_set_swapwallet_api_key", "primary")],
+                    [cb("≡ƒÅ╖ Shop SwapWallet", "admin_set_swapwallet_shop_username", "primary")],
+                    [cb("≡ƒ¬Ö ┌⌐█î┘ü ┘╛┘ê┘äΓÇî┘ç╪º█î ┌⌐╪▒█î┘╛╪¬┘ê", "admin_crypto_wallets", "primary")],
+                    [cb(usdtAutoRate ? "Γ£à ┘å╪▒╪« ╪«┘ê╪»┌⌐╪º╪▒ USDT" : "Γ¥î ┘å╪▒╪« ╪«┘ê╪»┌⌐╪º╪▒ USDT", "admin_toggle_usdt_auto_rate", usdtAutoRate ? "success" : "danger")],
+                    [cb("≡ƒÆ▒ ┘å╪▒╪« ╪»╪│╪¬█î USDT", "admin_set_usdt_toman_rate", "primary")],
+                    [cb(plisioAutoRate ? "Γ£à ┘å╪▒╪« ╪«┘ê╪»┌⌐╪º╪▒ Plisio" : "Γ¥î ┘å╪▒╪« ╪«┘ê╪»┌⌐╪º╪▒ Plisio", "admin_toggle_plisio_auto_rate", plisioAutoRate ? "success" : "danger")],
+                    [cb("Γ₧ò ╪¡╪º╪┤█î┘ç ╪¬┘ê┘à╪º┘å/USDT", "admin_set_plisio_extra_toman", "primary")],
+                    [cb("≡ƒ¢ƒ ┘å╪▒╪« ╪»╪│╪¬█î (fallback)", "admin_set_plisio_fallback_rate", "primary")],
                     [backButton("admin_settings")]
                 ]
             }
@@ -16065,25 +15946,25 @@ async function handleCallback(update) {
     `;
         const lines = wallets.map((w) => {
             const row = w;
-            const status = cryptoWalletReady(row) ? "✅" : row.active ? "⚠️" : "⛔️";
+            const status = cryptoWalletReady(row) ? "Γ£à" : row.active ? "ΓÜá∩╕Å" : "Γ¢ö∩╕Å";
             const rate = row.rate_mode === "auto"
-                ? "خودکار"
+                ? "╪«┘ê╪»┌⌐╪º╪▒"
                 : row.rate_toman_per_unit
                     ? `${formatPriceToman(Number(row.rate_toman_per_unit))} / 1`
                     : "-";
             const extra = Number(row.extra_toman_per_unit || 0);
             const extraText = extra ? ` +${formatPriceToman(extra)}` : "";
-            return `${status} ${cryptoWalletTitle(row)} | آدرس: ${shortAddr(row.address)} | نرخ: ${rate}${extraText}`;
+            return `${status} ${cryptoWalletTitle(row)} | ╪ó╪»╪▒╪│: ${shortAddr(row.address)} | ┘å╪▒╪«: ${rate}${extraText}`;
         });
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `کیف پول‌های کریپتو:\n\n${lines.length ? lines.join("\n") : "هیچ موردی ثبت نشده است."}`,
+            text: `┌⌐█î┘ü ┘╛┘ê┘äΓÇî┘ç╪º█î ┌⌐╪▒█î┘╛╪¬┘ê:\n\n${lines.length ? lines.join("\n") : "┘ç█î┌å ┘à┘ê╪▒╪»█î ╪½╪¿╪¬ ┘å╪┤╪»┘ç ╪º╪│╪¬."}`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("➕ افزودن کیف پول", "admin_crypto_wallet_add", "success")],
+                    [cb("Γ₧ò ╪º┘ü╪▓┘ê╪»┘å ┌⌐█î┘ü ┘╛┘ê┘ä", "admin_crypto_wallet_add", "success")],
                     ...wallets.slice(0, 12).map((w) => {
                         const id = Number(w.id);
-                        return [cb(`⚙️ ${String(w.currency)} (${String(w.network)})`, `admin_crypto_wallet_edit_${id}`, "primary")];
+                        return [cb(`ΓÜÖ∩╕Å ${String(w.currency)} (${String(w.network)})`, `admin_crypto_wallet_edit_${id}`, "primary")];
                     }),
                     [backButton("admin_gateway_settings")]
                 ]
@@ -16094,14 +15975,14 @@ async function handleCallback(update) {
     if (data === "admin_crypto_wallet_add") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: "کدام کیف پول را می‌خواهید اضافه کنید؟",
+            text: "┌⌐╪»╪º┘à ┌⌐█î┘ü ┘╛┘ê┘ä ╪▒╪º ┘à█îΓÇî╪«┘ê╪º┘ç█î╪» ╪º╪╢╪º┘ü┘ç ┌⌐┘å█î╪»╪ƒ",
             reply_markup: {
                 inline_keyboard: [
                     [cb("TRX (TRON)", "admin_crypto_wallet_add_trx_tron", "primary")],
                     [cb("TON (TON)", "admin_crypto_wallet_add_ton_ton", "primary")],
                     [cb("USDT (TRC20)", "admin_crypto_wallet_add_usdt_trc20", "primary")],
                     [cb("USDT (ERC20)", "admin_crypto_wallet_add_usdt_erc20", "primary")],
-                    [cb("سایر", "admin_crypto_wallet_add_other", "primary")],
+                    [cb("╪│╪º█î╪▒", "admin_crypto_wallet_add_other", "primary")],
                     [backButton("admin_crypto_wallets")]
                 ]
             }
@@ -16121,12 +16002,12 @@ async function handleCallback(update) {
     `;
         const walletId = Number(inserted[0].id);
         await setState(userId, "admin_crypto_wallet_set_address", { walletId });
-        await tg("sendMessage", { chat_id: chatId, text: `آدرس کیف پول ${currency} (${network}) را ارسال کنید.\nبرای پاک‌کردن: -` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪ó╪»╪▒╪│ ┌⌐█î┘ü ┘╛┘ê┘ä ${currency} (${network}) ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -` });
         return null;
     }
     if (data === "admin_crypto_wallet_add_other") {
         await setState(userId, "admin_crypto_wallet_add_other_currency");
-        await tg("sendMessage", { chat_id: chatId, text: "نام ارز را ارسال کنید (مثال: BTC یا LTC):" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å╪º┘à ╪º╪▒╪▓ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪» (┘à╪½╪º┘ä: BTC █î╪º LTC):" });
         return null;
     }
     if (data.startsWith("admin_crypto_wallet_edit_")) {
@@ -16138,27 +16019,27 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "کیف پول یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┌⌐█î┘ü ┘╛┘ê┘ä █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const w = rows[0];
-        const rate = w.rate_mode === "auto" ? "خودکار" : w.rate_toman_per_unit ? `${formatPriceToman(Number(w.rate_toman_per_unit))} تومان` : "-";
+        const rate = w.rate_mode === "auto" ? "╪«┘ê╪»┌⌐╪º╪▒" : w.rate_toman_per_unit ? `${formatPriceToman(Number(w.rate_toman_per_unit))} ╪¬┘ê┘à╪º┘å` : "-";
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `تنظیم کیف پول:\n` +
+            text: `╪¬┘å╪╕█î┘à ┌⌐█î┘ü ┘╛┘ê┘ä:\n` +
                 `${cryptoWalletTitle(w)}\n` +
-                `وضعیت: ${w.active ? "فعال" : "غیرفعال"}\n` +
-                `آدرس: ${w.address || "-"}\n` +
-                `نرخ: ${rate}\n` +
-                `حاشیه: ${formatPriceToman(Number(w.extra_toman_per_unit || 0))} تومان`,
+                `┘ê╪╢╪╣█î╪¬: ${w.active ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"}\n` +
+                `╪ó╪»╪▒╪│: ${w.address || "-"}\n` +
+                `┘å╪▒╪«: ${rate}\n` +
+                `╪¡╪º╪┤█î┘ç: ${formatPriceToman(Number(w.extra_toman_per_unit || 0))} ╪¬┘ê┘à╪º┘å`,
             reply_markup: {
                 inline_keyboard: [
-                    [cb("✍️ تنظیم آدرس", `admin_crypto_wallet_set_address_${walletId}`, "primary")],
-                    [cb(w.rate_mode === "auto" ? "✅ نرخ خودکار" : "❌ نرخ خودکار", `admin_crypto_wallet_toggle_auto_${walletId}`, w.rate_mode === "auto" ? "success" : "danger")],
-                    [cb("💱 تنظیم نرخ دستی", `admin_crypto_wallet_set_rate_${walletId}`, "primary")],
-                    [cb("➕ تنظیم حاشیه تومان", `admin_crypto_wallet_set_extra_${walletId}`, "primary")],
-                    [cb(w.active ? "⛔️ غیرفعال" : "✅ فعال", `admin_crypto_wallet_toggle_${walletId}`, w.active ? "danger" : "success")],
-                    [cb("🗑 حذف", `admin_crypto_wallet_delete_${walletId}`, "danger")],
+                    [cb("Γ£ì∩╕Å ╪¬┘å╪╕█î┘à ╪ó╪»╪▒╪│", `admin_crypto_wallet_set_address_${walletId}`, "primary")],
+                    [cb(w.rate_mode === "auto" ? "Γ£à ┘å╪▒╪« ╪«┘ê╪»┌⌐╪º╪▒" : "Γ¥î ┘å╪▒╪« ╪«┘ê╪»┌⌐╪º╪▒", `admin_crypto_wallet_toggle_auto_${walletId}`, w.rate_mode === "auto" ? "success" : "danger")],
+                    [cb("≡ƒÆ▒ ╪¬┘å╪╕█î┘à ┘å╪▒╪« ╪»╪│╪¬█î", `admin_crypto_wallet_set_rate_${walletId}`, "primary")],
+                    [cb("Γ₧ò ╪¬┘å╪╕█î┘à ╪¡╪º╪┤█î┘ç ╪¬┘ê┘à╪º┘å", `admin_crypto_wallet_set_extra_${walletId}`, "primary")],
+                    [cb(w.active ? "Γ¢ö∩╕Å ╪║█î╪▒┘ü╪╣╪º┘ä" : "Γ£à ┘ü╪╣╪º┘ä", `admin_crypto_wallet_toggle_${walletId}`, w.active ? "danger" : "success")],
+                    [cb("≡ƒùæ ╪¡╪░┘ü", `admin_crypto_wallet_delete_${walletId}`, "danger")],
                     [backButton("admin_crypto_wallets")]
                 ]
             }
@@ -16168,19 +16049,19 @@ async function handleCallback(update) {
     if (data.startsWith("admin_crypto_wallet_set_address_")) {
         const walletId = Number(data.replace("admin_crypto_wallet_set_address_", ""));
         await setState(userId, "admin_crypto_wallet_set_address", { walletId });
-        await tg("sendMessage", { chat_id: chatId, text: "آدرس کیف پول را ارسال کنید.\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ┌⌐█î┘ü ┘╛┘ê┘ä ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data.startsWith("admin_crypto_wallet_set_rate_")) {
         const walletId = Number(data.replace("admin_crypto_wallet_set_rate_", ""));
         await setState(userId, "admin_crypto_wallet_set_rate", { walletId });
-        await tg("sendMessage", { chat_id: chatId, text: "نرخ 1 واحد را به تومان ارسال کنید (فقط عدد).\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« 1 ┘ê╪º╪¡╪» ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪» (┘ü┘é╪╖ ╪╣╪»╪»).\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data.startsWith("admin_crypto_wallet_set_extra_")) {
         const walletId = Number(data.replace("admin_crypto_wallet_set_extra_", ""));
         await setState(userId, "admin_crypto_wallet_set_extra", { walletId });
-        await tg("sendMessage", { chat_id: chatId, text: "حاشیه تومان (برای هر 1 واحد) را ارسال کنید (فقط عدد).\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪º╪┤█î┘ç ╪¬┘ê┘à╪º┘å (╪¿╪▒╪º█î ┘ç╪▒ 1 ┘ê╪º╪¡╪») ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪» (┘ü┘é╪╖ ╪╣╪»╪»).\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data.startsWith("admin_crypto_wallet_toggle_auto_")) {
@@ -16191,109 +16072,109 @@ async function handleCallback(update) {
         const current = String(rows[0].rate_mode || "manual");
         const next = current === "auto" ? "manual" : "auto";
         await sql `UPDATE crypto_wallets SET rate_mode = ${next} WHERE id = ${walletId};`;
-        await tg("sendMessage", { chat_id: chatId, text: `نرخ ${next === "auto" ? "خودکار" : "دستی"} تنظیم شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘å╪▒╪« ${next === "auto" ? "╪«┘ê╪»┌⌐╪º╪▒" : "╪»╪│╪¬█î"} ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à` });
         return null;
     }
     if (data.startsWith("admin_crypto_wallet_toggle_")) {
         const walletId = Number(data.replace("admin_crypto_wallet_toggle_", ""));
         const rows = await sql `UPDATE crypto_wallets SET active = NOT active WHERE id = ${walletId} RETURNING active;`;
         if (rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: `وضعیت به ${rows[0].active ? "فعال" : "غیرفعال"} تغییر کرد ✅` });
+            await tg("sendMessage", { chat_id: chatId, text: `┘ê╪╢╪╣█î╪¬ ╪¿┘ç ${rows[0].active ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"} ╪¬╪║█î█î╪▒ ┌⌐╪▒╪» Γ£à` });
         }
         return null;
     }
     if (data.startsWith("admin_crypto_wallet_delete_")) {
         const walletId = Number(data.replace("admin_crypto_wallet_delete_", ""));
         await sql `DELETE FROM crypto_wallets WHERE id = ${walletId};`;
-        await tg("sendMessage", { chat_id: chatId, text: "حذف شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪░┘ü ╪┤╪» Γ£à" });
         return null;
     }
     if (data === "admin_set_public_base_url") {
         await setState(userId, "admin_set_public_base_url");
-        await tg("sendMessage", { chat_id: chatId, text: "آدرس کامل سایت را ارسال کنید. مثال: https://example.com\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪ó╪»╪▒╪│ ┌⌐╪º┘à┘ä ╪│╪º█î╪¬ ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». ┘à╪½╪º┘ä: https://example.com\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data === "admin_set_tronado_api_key") {
         await setState(userId, "admin_set_tronado_api_key");
-        await tg("sendMessage", { chat_id: chatId, text: "کلید Tronado را ارسال کنید.\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» Tronado ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data === "admin_set_tetrapay_api_key") {
         await setState(userId, "admin_set_tetrapay_api_key");
-        await tg("sendMessage", { chat_id: chatId, text: "کلید TetraPay را ارسال کنید.\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» TetraPay ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data === "admin_set_plisio_api_key") {
         await setState(userId, "admin_set_plisio_api_key");
-        await tg("sendMessage", { chat_id: chatId, text: "کلید Plisio را ارسال کنید.\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» Plisio ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data === "admin_set_swapwallet_api_key") {
         await setState(userId, "admin_set_swapwallet_api_key");
-        await tg("sendMessage", { chat_id: chatId, text: "کلید SwapWallet را ارسال کنید.\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐┘ä█î╪» SwapWallet ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪».\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data === "admin_set_swapwallet_shop_username") {
         await setState(userId, "admin_set_swapwallet_shop_username");
-        await tg("sendMessage", { chat_id: chatId, text: "username فروشگاه SwapWallet را ارسال کنید (بدون @).\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "username ┘ü╪▒┘ê╪┤┌»╪º┘ç SwapWallet ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪» (╪¿╪»┘ê┘å @).\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data === "admin_toggle_usdt_auto_rate") {
         const current = await getBoolSetting("usdt_auto_rate", true);
         await setSetting("usdt_auto_rate", (!current).toString());
-        await tg("sendMessage", { chat_id: chatId, text: `نرخ خودکار USDT ${!current ? "فعال" : "غیرفعال"} شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘å╪▒╪« ╪«┘ê╪»┌⌐╪º╪▒ USDT ${!current ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"} ╪┤╪» Γ£à` });
         return null;
     }
     if (data === "admin_set_usdt_toman_rate") {
         await setState(userId, "admin_set_usdt_toman_rate");
-        await tg("sendMessage", { chat_id: chatId, text: "نرخ 1 USDT را به تومان ارسال کنید. مثال: 460000\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« 1 USDT ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». ┘à╪½╪º┘ä: 460000\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data === "admin_toggle_plisio_auto_rate") {
         const current = await getBoolSetting("plisio_auto_rate", true);
         await setSetting("plisio_auto_rate", (!current).toString());
-        await tg("sendMessage", { chat_id: chatId, text: `نرخ خودکار Plisio ${!current ? "فعال" : "غیرفعال"} شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘å╪▒╪« ╪«┘ê╪»┌⌐╪º╪▒ Plisio ${!current ? "┘ü╪╣╪º┘ä" : "╪║█î╪▒┘ü╪╣╪º┘ä"} ╪┤╪» Γ£à` });
         return null;
     }
     if (data === "admin_set_plisio_extra_toman") {
         await setState(userId, "admin_set_plisio_extra_toman");
-        await tg("sendMessage", { chat_id: chatId, text: "حاشیه را به تومان (برای هر 1 USDT) ارسال کنید. مثال: 2000\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪º╪┤█î┘ç ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å (╪¿╪▒╪º█î ┘ç╪▒ 1 USDT) ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». ┘à╪½╪º┘ä: 2000\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data === "admin_set_plisio_fallback_rate") {
         await setState(userId, "admin_set_plisio_fallback_rate");
-        await tg("sendMessage", { chat_id: chatId, text: "نرخ دستی USDT را به تومان ارسال کنید (fallback). مثال: 65000\nبرای پاک‌کردن: -" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘å╪▒╪« ╪»╪│╪¬█î USDT ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪» (fallback). ┘à╪½╪º┘ä: 65000\n╪¿╪▒╪º█î ┘╛╪º┌⌐ΓÇî┌⌐╪▒╪»┘å: -" });
         return null;
     }
     if (data === "admin_set_topup_price") {
         await setState(userId, "admin_set_topup_price");
-        await tg("sendMessage", { chat_id: chatId, text: "قیمت هر 1GB افزایش دیتا را به تومان ارسال کنید. مثال: 500000" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘é█î┘à╪¬ ┘ç╪▒ 1GB ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». ┘à╪½╪º┘ä: 500000" });
         return null;
     }
     if (data === "admin_set_product_price") {
         await setState(userId, "admin_set_product_price");
-        await tg("sendMessage", { chat_id: chatId, text: "قیمت پیشفرض هر 1GB محصول را به تومان ارسال کنید. مثال: 500000" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘é█î┘à╪¬ ┘╛█î╪┤┘ü╪▒╪╢ ┘ç╪▒ 1GB ┘à╪¡╪╡┘ê┘ä ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». ┘à╪½╪º┘ä: 500000" });
         return null;
     }
     if (data === "admin_set_custom_v2ray_extra_day") {
         await setState(userId, "admin_set_custom_v2ray_extra_day");
-        await tg("sendMessage", { chat_id: chatId, text: "قیمت هر روز برای محصول سفارشی را به تومان ارسال کنید. مثال: 10000\nبرای خاموش: 0" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘é█î┘à╪¬ ┘ç╪▒ ╪▒┘ê╪▓ ╪¿╪▒╪º█î ┘à╪¡╪╡┘ê┘ä ╪│┘ü╪º╪▒╪┤█î ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪». ┘à╪½╪º┘ä: 10000\n╪¿╪▒╪º█î ╪«╪º┘à┘ê╪┤: 0" });
         return null;
     }
     if (data === "admin_set_custom_v2ray_min_gb") {
         await setState(userId, "admin_set_custom_v2ray_min_gb");
-        await tg("sendMessage", { chat_id: chatId, text: "حداقل حجم برای خرید کانفیگ دلخواه را وارد کنید (به گیگابایت). مثال: 1" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪»╪º┘é┘ä ╪¡╪¼┘à ╪¿╪▒╪º█î ╪«╪▒█î╪» ┌⌐╪º┘å┘ü█î┌» ╪»┘ä╪«┘ê╪º┘ç ╪▒╪º ┘ê╪º╪▒╪» ┌⌐┘å█î╪» (╪¿┘ç ┌»█î┌»╪º╪¿╪º█î╪¬). ┘à╪½╪º┘ä: 1" });
         return null;
     }
     if (data === "admin_set_custom_v2ray_min_days") {
         await setState(userId, "admin_set_custom_v2ray_min_days");
-        await tg("sendMessage", { chat_id: chatId, text: "حداقل زمان برای خرید کانفیگ دلخواه را وارد کنید (به روز). مثال: 30" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪»╪º┘é┘ä ╪▓┘à╪º┘å ╪¿╪▒╪º█î ╪«╪▒█î╪» ┌⌐╪º┘å┘ü█î┌» ╪»┘ä╪«┘ê╪º┘ç ╪▒╪º ┘ê╪º╪▒╪» ┌⌐┘å█î╪» (╪¿┘ç ╪▒┘ê╪▓). ┘à╪½╪º┘ä: 30" });
         return null;
     }
     if (data === "admin_toggle_global_infinite") {
         const current = await getBoolSetting("global_infinite_mode", false);
         await setSetting("global_infinite_mode", (!current).toString());
-        await tg("sendMessage", { chat_id: chatId, text: `حالت بینهایت سراسری ${!current ? "روشن" : "خاموش"} شد ✅` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪¡╪º┘ä╪¬ ╪¿█î┘å┘ç╪º█î╪¬ ╪│╪▒╪º╪│╪▒█î ${!current ? "╪▒┘ê╪┤┘å" : "╪«╪º┘à┘ê╪┤"} ╪┤╪» Γ£à` });
         return null;
     }
     if (data === "admin_purchase_bonus_settings") {
@@ -16303,17 +16184,17 @@ async function handleCallback(update) {
     if (data === "admin_toggle_purchase_bonus") {
         const current = await getBoolSetting("purchase_bonus_enabled", false);
         await setSetting("purchase_bonus_enabled", (!current).toString());
-        await tg("sendMessage", { chat_id: chatId, text: `جایزه تصادفی خرید ${!current ? "✅ فعال" : "❌ غیرفعال"} شد.` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪¼╪º█î╪▓┘ç ╪¬╪╡╪º╪»┘ü█î ╪«╪▒█î╪» ${!current ? "Γ£à ┘ü╪╣╪º┘ä" : "Γ¥î ╪║█î╪▒┘ü╪╣╪º┘ä"} ╪┤╪».` });
         return null;
     }
     if (data === "admin_set_purchase_bonus_min") {
         await setState(userId, "admin_set_purchase_bonus_min");
-        await tg("sendMessage", { chat_id: chatId, text: "حداقل مبلغ جایزه تصادفی را به تومان وارد کنید.\nمثال: 1000" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪»╪º┘é┘ä ┘à╪¿┘ä╪║ ╪¼╪º█î╪▓┘ç ╪¬╪╡╪º╪»┘ü█î ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ┘ê╪º╪▒╪» ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 1000" });
         return null;
     }
     if (data === "admin_set_purchase_bonus_max") {
         await setState(userId, "admin_set_purchase_bonus_max");
-        await tg("sendMessage", { chat_id: chatId, text: "حداکثر مبلغ جایزه تصادفی را به تومان وارد کنید.\nمثال: 10000" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪»╪º┌⌐╪½╪▒ ┘à╪¿┘ä╪║ ╪¼╪º█î╪▓┘ç ╪¬╪╡╪º╪»┘ü█î ╪▒╪º ╪¿┘ç ╪¬┘ê┘à╪º┘å ┘ê╪º╪▒╪» ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 10000" });
         return null;
     }
     if (data === "admin_test_config_settings") {
@@ -16323,22 +16204,22 @@ async function handleCallback(update) {
     if (data === "admin_toggle_test_config") {
         const current = await getBoolSetting("test_config_enabled", false);
         await setSetting("test_config_enabled", (!current).toString());
-        await tg("sendMessage", { chat_id: chatId, text: `کانفیگ تست ${!current ? "✅ فعال" : "❌ غیرفعال"} شد.` });
+        await tg("sendMessage", { chat_id: chatId, text: `┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ${!current ? "Γ£à ┘ü╪╣╪º┘ä" : "Γ¥î ╪║█î╪▒┘ü╪╣╪º┘ä"} ╪┤╪».` });
         return null;
     }
     if (data === "admin_set_test_config_mb") {
         await setState(userId, "admin_set_test_config_mb");
-        await tg("sendMessage", { chat_id: chatId, text: "حجم کانفیگ تست را به مگابایت وارد کنید.\nمثال: 100" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪¡╪¼┘à ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪▒╪º ╪¿┘ç ┘à┌»╪º╪¿╪º█î╪¬ ┘ê╪º╪▒╪» ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 100" });
         return null;
     }
     if (data === "admin_set_test_config_hours") {
         await setState(userId, "admin_set_test_config_hours");
-        await tg("sendMessage", { chat_id: chatId, text: "مدت زمان کانفیگ تست را به ساعت وارد کنید.\nمثال: 24" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪»╪¬ ╪▓┘à╪º┘å ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪▒╪º ╪¿┘ç ╪│╪º╪╣╪¬ ┘ê╪º╪▒╪» ┌⌐┘å█î╪».\n┘à╪½╪º┘ä: 24" });
         return null;
     }
     if (data === "admin_reset_test_configs") {
         const result = await sql `UPDATE users SET test_config_used_at = NULL WHERE test_config_used_at IS NOT NULL RETURNING telegram_id;`;
-        await tg("sendMessage", { chat_id: chatId, text: `✅ ریست انجام شد.\n${result.length} کاربر مجدداً می‌توانند کانفیگ تست دریافت کنند.` });
+        await tg("sendMessage", { chat_id: chatId, text: `Γ£à ╪▒█î╪│╪¬ ╪º┘å╪¼╪º┘à ╪┤╪».\n${result.length} ┌⌐╪º╪▒╪¿╪▒ ┘à╪¼╪»╪»╪º┘ï ┘à█îΓÇî╪¬┘ê╪º┘å┘å╪» ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪»╪▒█î╪º┘ü╪¬ ┌⌐┘å┘å╪».` });
         return null;
     }
     if (data === "admin_pick_test_config_product") {
@@ -16347,22 +16228,22 @@ async function handleCallback(update) {
     }
     if (data === "admin_test_config_clear_product") {
         await setSetting("test_config_product_id", "");
-        await tg("sendMessage", { chat_id: chatId, text: "محصول کانفیگ تست پاک شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ┘╛╪º┌⌐ ╪┤╪» Γ£à" });
         return null;
     }
     if (data.startsWith("admin_test_config_product_")) {
         const productId = Number(data.replace("admin_test_config_product_", ""));
         const rows = await sql `SELECT name, sell_mode FROM products WHERE id = ${productId} LIMIT 1;`;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "┘à╪¡╪╡┘ê┘ä ┘╛█î╪»╪º ┘å╪┤╪»." });
             return null;
         }
         if (String(rows[0].sell_mode || "") !== "panel") {
-            await tg("sendMessage", { chat_id: chatId, text: "❌ محصول انتخاب‌شده باید sell_mode = panel داشته باشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "Γ¥î ┘à╪¡╪╡┘ê┘ä ╪º┘å╪¬╪«╪º╪¿ΓÇî╪┤╪»┘ç ╪¿╪º█î╪» sell_mode = panel ╪»╪º╪┤╪¬┘ç ╪¿╪º╪┤╪»." });
             return null;
         }
         await setSetting("test_config_product_id", String(productId));
-        await tg("sendMessage", { chat_id: chatId, text: `محصول کانفیگ تست تنظیم شد ✅\n${String(rows[0].name)}` });
+        await tg("sendMessage", { chat_id: chatId, text: `┘à╪¡╪╡┘ê┘ä ┌⌐╪º┘å┘ü█î┌» ╪¬╪│╪¬ ╪¬┘å╪╕█î┘à ╪┤╪» Γ£à\n${String(rows[0].name)}` });
         return null;
     }
     if (data === "test_config_claim") {
@@ -16372,11 +16253,11 @@ async function handleCallback(update) {
     if (data.startsWith("receipt_accept_")) {
         const orderId = Number(data.replace("receipt_accept_", ""));
         if (await isRateLimited(userId, "receipt_accept", 2000)) {
-            await tg("sendMessage", { chat_id: chatId, text: "درخواست شما در حال پردازش است. لطفاً چند لحظه صبر کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪»╪▒╪«┘ê╪º╪│╪¬ ╪┤┘à╪º ╪»╪▒ ╪¡╪º┘ä ┘╛╪▒╪»╪º╪▓╪┤ ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ┌å┘å╪» ┘ä╪¡╪╕┘ç ╪╡╪¿╪▒ ┌⌐┘å█î╪»." });
             return null;
         }
         const result = await finalizeOrder(orderId, userId);
-        await tg("sendMessage", { chat_id: chatId, text: result.ok ? "سفارش تایید شد ✅" : `خطا: ${result.reason}` });
+        await tg("sendMessage", { chat_id: chatId, text: result.ok ? "╪│┘ü╪º╪▒╪┤ ╪¬╪º█î█î╪» ╪┤╪» Γ£à" : `╪«╪╖╪º: ${result.reason}` });
         return null;
     }
     if (data.startsWith("receipt_deny_")) {
@@ -16393,21 +16274,21 @@ async function handleCallback(update) {
             const order = rows[0];
             const walletUsed = Number(order.wallet_used || 0);
             if (walletUsed > 0) {
-                await refundWalletUsage(Number(order.telegram_id), walletUsed, `برگشت وجه به دلیل رد رسید سفارش ${order.purchase_id}`);
+                await refundWalletUsage(Number(order.telegram_id), walletUsed, `╪¿╪▒┌»╪┤╪¬ ┘ê╪¼┘ç ╪¿┘ç ╪»┘ä█î┘ä ╪▒╪» ╪▒╪│█î╪» ╪│┘ü╪º╪▒╪┤ ${order.purchase_id}`);
             }
-            await tg("sendMessage", { chat_id: Number(order.telegram_id), text: `رسید سفارش ${order.purchase_id} رد شد ❌` });
+            await tg("sendMessage", { chat_id: Number(order.telegram_id), text: `╪▒╪│█î╪» ╪│┘ü╪º╪▒╪┤ ${order.purchase_id} ╪▒╪» ╪┤╪» Γ¥î` });
         }
-        await tg("sendMessage", { chat_id: chatId, text: rows.length ? "رد شد ✅" : "سفارش یافت نشد یا قبلاً بررسی شده." });
+        await tg("sendMessage", { chat_id: chatId, text: rows.length ? "╪▒╪» ╪┤╪» Γ£à" : "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪» █î╪º ┘é╪¿┘ä╪º┘ï ╪¿╪▒╪▒╪│█î ╪┤╪»┘ç." });
         return null;
     }
     if (data.startsWith("crypto_accept_")) {
         const orderId = Number(data.replace("crypto_accept_", ""));
         if (await isRateLimited(userId, "crypto_accept", 2000)) {
-            await tg("sendMessage", { chat_id: chatId, text: "درخواست شما در حال پردازش است. لطفاً چند لحظه صبر کنید." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪»╪▒╪«┘ê╪º╪│╪¬ ╪┤┘à╪º ╪»╪▒ ╪¡╪º┘ä ┘╛╪▒╪»╪º╪▓╪┤ ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï ┌å┘å╪» ┘ä╪¡╪╕┘ç ╪╡╪¿╪▒ ┌⌐┘å█î╪»." });
             return null;
         }
         const result = await finalizeOrder(orderId, userId);
-        await tg("sendMessage", { chat_id: chatId, text: result.ok ? "سفارش تایید شد ✅" : `خطا: ${result.reason}` });
+        await tg("sendMessage", { chat_id: chatId, text: result.ok ? "╪│┘ü╪º╪▒╪┤ ╪¬╪º█î█î╪» ╪┤╪» Γ£à" : `╪«╪╖╪º: ${result.reason}` });
         return null;
     }
     if (data.startsWith("crypto_deny_")) {
@@ -16424,11 +16305,11 @@ async function handleCallback(update) {
             const order = rows[0];
             const walletUsed = Number(order.wallet_used || 0);
             if (walletUsed > 0) {
-                await refundWalletUsage(Number(order.telegram_id), walletUsed, `برگشت وجه به دلیل رد پرداخت کریپتو سفارش ${order.purchase_id}`);
+                await refundWalletUsage(Number(order.telegram_id), walletUsed, `╪¿╪▒┌»╪┤╪¬ ┘ê╪¼┘ç ╪¿┘ç ╪»┘ä█î┘ä ╪▒╪» ┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪▒█î┘╛╪¬┘ê ╪│┘ü╪º╪▒╪┤ ${order.purchase_id}`);
             }
-            await tg("sendMessage", { chat_id: Number(order.telegram_id), text: `پرداخت کریپتو سفارش ${order.purchase_id} رد شد ❌` });
+            await tg("sendMessage", { chat_id: Number(order.telegram_id), text: `┘╛╪▒╪»╪º╪«╪¬ ┌⌐╪▒█î┘╛╪¬┘ê ╪│┘ü╪º╪▒╪┤ ${order.purchase_id} ╪▒╪» ╪┤╪» Γ¥î` });
         }
-        await tg("sendMessage", { chat_id: chatId, text: rows.length ? "رد شد ✅" : "سفارش یافت نشد یا قبلاً بررسی شده." });
+        await tg("sendMessage", { chat_id: chatId, text: rows.length ? "╪▒╪» ╪┤╪» Γ£à" : "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪» █î╪º ┘é╪¿┘ä╪º┘ï ╪¿╪▒╪▒╪│█î ╪┤╪»┘ç." });
         return null;
     }
     if (data.startsWith("receipt_ban_")) {
@@ -16453,16 +16334,16 @@ async function handleCallback(update) {
       `;
             const walletUsed = Number(order.wallet_used || 0);
             if (walletUsed > 0) {
-                await refundWalletUsage(targetUser, walletUsed, `برگشت وجه سفارش ${order.purchase_id}`);
+                await refundWalletUsage(targetUser, walletUsed, `╪¿╪▒┌»╪┤╪¬ ┘ê╪¼┘ç ╪│┘ü╪º╪▒╪┤ ${order.purchase_id}`);
             }
             try {
-                await tg("sendMessage", { chat_id: targetUser, text: "به دلیل ارسال رسید نامعتبر، دسترسی شما مسدود شد." });
+                await tg("sendMessage", { chat_id: targetUser, text: "╪¿┘ç ╪»┘ä█î┘ä ╪º╪▒╪│╪º┘ä ╪▒╪│█î╪» ┘å╪º┘à╪╣╪¬╪¿╪▒╪î ╪»╪│╪¬╪▒╪│█î ╪┤┘à╪º ┘à╪│╪»┘ê╪» ╪┤╪»." });
             }
             catch (error) {
                 logError("ban_user_notify_failed", error, { targetUserId: targetUser, by: userId, mode: "receipt" });
             }
         }
-        await tg("sendMessage", { chat_id: chatId, text: rows.length ? "کاربر بن شد ✅" : "سفارش یافت نشد یا قابل بن نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: rows.length ? "┌⌐╪º╪▒╪¿╪▒ ╪¿┘å ╪┤╪» Γ£à" : "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪» █î╪º ┘é╪º╪¿┘ä ╪¿┘å ┘å█î╪│╪¬." });
         return null;
     }
     if (data.startsWith("crypto_ban_")) {
@@ -16487,11 +16368,11 @@ async function handleCallback(update) {
       `;
             const walletUsed = Number(order.wallet_used || 0);
             if (walletUsed > 0) {
-                await refundWalletUsage(targetUser, walletUsed, `برگشت وجه سفارش ${order.purchase_id}`);
+                await refundWalletUsage(targetUser, walletUsed, `╪¿╪▒┌»╪┤╪¬ ┘ê╪¼┘ç ╪│┘ü╪º╪▒╪┤ ${order.purchase_id}`);
             }
-            await tg("sendMessage", { chat_id: targetUser, text: "به دلیل ارسال رسید نامعتبر، دسترسی شما مسدود شد." }).catch(() => { });
+            await tg("sendMessage", { chat_id: targetUser, text: "╪¿┘ç ╪»┘ä█î┘ä ╪º╪▒╪│╪º┘ä ╪▒╪│█î╪» ┘å╪º┘à╪╣╪¬╪¿╪▒╪î ╪»╪│╪¬╪▒╪│█î ╪┤┘à╪º ┘à╪│╪»┘ê╪» ╪┤╪»." }).catch(() => { });
         }
-        await tg("sendMessage", { chat_id: chatId, text: rows.length ? "کاربر بن شد ✅" : "سفارش یافت نشد یا قابل بن نیست." });
+        await tg("sendMessage", { chat_id: chatId, text: rows.length ? "┌⌐╪º╪▒╪¿╪▒ ╪¿┘å ╪┤╪» Γ£à" : "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪» █î╪º ┘é╪º╪¿┘ä ╪¿┘å ┘å█î╪│╪¬." });
         return null;
     }
     if (data.startsWith("retry_config_")) {
@@ -16505,12 +16386,12 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!orderRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const retryOrder = orderRows[0];
         const orderStatus = String(retryOrder.status);
-        // ── Case 1: Config was already created — just resend it ──────────────────
+        // ΓöÇΓöÇ Case 1: Config was already created ΓÇö just resend it ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         if (orderStatus === "paid") {
             const invRows = await sql `
         SELECT id, config_value, delivery_payload
@@ -16519,24 +16400,24 @@ async function handleCallback(update) {
         ORDER BY id ASC;
       `;
             if (invRows.length > 0) {
-                await tg("sendMessage", { chat_id: chatId, text: "✅ کانفیگ شما قبلاً ساخته شده. در حال ارسال مجدد..." }).catch(() => { });
+                await tg("sendMessage", { chat_id: chatId, text: "Γ£à ┌⌐╪º┘å┘ü█î┌» ╪┤┘à╪º ┘é╪¿┘ä╪º┘ï ╪│╪º╪«╪¬┘ç ╪┤╪»┘ç. ╪»╪▒ ╪¡╪º┘ä ╪º╪▒╪│╪º┘ä ┘à╪¼╪»╪»..." }).catch(() => { });
                 for (let i = 0; i < invRows.length; i++) {
                     const inv = invRows[i];
                     const dp = parseDeliveryPayload(inv.delivery_payload);
                     const isLast = i === invRows.length - 1;
-                    await sendDeliveryPackage(chatId, String(retryOrder.purchase_id), String(inv.config_value ?? ""), dp, isLast ? [[{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }], [homeButton()]] : []).catch(() => { });
+                    await sendDeliveryPackage(chatId, String(retryOrder.purchase_id), String(inv.config_value ?? ""), dp, isLast ? [[{ text: "Γ₧ò ╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º", callback_data: "topup_menu" }], [homeButton()]] : []).catch(() => { });
                 }
                 return null;
             }
-            // paid but no inventory rows — fall through to retry
+            // paid but no inventory rows ΓÇö fall through to retry
         }
-        // ── Case 2: Must be awaiting_config to retry ──────────────────────────────
+        // ΓöÇΓöÇ Case 2: Must be awaiting_config to retry ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
         if (orderStatus !== "awaiting_config") {
-            await tg("sendMessage", { chat_id: chatId, text: "این سفارش دیگر در وضعیت قابل تلاش مجدد نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪│┘ü╪º╪▒╪┤ ╪»█î┌»╪▒ ╪»╪▒ ┘ê╪╢╪╣█î╪¬ ┘é╪º╪¿┘ä ╪¬┘ä╪º╪┤ ┘à╪¼╪»╪» ┘å█î╪│╪¬." });
             return null;
         }
         // Before creating a NEW config, check if provisioning already ran but timed out
-        // before delivery. If inventory rows exist, just resend and mark paid — no new panel config needed.
+        // before delivery. If inventory rows exist, just resend and mark paid ΓÇö no new panel config needed.
         const existingInv = await sql `
       SELECT id, config_value, delivery_payload
       FROM inventory
@@ -16549,18 +16430,18 @@ async function handleCallback(update) {
         SET status = 'paid', paid_at = COALESCE(paid_at, NOW())
         WHERE id = ${orderId} AND status = 'awaiting_config' AND telegram_id = ${userId};
       `;
-            await tg("sendMessage", { chat_id: chatId, text: "✅ کانفیگ شما قبلاً ساخته شده. در حال ارسال مجدد..." }).catch(() => { });
+            await tg("sendMessage", { chat_id: chatId, text: "Γ£à ┌⌐╪º┘å┘ü█î┌» ╪┤┘à╪º ┘é╪¿┘ä╪º┘ï ╪│╪º╪«╪¬┘ç ╪┤╪»┘ç. ╪»╪▒ ╪¡╪º┘ä ╪º╪▒╪│╪º┘ä ┘à╪¼╪»╪»..." }).catch(() => { });
             for (let i = 0; i < existingInv.length; i++) {
                 const inv = existingInv[i];
                 const dp = parseDeliveryPayload(inv.delivery_payload);
                 const isLast = i === existingInv.length - 1;
-                await sendDeliveryPackage(chatId, String(retryOrder.purchase_id), String(inv.config_value ?? ""), dp, isLast ? [[{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }], [homeButton()]] : []).catch(() => { });
+                await sendDeliveryPackage(chatId, String(retryOrder.purchase_id), String(inv.config_value ?? ""), dp, isLast ? [[{ text: "Γ₧ò ╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º", callback_data: "topup_menu" }], [homeButton()]] : []).catch(() => { });
             }
             return null;
         }
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `🔄 در حال تلاش مجدد برای ساخت کانفیگ سفارش ${retryOrder.purchase_id}...`
+            text: `≡ƒöä ╪»╪▒ ╪¡╪º┘ä ╪¬┘ä╪º╪┤ ┘à╪¼╪»╪» ╪¿╪▒╪º█î ╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤ ${retryOrder.purchase_id}...`
         }).catch(() => { });
         // Reset so finalizeOrder can lock it again
         await sql `
@@ -16575,14 +16456,14 @@ async function handleCallback(update) {
             new Promise((resolve) => setTimeout(() => { retryTimedOut = true; resolve({ ok: false, reason: "timeout" }); }, 24_000))
         ]);
         if (retryResult.ok || retryResult.reason === "already_paid") {
-            // Success — delivery message already sent inside finalizeOrder
+            // Success ΓÇö delivery message already sent inside finalizeOrder
             return null;
         }
         // provision_failed is already handled inside finalizeOrder with buttons
         if (!retryTimedOut && retryResult.reason === "provision_failed") {
             return null;
         }
-        // Any other failure (timeout, panel_unavailable, stock_empty…) →
+        // Any other failure (timeout, panel_unavailable, stock_emptyΓÇª) ΓåÆ
         // reset back to awaiting_config and show the two options again
         await sql `
       UPDATE orders
@@ -16593,12 +16474,12 @@ async function handleCallback(update) {
         await tg("sendMessage", {
             chat_id: chatId,
             parse_mode: "HTML",
-            text: `⚠️ تلاش مجدد برای ساخت کانفیگ سفارش <b>${escapeHtml(String(retryOrder.purchase_id))}</b> ناموفق بود.\n` +
-                `لطفاً دوباره انتخاب کنید:`,
+            text: `ΓÜá∩╕Å ╪¬┘ä╪º╪┤ ┘à╪¼╪»╪» ╪¿╪▒╪º█î ╪│╪º╪«╪¬ ┌⌐╪º┘å┘ü█î┌» ╪│┘ü╪º╪▒╪┤ <b>${escapeHtml(String(retryOrder.purchase_id))}</b> ┘å╪º┘à┘ê┘ü┘é ╪¿┘ê╪».\n` +
+                `┘ä╪╖┘ü╪º┘ï ╪»┘ê╪¿╪º╪▒┘ç ╪º┘å╪¬╪«╪º╪¿ ┌⌐┘å█î╪»:`,
             reply_markup: {
                 inline_keyboard: [
-                    [{ text: "🔄 تلاش مجدد برای دریافت کانفیگ", callback_data: `retry_config_${orderId}` }],
-                    [{ text: "💰 بازگشت وجه به کیف پول", callback_data: `refund_to_wallet_${orderId}` }]
+                    [{ text: "≡ƒöä ╪¬┘ä╪º╪┤ ┘à╪¼╪»╪» ╪¿╪▒╪º█î ╪»╪▒█î╪º┘ü╪¬ ┌⌐╪º┘å┘ü█î┌»", callback_data: `retry_config_${orderId}` }],
+                    [{ text: "≡ƒÆ░ ╪¿╪º╪▓┌»╪┤╪¬ ┘ê╪¼┘ç ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä", callback_data: `refund_to_wallet_${orderId}` }]
                 ]
             }
         }).catch(() => { });
@@ -16615,15 +16496,15 @@ async function handleCallback(update) {
       LIMIT 1;
     `;
         if (!orderRows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "سفارش یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪│┘ü╪º╪▒╪┤ █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const refundOrder = orderRows[0];
         if (String(refundOrder.status) !== "awaiting_config") {
-            await tg("sendMessage", { chat_id: chatId, text: "این سفارش قبلاً پردازش شده و قابل استرداد نیست." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┘é╪¿┘ä╪º┘ï ┘╛╪▒╪»╪º╪▓╪┤ ╪┤╪»┘ç ┘ê ┘é╪º╪¿┘ä ╪º╪│╪¬╪▒╪»╪º╪» ┘å█î╪│╪¬." });
             return null;
         }
-        // Atomically mark as cancelled — prevent double-refunds
+        // Atomically mark as cancelled ΓÇö prevent double-refunds
         const cancelled = await sql `
       UPDATE orders
       SET status = 'cancelled'
@@ -16631,7 +16512,7 @@ async function handleCallback(update) {
       RETURNING id;
     `;
         if (!cancelled.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "این سفارش قبلاً پردازش شده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪│┘ü╪º╪▒╪┤ ┘é╪¿┘ä╪º┘ï ┘╛╪▒╪»╪º╪▓╪┤ ╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         // --- Inventory cleanup ---
@@ -16662,21 +16543,21 @@ async function handleCallback(update) {
                                 ? await deleteMarzbanUser(inv, key)
                                 : await revokeSanaeiClient(inv, key);
                         }
-                        revokeResults.push(`${String(inv.panel_type)} ${key}: ${result.ok ? "✅" : "⚠️ " + String(result.message || "")}`);
+                        revokeResults.push(`${String(inv.panel_type)} ${key}: ${result.ok ? "Γ£à" : "ΓÜá∩╕Å " + String(result.message || "")}`);
                     }
                     catch (e) {
-                        revokeResults.push(`${String(inv.panel_type)} ${key}: ❌ خطا`);
+                        revokeResults.push(`${String(inv.panel_type)} ${key}: Γ¥î ╪«╪╖╪º`);
                     }
                 }
             }
-            await notifyAdmins(`⚠️ بازگشت وجه سفارش ${refundOrder.purchase_id}: ${orphanedInv.length} کانفیگ از inventory حذف و از پنل باطل شد.\n` +
-                `کاربر: ${userId}\n` +
-                (revokeResults.length ? `نتایج باطل‌سازی:\n${revokeResults.join("\n")}` : "")).catch(() => { });
+            await notifyAdmins(`ΓÜá∩╕Å ╪¿╪º╪▓┌»╪┤╪¬ ┘ê╪¼┘ç ╪│┘ü╪º╪▒╪┤ ${refundOrder.purchase_id}: ${orphanedInv.length} ┌⌐╪º┘å┘ü█î┌» ╪º╪▓ inventory ╪¡╪░┘ü ┘ê ╪º╪▓ ┘╛┘å┘ä ╪¿╪º╪╖┘ä ╪┤╪».\n` +
+                `┌⌐╪º╪▒╪¿╪▒: ${userId}\n` +
+                (revokeResults.length ? `┘å╪¬╪º█î╪¼ ╪¿╪º╪╖┘äΓÇî╪│╪º╪▓█î:\n${revokeResults.join("\n")}` : "")).catch(() => { });
         }
         // --- End inventory cleanup ---
         // wallet_used is the amount deducted from the wallet (may equal full price for wallet orders).
         // final_price is the externally paid amount (0 for pure wallet orders).
-        // Refund whichever was actually charged — for wallet orders wallet_used is what matters.
+        // Refund whichever was actually charged ΓÇö for wallet orders wallet_used is what matters.
         const walletUsedForRefund = Math.max(0, Math.round(Number(refundOrder.wallet_used || 0)));
         const finalPriceForRefund = Math.max(0, Math.round(Number(refundOrder.final_price || 0)));
         // Refund BOTH: wallet credit used + any external payment (card2card / crypto)
@@ -16684,36 +16565,36 @@ async function handleCallback(update) {
         const refundAmount = walletUsedForRefund + finalPriceForRefund;
         if (refundAmount > 0) {
             try {
-                await refundWalletUsage(userId, refundAmount, `بازگشت وجه سفارش ${refundOrder.purchase_id} (انتخاب کاربر)`);
+                await refundWalletUsage(userId, refundAmount, `╪¿╪º╪▓┌»╪┤╪¬ ┘ê╪¼┘ç ╪│┘ü╪º╪▒╪┤ ${refundOrder.purchase_id} (╪º┘å╪¬╪«╪º╪¿ ┌⌐╪º╪▒╪¿╪▒)`);
             }
             catch (refundErr) {
                 logError("user_refund_to_wallet_failed", refundErr, { orderId, userId, refundAmount });
-                await tg("sendMessage", { chat_id: chatId, text: "خطا در بازگشت وجه. لطفاً با پشتیبانی تماس بگیرید." }).catch(() => { });
+                await tg("sendMessage", { chat_id: chatId, text: "╪«╪╖╪º ╪»╪▒ ╪¿╪º╪▓┌»╪┤╪¬ ┘ê╪¼┘ç. ┘ä╪╖┘ü╪º┘ï ╪¿╪º ┘╛╪┤╪¬█î╪¿╪º┘å█î ╪¬┘à╪º╪│ ╪¿┌»█î╪▒█î╪»." }).catch(() => { });
                 return null;
             }
         }
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `✅ وجه سفارش <b>${escapeHtml(String(refundOrder.purchase_id))}</b> به کیف پول شما برگشت داده شد.\n` +
-                `${refundAmount > 0 ? `💰 مبلغ ${formatPriceToman(refundAmount)} تومان به کیف پول اضافه شد.` : ""}`,
+            text: `Γ£à ┘ê╪¼┘ç ╪│┘ü╪º╪▒╪┤ <b>${escapeHtml(String(refundOrder.purchase_id))}</b> ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ╪┤┘à╪º ╪¿╪▒┌»╪┤╪¬ ╪»╪º╪»┘ç ╪┤╪».\n` +
+                `${refundAmount > 0 ? `≡ƒÆ░ ┘à╪¿┘ä╪║ ${formatPriceToman(refundAmount)} ╪¬┘ê┘à╪º┘å ╪¿┘ç ┌⌐█î┘ü ┘╛┘ê┘ä ╪º╪╢╪º┘ü┘ç ╪┤╪».` : ""}`,
             parse_mode: "HTML",
             reply_markup: { inline_keyboard: [[homeButton()]] }
         }).catch(() => { });
-        await notifyAdmins(`💰 بازگشت وجه توسط کاربر ${userId} برای سفارش ${refundOrder.purchase_id} انجام شد.\nمبلغ: ${formatPriceToman(refundAmount)} تومان`);
+        await notifyAdmins(`≡ƒÆ░ ╪¿╪º╪▓┌»╪┤╪¬ ┘ê╪¼┘ç ╪¬┘ê╪│╪╖ ┌⌐╪º╪▒╪¿╪▒ ${userId} ╪¿╪▒╪º█î ╪│┘ü╪º╪▒╪┤ ${refundOrder.purchase_id} ╪º┘å╪¼╪º┘à ╪┤╪».\n┘à╪¿┘ä╪║: ${formatPriceToman(refundAmount)} ╪¬┘ê┘à╪º┘å`);
         return null;
     }
     if (data.startsWith("admin_provide_config_")) {
         if (!await isAdmin(userId)) {
-            await tg("sendMessage", { chat_id: chatId, text: "این عملیات فقط برای ادمین‌ها مجاز است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪╣┘à┘ä█î╪º╪¬ ┘ü┘é╪╖ ╪¿╪▒╪º█î ╪º╪»┘à█î┘åΓÇî┘ç╪º ┘à╪¼╪º╪▓ ╪º╪│╪¬." });
             return null;
         }
         const orderId = Number(data.replace("admin_provide_config_", ""));
         if (!Number.isFinite(orderId) || orderId <= 0) {
-            await tg("sendMessage", { chat_id: chatId, text: "شناسه سفارش نامعتبر است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪┤┘å╪º╪│┘ç ╪│┘ü╪º╪▒╪┤ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬." });
             return null;
         }
         await setState(userId, "admin_provide_config", { orderId });
-        await tg("sendMessage", { chat_id: chatId, text: "کانفیگ آماده را ارسال کنید تا برای کاربر تحویل شود." });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º┘å┘ü█î┌» ╪ó┘à╪º╪»┘ç ╪▒╪º ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪» ╪¬╪º ╪¿╪▒╪º█î ┌⌐╪º╪▒╪¿╪▒ ╪¬╪¡┘ê█î┘ä ╪┤┘ê╪»." });
         return null;
     }
     if (data.startsWith("topup_accept_")) {
@@ -16725,23 +16606,23 @@ async function handleCallback(update) {
       RETURNING telegram_id, purchase_id;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "این درخواست قابل تایید نیست یا قبلاً بررسی شده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪»╪▒╪«┘ê╪º╪│╪¬ ┘é╪º╪¿┘ä ╪¬╪º█î█î╪» ┘å█î╪│╪¬ █î╪º ┘é╪¿┘ä╪º┘ï ╪¿╪▒╪▒╪│█î ╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
         await tg("sendMessage", {
             chat_id: Number(rows[0].telegram_id),
-            text: `رسید سفارش افزایش دیتا ${rows[0].purchase_id} تایید شد ✅\nادمین به‌زودی افزایش را اعمال می‌کند.`
+            text: `╪▒╪│█î╪» ╪│┘ü╪º╪▒╪┤ ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ${rows[0].purchase_id} ╪¬╪º█î█î╪» ╪┤╪» Γ£à\n╪º╪»┘à█î┘å ╪¿┘çΓÇî╪▓┘ê╪»█î ╪º┘ü╪▓╪º█î╪┤ ╪▒╪º ╪º╪╣┘à╪º┘ä ┘à█îΓÇî┌⌐┘å╪».`
         });
         const auto = await tryAutoApplyPanelTopup(id, userId);
         if (auto.ok) {
-            await tg("sendMessage", { chat_id: chatId, text: `رسید تایید شد و افزایش دیتا خودکار اعمال شد ✅\n${auto.message}` });
+            await tg("sendMessage", { chat_id: chatId, text: `╪▒╪│█î╪» ╪¬╪º█î█î╪» ╪┤╪» ┘ê ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪«┘ê╪»┌⌐╪º╪▒ ╪º╪╣┘à╪º┘ä ╪┤╪» Γ£à\n${auto.message}` });
             return null;
         }
         logInfo("topup_auto_apply_skipped", { topupRequestId: id, reason: auto.message });
-        await notifyAdmins(`✅ رسید افزایش دیتا تایید شد: ${rows[0].purchase_id}`, {
-            inline_keyboard: [[confirmButton(`done_topup_${id}`, "✅ انجام شد")]]
+        await notifyAdmins(`Γ£à ╪▒╪│█î╪» ╪º┘ü╪▓╪º█î╪┤ ╪»█î╪¬╪º ╪¬╪º█î█î╪» ╪┤╪»: ${rows[0].purchase_id}`, {
+            inline_keyboard: [[confirmButton(`done_topup_${id}`, "Γ£à ╪º┘å╪¼╪º┘à ╪┤╪»")]]
         });
-        await tg("sendMessage", { chat_id: chatId, text: `رسید تایید شد ✅\nاعمال خودکار انجام نشد: ${auto.message}` });
+        await tg("sendMessage", { chat_id: chatId, text: `╪▒╪│█î╪» ╪¬╪º█î█î╪» ╪┤╪» Γ£à\n╪º╪╣┘à╪º┘ä ╪«┘ê╪»┌⌐╪º╪▒ ╪º┘å╪¼╪º┘à ┘å╪┤╪»: ${auto.message}` });
         return null;
     }
     if (data.startsWith("topup_deny_")) {
@@ -16753,11 +16634,11 @@ async function handleCallback(update) {
       RETURNING telegram_id, purchase_id;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "این درخواست قابل رد نیست یا قبلاً بررسی شده است." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪»╪▒╪«┘ê╪º╪│╪¬ ┘é╪º╪¿┘ä ╪▒╪» ┘å█î╪│╪¬ █î╪º ┘é╪¿┘ä╪º┘ï ╪¿╪▒╪▒╪│█î ╪┤╪»┘ç ╪º╪│╪¬." });
             return null;
         }
-        await tg("sendMessage", { chat_id: Number(rows[0].telegram_id), text: `رسید سفارش ${rows[0].purchase_id} رد شد ���` });
-        await tg("sendMessage", { chat_id: chatId, text: "رد شد ✅" });
+        await tg("sendMessage", { chat_id: Number(rows[0].telegram_id), text: `╪▒╪│█î╪» ╪│┘ü╪º╪▒╪┤ ${rows[0].purchase_id} ╪▒╪» ╪┤╪» ∩┐╜∩┐╜∩┐╜` });
+        await tg("sendMessage", { chat_id: chatId, text: "╪▒╪» ╪┤╪» Γ£à" });
         return null;
     }
     if (data.startsWith("topup_ban_")) {
@@ -16776,12 +16657,12 @@ async function handleCallback(update) {
       WHERE id = ${id} AND status = 'receipt_submitted';
     `;
         try {
-            await tg("sendMessage", { chat_id: targetUser, text: "به دلیل ارسال رسید نامعتبر، دسترسی شما مسدود شد." });
+            await tg("sendMessage", { chat_id: targetUser, text: "╪¿┘ç ╪»┘ä█î┘ä ╪º╪▒╪│╪º┘ä ╪▒╪│█î╪» ┘å╪º┘à╪╣╪¬╪¿╪▒╪î ╪»╪│╪¬╪▒╪│█î ╪┤┘à╪º ┘à╪│╪»┘ê╪» ╪┤╪»." });
         }
         catch (error) {
             logError("ban_user_notify_failed", error, { targetUserId: targetUser, by: userId, mode: "topup_receipt" });
         }
-        await tg("sendMessage", { chat_id: chatId, text: "کاربر بن شد ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "┌⌐╪º╪▒╪¿╪▒ ╪¿┘å ╪┤╪» Γ£à" });
         return null;
     }
     if (data.startsWith("done_topup_")) {
@@ -16793,17 +16674,17 @@ async function handleCallback(update) {
       RETURNING telegram_id, inventory_id, requested_mb, purchase_id;
     `;
         if (!rows.length) {
-            await tg("sendMessage", { chat_id: chatId, text: "این درخواست قبلا بسته شده یا یافت نشد." });
+            await tg("sendMessage", { chat_id: chatId, text: "╪º█î┘å ╪»╪▒╪«┘ê╪º╪│╪¬ ┘é╪¿┘ä╪º ╪¿╪│╪¬┘ç ╪┤╪»┘ç █î╪º █î╪º┘ü╪¬ ┘å╪┤╪»." });
             return null;
         }
         const cfg = await sql `SELECT config_value FROM inventory WHERE id = ${rows[0].inventory_id} LIMIT 1;`;
         await tg("sendMessage", {
             chat_id: Number(rows[0].telegram_id),
-            text: `درخواست افزایش ${rows[0].requested_mb}MB شما انجام شد ✅\n` +
-                `شماره سفارش: ${rows[0].purchase_id}\n` +
-                `کانفیگ:\n${String(cfg[0]?.config_value || "-")}`
+            text: `╪»╪▒╪«┘ê╪º╪│╪¬ ╪º┘ü╪▓╪º█î╪┤ ${rows[0].requested_mb}MB ╪┤┘à╪º ╪º┘å╪¼╪º┘à ╪┤╪» Γ£à\n` +
+                `╪┤┘à╪º╪▒┘ç ╪│┘ü╪º╪▒╪┤: ${rows[0].purchase_id}\n` +
+                `┌⌐╪º┘å┘ü█î┌»:\n${String(cfg[0]?.config_value || "-")}`
         });
-        await tg("sendMessage", { chat_id: chatId, text: "درخواست به حالت Done رفت ✅" });
+        await tg("sendMessage", { chat_id: chatId, text: "╪»╪▒╪«┘ê╪º╪│╪¬ ╪¿┘ç ╪¡╪º┘ä╪¬ Done ╪▒┘ü╪¬ Γ£à" });
         return null;
     }
 }
@@ -16846,12 +16727,12 @@ async function checkMandatoryChannels(userId, chatId, silent = false) {
     if (notJoined.length > 0) {
         if (!silent) {
             const buttons = notJoined.map(c => {
-                return [{ text: `عضویت در ${c.name}`, url: c.url }];
+                return [{ text: `╪╣╪╢┘ê█î╪¬ ╪»╪▒ ${c.name}`, url: c.url }];
             });
-            buttons.push([cb("✅ بررسی عضویت", "check_membership", "success")]);
+            buttons.push([cb("Γ£à ╪¿╪▒╪▒╪│█î ╪╣╪╢┘ê█î╪¬", "check_membership", "success")]);
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: "برای استفاده از ربات، اول باید در کانال‌های زیر عضو بشی.\nبعد از عضویت، روی «بررسی عضویت» بزن.",
+                text: "╪¿╪▒╪º█î ╪º╪│╪¬┘ü╪º╪»┘ç ╪º╪▓ ╪▒╪¿╪º╪¬╪î ╪º┘ê┘ä ╪¿╪º█î╪» ╪»╪▒ ┌⌐╪º┘å╪º┘äΓÇî┘ç╪º█î ╪▓█î╪▒ ╪╣╪╢┘ê ╪¿╪┤█î.\n╪¿╪╣╪» ╪º╪▓ ╪╣╪╢┘ê█î╪¬╪î ╪▒┘ê█î ┬½╪¿╪▒╪▒╪│█î ╪╣╪╢┘ê█î╪¬┬╗ ╪¿╪▓┘å.",
                 reply_markup: { inline_keyboard: buttons }
             });
         }
@@ -16875,7 +16756,7 @@ async function handleMessage(update) {
         startCommand?.payload ? captureReferralAttribution(userId, startCommand.payload) : Promise.resolve()
     ]);
     if (banned) {
-        await tg("sendMessage", { chat_id: chatId, text: "دسترسی شما به دلیل تخلف مسدود شده است." });
+        await tg("sendMessage", { chat_id: chatId, text: "╪»╪│╪¬╪▒╪│█î ╪┤┘à╪º ╪¿┘ç ╪»┘ä█î┘ä ╪¬╪«┘ä┘ü ┘à╪│╪»┘ê╪» ╪┤╪»┘ç ╪º╪│╪¬." });
         return null;
     }
     if (!(await checkMandatoryChannels(userId, chatId))) {
@@ -16903,11 +16784,11 @@ async function handleMessage(update) {
         return null;
     }
     const state = await getState(userId);
-    // ── Document handling (used for restore-from-backup) ──────────────────────
+    // ΓöÇΓöÇ Document handling (used for restore-from-backup) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
     const documentFileId = update?.document?.file_id || null;
     if (documentFileId && state?.state === "admin_awaiting_restore_file" && await isAdmin(userId)) {
         await clearState(userId);
-        await tg("sendMessage", { chat_id: chatId, text: "⏳ در حال پردازش و بازیابی فایل بکاپ..." });
+        await tg("sendMessage", { chat_id: chatId, text: "ΓÅ│ ╪»╪▒ ╪¡╪º┘ä ┘╛╪▒╪»╪º╪▓╪┤ ┘ê ╪¿╪º╪▓█î╪º╪¿█î ┘ü╪º█î┘ä ╪¿┌⌐╪º┘╛..." });
         try {
             const raw = await tgDownloadFile(documentFileId);
             let data;
@@ -16915,11 +16796,11 @@ async function handleMessage(update) {
                 data = JSON.parse(raw);
             }
             catch {
-                await tg("sendMessage", { chat_id: chatId, text: "❌ فایل نامعتبر است. لطفاً یک فایل JSON معتبر ارسال کنید." });
+                await tg("sendMessage", { chat_id: chatId, text: "Γ¥î ┘ü╪º█î┘ä ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬. ┘ä╪╖┘ü╪º┘ï █î┌⌐ ┘ü╪º█î┘ä JSON ┘à╪╣╪¬╪¿╪▒ ╪º╪▒╪│╪º┘ä ┌⌐┘å█î╪»." });
                 return null;
             }
             if (data.version !== "1.0" || typeof data.tables !== "object") {
-                await tg("sendMessage", { chat_id: chatId, text: "❌ فرمت بکاپ نامعتبر است. فایل باید شامل version و tables باشد." });
+                await tg("sendMessage", { chat_id: chatId, text: "Γ¥î ┘ü╪▒┘à╪¬ ╪¿┌⌐╪º┘╛ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪º╪│╪¬. ┘ü╪º█î┘ä ╪¿╪º█î╪» ╪┤╪º┘à┘ä version ┘ê tables ╪¿╪º╪┤╪»." });
                 return null;
             }
             const result = await restoreFromBackup(data);
@@ -16930,14 +16811,14 @@ async function handleMessage(update) {
                 .join("\n");
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `✅ بازیابی کامل شد!\n📊 مجموع: ${totalRows} ردیف\n\n${summary}`
+                text: `Γ£à ╪¿╪º╪▓█î╪º╪¿█î ┌⌐╪º┘à┘ä ╪┤╪»!\n≡ƒôè ┘à╪¼┘à┘ê╪╣: ${totalRows} ╪▒╪»█î┘ü\n\n${summary}`
             });
         }
         catch (err) {
             logError("admin_restore_failed", err);
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `❌ خطا در بازیابی:\n${err.message || err}`
+                text: `Γ¥î ╪«╪╖╪º ╪»╪▒ ╪¿╪º╪▓█î╪º╪¿█î:\n${err.message || err}`
             });
         }
         return null;
@@ -16945,10 +16826,10 @@ async function handleMessage(update) {
     if (text === "/cancel") {
         if (state) {
             await clearState(userId);
-            await sendMainMenu(chatId, userId, "عملیات جاری لغو شد.");
+            await sendMainMenu(chatId, userId, "╪╣┘à┘ä█î╪º╪¬ ╪¼╪º╪▒█î ┘ä╪║┘ê ╪┤╪».");
             return null;
         }
-        await sendMainMenu(chatId, userId, "هیچ عملیات فعالی برای لغو وجود ندارد.");
+        await sendMainMenu(chatId, userId, "┘ç█î┌å ╪╣┘à┘ä█î╪º╪¬ ┘ü╪╣╪º┘ä█î ╪¿╪▒╪º█î ┘ä╪║┘ê ┘ê╪¼┘ê╪» ┘å╪»╪º╪▒╪».");
         return null;
     }
     if (state) {
@@ -16956,7 +16837,7 @@ async function handleMessage(update) {
         if (consumed)
             return null;
     }
-    await sendMainMenu(chatId, userId, "دستور نامعتبر بود. از منوی زیر استفاده کنید:");
+    await sendMainMenu(chatId, userId, "╪»╪│╪¬┘ê╪▒ ┘å╪º┘à╪╣╪¬╪¿╪▒ ╪¿┘ê╪». ╪º╪▓ ┘à┘å┘ê█î ╪▓█î╪▒ ╪º╪│╪¬┘ü╪º╪»┘ç ┌⌐┘å█î╪»:");
 }
 export async function handleTelegramUpdate(update) {
     await ensureSchema();
@@ -17005,7 +16886,7 @@ export async function pingchiApi(action, payload = {}) {
     if (!res.ok || !data) {
         if (data && data.message)
             return { ok: false, message: data.message, code: data.code };
-        return { ok: false, message: `Pingchi HTTP ${res.status}: ${responseSnippet(raw)}` };
+        return { ok: false, message: , Pingchi, HTTP };
     }
     return { ok: data.success, data: data.data, raw: data };
 }
@@ -17022,7 +16903,7 @@ export async function provisionPingchiSale(order, panelConfig) {
         name: name
     });
     if (!res.ok) {
-        throw new Error(`Pingchi error: ${res.message}`);
+        throw new Error(Pingchi, error);
     }
     const service = res.data?.service || {};
     const subUrl = service.subscription_url || "";
@@ -17030,8 +16911,7 @@ export async function provisionPingchiSale(order, panelConfig) {
     const configValue = subUrl || username || "No link provided";
     const deliveryPayload = {
         type: "pingchi",
-        subscriptionUrl: subUrl,
-        configLinks: subUrl ? [subUrl] : [],
+        sub_url: subUrl,
         metadata: { username }
     };
     return { configValue, deliveryPayload };
