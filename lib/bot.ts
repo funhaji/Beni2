@@ -3054,7 +3054,9 @@ async function sendAdminPanel(chatId: number) {
     text: "پنل ادمین 👇",
     reply_markup: {
       inline_keyboard: [
-        [cb("📦 مدیریت محصولات", "admin_products", "primary")],
+        [cb("📦 کانفیگ‌ها (V2Ray)", "admin_products_v2ray_page_0", "primary")],
+        [cb("📦 اشتراک‌ها (VPN)", "admin_products_account_page_0", "primary")],
+        [cb("📦 وایرگارد (Wireguard)", "admin_products_wireguard_page_0", "primary")],
         [cb("🗂 مدیریت موجودی", "admin_inventory", "primary")],
         [cb("💳 روش‌های پرداخت", "admin_payment_methods", "primary")],
         [cb("💳 کارت‌ها", "admin_cards", "primary")],
@@ -5511,7 +5513,7 @@ async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = ""
   });
 }
 
-async function listProductsForAdmin(chatId: number, userId: number, page = 0) {
+async function listProductsForAdmin(chatId: number, userId: number, page = 0, kindFilter?: string) {
   const showArchived = await getBoolSetting(`admin_products_show_archived_${userId}`, false);
   const rows = await sql`
     SELECT
@@ -5529,6 +5531,7 @@ async function listProductsForAdmin(chatId: number, userId: number, page = 0) {
     FROM products p
     LEFT JOIN panels pnl ON pnl.id = p.panel_id
     WHERE (${showArchived} = TRUE OR p.is_active = TRUE)
+      AND (${kindFilter || null}::text IS NULL OR COALESCE(p.panel_config->>'product_kind', 'v2ray') = ${kindFilter || null})
     ORDER BY p.id ASC;
   `;
   
@@ -5561,20 +5564,27 @@ async function listProductsForAdmin(chatId: number, userId: number, page = 0) {
     ]
   ]);
   
+  const kindSuffix = kindFilter || "all";
   if (totalPages > 1) {
     const navRow: { text: string; callback_data: string }[] = [];
-    if (safePage > 0) navRow.push({ text: "◀️ قبلی", callback_data: `admin_products_page_${safePage - 1}` });
+    if (safePage > 0) navRow.push({ text: "◀️ قبلی", callback_data: `admin_products_${kindSuffix}_page_${safePage - 1}` });
     navRow.push({ text: `صفحه ${safePage + 1} از ${totalPages}`, callback_data: "noop" });
-    if (safePage < totalPages - 1) navRow.push({ text: "بعدی ▶️", callback_data: `admin_products_page_${safePage + 1}` });
+    if (safePage < totalPages - 1) navRow.push({ text: "بعدی ▶️", callback_data: `admin_products_${kindSuffix}_page_${safePage + 1}` });
     keyboard.push(navRow);
   }
 
-  keyboard.push([cb(showArchived ? "📦 مخفی کردن آرشیو" : "📦 نمایش آرشیو", showArchived ? "admin_products_hide_archived" : "admin_products_show_archived", "primary")]);
+  keyboard.push([cb(showArchived ? "📦 مخفی کردن آرشیو" : "📦 نمایش آرشیو", showArchived ? `admin_products_${kindSuffix}_hide_archived` : `admin_products_${kindSuffix}_show_archived`, "primary")]);
   keyboard.push([cb("➕ افزودن محصول", "admin_add_product", "success")]);
   keyboard.push([backButton("admin_panel")]);
+  
+  let title = "مدیریت محصولات:";
+  if (kindFilter === "v2ray") title = "مدیریت کانفیگ‌ها (V2Ray):";
+  if (kindFilter === "account") title = "مدیریت اشتراک‌ها (VPN):";
+  if (kindFilter === "wireguard") title = "مدیریت وایرگارد (Wireguard):";
+  
   await tg("sendMessage", {
     chat_id: chatId,
-    text: "مدیریت محصولات:",
+    text: title,
     reply_markup: { inline_keyboard: keyboard }
   });
 }
@@ -7809,7 +7819,36 @@ async function parseAndApplyState(
     }
     await setSetting("pingchi_api_key", raw);
     await clearState(userId);
-    await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی با موفقیت تنظیم شد ✅" });
+    
+    await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی تنظیم شد ✅\nدر حال دریافت لیست پلن‌ها از پینگچی..." });
+    
+    const plansReq = await pingchiApi("plans.list");
+    if (plansReq.ok && Array.isArray((plansReq.data as any)?.plans)) {
+      const plans = (plansReq.data as any).plans;
+      let added = 0;
+      for (const plan of plans) {
+        const existing = await sql`
+          SELECT id FROM products 
+          WHERE sell_mode = 'pingchi' 
+            AND panel_config->>'pingchi_plan_id' = ${String(plan.id)}
+          LIMIT 1
+        `;
+        if (existing.length === 0) {
+          await sql`
+            INSERT INTO products (
+              name, price_toman, size_mb, is_active, is_infinite, sell_mode, panel_config
+            ) VALUES (
+              ${plan.name}, 0, 0, false, true, 'pingchi', ${JSON.stringify({ pingchi_plan_id: plan.id, product_kind: "wireguard" })}
+            )
+          `;
+          added++;
+        }
+      }
+      await tg("sendMessage", { chat_id: chatId, text: `✅ تعداد ${added} پلن جدید از پینگچی دریافت و به عنوان محصول (غیرفعال با قیمت 0) اضافه شد.\n\nلطفاً از بخش "مدیریت وایرگارد" محصولات را قیمت‌گذاری و فعال کنید.` });
+    } else {
+      await tg("sendMessage", { chat_id: chatId, text: "⚠️ خطا در دریافت پلن‌ها از پینگچی. آیا کلید دسترسی صحیح است؟" });
+    }
+    
     return true;
   }
   if (state.state === "admin_set_plisio_usd_rate") {
@@ -15158,22 +15197,18 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     await tg("sendMessage", { chat_id: chatId, text: "درخواست رد شد ✅" });
     return null;
   }
-  if (data === "admin_products" || data.startsWith("admin_products_page_")) {
-    let page = 0;
-    if (data.startsWith("admin_products_page_")) {
-      page = Math.max(0, parseInt(data.replace("admin_products_page_", ""), 10) || 0);
-    }
-    await listProductsForAdmin(chatId, userId, page);
+  const productMatch = data.match(/^admin_products_(v2ray|account|wireguard|all)_page_(\d+)$/);
+  if (productMatch) {
+    const kindFilter = productMatch[1] === "all" ? undefined : productMatch[1];
+    const page = Number(productMatch[2]);
+    await listProductsForAdmin(chatId, userId, page, kindFilter);
     return null;
   }
-  if (data === "admin_products_show_archived") {
-    await setSetting(`admin_products_show_archived_${userId}`, "true");
-    await listProductsForAdmin(chatId, userId);
-    return null;
-  }
-  if (data === "admin_products_hide_archived") {
-    await setSetting(`admin_products_show_archived_${userId}`, "false");
-    await listProductsForAdmin(chatId, userId);
+  const archiveMatch = data.match(/^admin_products_(v2ray|account|wireguard|all)_(show|hide)_archived$/);
+  if (archiveMatch) {
+    const kindFilter = archiveMatch[1] === "all" ? undefined : archiveMatch[1];
+    await setSetting(`admin_products_show_archived_${userId}`, archiveMatch[2] === "show" ? "true" : "false");
+    await listProductsForAdmin(chatId, userId, 0, kindFilter);
     return null;
   }
   if (data === "admin_add_product") {
