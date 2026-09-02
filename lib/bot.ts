@@ -50,7 +50,7 @@ type PanelWizardStep = "name" | "base_url" | "username" | "password" | "sub_port
 type ProductPanelWizardStep = "panel" | "mode" | "sell_limit" | "delivery" | "inbound_id" | "protocol" | "expire_days" | "data_limit_mb";
 type ProductWizardMode = "add" | "edit";
 type ProductKind = "v2ray" | "account";
-type ProductWizardStep =
+type ProductWizardStep = "pingchi_plan_id"
   | "name"
   | "product_kind"
   | "size_mb"
@@ -85,6 +85,7 @@ type CryptoWalletRow = {
   active: boolean;
 };
 type DeliveryPayload = {
+  type?: string;
   subscriptionUrl?: string | null;
   configLinks?: string[];
   previousConfigs?: string[];
@@ -2137,7 +2138,7 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
       await tg("sendMessage", { chat_id: chatId, text: `خطا در دریافت پلن‌های پینگچی: ${plansReq.message}` });
       return null;
     }
-    const plans = plansReq.data?.rows || [];
+    const plans = (plansReq.data as any)?.rows || [];
     const kb: any[] = [];
     for (const plan of plans) {
       kb.push([cb(`${plan.name} - ${plan.payable} تومان`, `admin_product_wizard_pingchi_plan_${plan.id}`, "primary")]);
@@ -12521,8 +12522,6 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
           if (key) {
              pingchiApi("services.delete", { username: key }).catch(() => {});
           }
-            }
-          }
         }
       }
       await notifyAdmins(
@@ -12603,6 +12602,145 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
         walletUsed: Number(order.wallet_used || 0)
       }),
       { inline_keyboard: [[{ text: "🔎 باز کردن سفارش", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] }
+    );
+    return { ok: true, reason: "fulfilled" };
+  } else if (parseSellMode(String(order.sell_mode || "")) === "pingchi") {
+    const panelConfig = sanitizePanelConfig(order.panel_config_snapshot);
+    const bulkQuantity = getOrderBulkQuantity(order, panelConfig);
+    
+    const allProvisions: Array<{ configValue: string; deliveryPayload: DeliveryPayload }> = [];
+    
+    for (let i = 0; i < bulkQuantity; i++) {
+      let provision: { configValue: string; deliveryPayload: DeliveryPayload };
+      try {
+        provision = await provisionPingchiSale({ purchase_id: String(order.purchase_id), product_name_snapshot: String(order.product_name) }, panelConfig);
+        allProvisions.push(provision);
+      } catch (err: any) {
+        logError("pingchi_provision_failed", err, { orderId: order.id, configIndex: i });
+        await sql`
+          UPDATE orders
+          SET status = 'awaiting_config', paid_at = NOW(), admin_decision_by = ${decidedBy}
+          WHERE id = ${order.id} AND status = 'fulfilling';
+        `;
+        await tg("sendMessage", {
+          chat_id: Number(order.telegram_id),
+          text: `✅ پرداخت شما تایید شد.\nاما مشکلی در ارتباط با سرور رخ داد. به ادمین پیام دادیم تا سریعا بررسی کند.`
+        }).catch(() => {});
+        const adminIds = await getAdminIds();
+        if (adminIds.length > 0) {
+          await tg("sendMessage", {
+            chat_id: adminIds[0],
+            text: `❌ خطای پینگچی (سفارش ${order.purchase_id})\n${err.message || ""}`
+          }).catch(() => {});
+        }
+        return { ok: false, reason: "provision_failed" };
+      }
+    }
+    
+    // Save to inventory
+    const allConfigLinks: string[] = [];
+    const allSubscriptionUrls: string[] = [];
+    let firstInventoryId: number | null = null;
+    
+    for (const provision of allProvisions) {
+      const delivered = parseDeliveryPayload(provision.deliveryPayload);
+      const panelUserKey = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || delivered.metadata?.uuid || "").trim() || null;
+      const inserted = await sql`
+        INSERT INTO inventory (
+          product_id, panel_user_key, config_value, delivery_payload, status, owner_telegram_id, sold_order_id, panel_id, sold_at
+        )
+        VALUES (
+          ${order.product_id},
+          ${panelUserKey},
+          ${provision.configValue},
+          ${serializeDeliveryPayload(provision.deliveryPayload)}::jsonb,
+          'sold',
+          ${order.telegram_id},
+          ${order.id},
+          ${order.source_panel_id},
+          NOW()
+        )
+        RETURNING id;
+      `;
+      if (!firstInventoryId) firstInventoryId = Number(inserted[0].id);
+      
+      await recordInventoryForensicEvent(Number(inserted[0].id), "sale_delivered", {
+        purchaseId: String(order.purchase_id),
+        by: decidedBy
+      });
+      
+      if (provision.deliveryPayload.configLinks) {
+        allConfigLinks.push(...provision.deliveryPayload.configLinks);
+      }
+      if (provision.deliveryPayload.subscriptionUrl) {
+        allSubscriptionUrls.push(provision.deliveryPayload.subscriptionUrl);
+      }
+    }
+    
+    const updateResult = await sql`
+      UPDATE orders
+      SET status = 'paid', paid_at = NOW(), inventory_id = ${firstInventoryId}, admin_decision_by = ${decidedBy}
+      WHERE id = ${order.id} AND status = 'fulfilling'
+      RETURNING id, purchase_id;
+    `;
+    
+    if (!updateResult.length) {
+      // Order cancelled during provision
+      for (const p of allProvisions) {
+        const delivered = parseDeliveryPayload(p.deliveryPayload);
+        const key = String(delivered.metadata?.username || delivered.metadata?.email || delivered.metadata?.subId || "").trim();
+        if (key) {
+           pingchiApi("services.delete", { username: key }).catch(() => {});
+        }
+      }
+      await notifyAdmins(`⚠️ سفارش ${order.purchase_id} لغو شد و پینگچی پاک‌سازی شد.`).catch(() => {});
+      return { ok: false, reason: "order_cancelled_during_provision" };
+    }
+    
+    await tg("sendMessage", {
+      chat_id: Number(order.telegram_id),
+      text: `پرداخت شما تایید شد ✅${bulkQuantity > 1 ? `\n${bulkQuantity} کانفیگ ساخته شد.` : ""}`
+    }).catch(() => {});
+    
+    for (let i = 0; i < allProvisions.length; i++) {
+      const prov = allProvisions[i];
+      const isLast = i === allProvisions.length - 1;
+      const provLinks = prov.deliveryPayload.configLinks || [];
+      const provSub = prov.deliveryPayload.subscriptionUrl || null;
+      const singleDelivery: DeliveryPayload = {
+        configLinks: provLinks,
+        subscriptionUrl: provSub,
+        primaryQr: buildQrText(provLinks[0] || null, provLinks, provSub),
+        primaryText: provLinks[0] || provSub || "",
+        metadata: prov.deliveryPayload.metadata
+      };
+      await sendDeliveryPackage(
+        Number(order.telegram_id),
+        String(order.purchase_id),
+        String(provLinks[0] || provSub || ""),
+        singleDelivery,
+        isLast ? [[{ text: "➕ درخواست افزایش دیتا", callback_data: "topup_menu" }], [homeButton()]] : []
+      ).catch((e) => logError("delivery_package_failed", e, { orderId: order.id, configIndex: i }));
+    }
+    
+    const profile = await getTelegramProfileText(Number(order.telegram_id));
+    const adminDelivery: DeliveryPayload = {
+      configLinks: allConfigLinks,
+      subscriptionUrl: allSubscriptionUrls[0] || null,
+      primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
+      metadata: { bulkCount: bulkQuantity }
+    };
+    await notifyAdmins(
+      buildAdminDeliverySummary({
+        purchaseId: String(order.purchase_id),
+        userId: Number(order.telegram_id),
+        telegramUsername: profile.username,
+        telegramFullName: profile.fullName,
+        productName: String(order.product_name || "-") + (bulkQuantity > 1 ? ` (x${bulkQuantity})` : ""),
+        deliveryPayload: adminDelivery,
+        walletUsed: Number(order.wallet_used || 0)
+      }),
+      { inline_keyboard: [[{ text: "🔎 بررسی", callback_data: `admin_open_purchase_${String(order.purchase_id)}` }]] }
     );
     return { ok: true, reason: "fulfilled" };
   }
@@ -14575,7 +14713,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     }
     const panelType = String(rows[0].panel_type || "");
     const deliveryPayload = parseDeliveryPayload(rows[0].delivery_payload);
-    let result = { ok: false, message: "unknown panel type" };
+    let result: any = { ok: false, message: "unknown panel type" };
     if (deliveryPayload.type === "pingchi") {
       result = await pingchiApi("services.delete", { username: key });
     } else {
@@ -17394,7 +17532,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
         const key = String(inv.panel_user_key || "").trim();
         if (key && inv.panel_type) {
           try {
-            let result = { ok: false, message: "unknown panel type" };
+            let result: any = { ok: false, message: "unknown panel type" };
             const dp = parseDeliveryPayload(inv.delivery_payload);
             if (dp.type === "pingchi") {
                result = await pingchiApi("services.delete", { username: key });
@@ -17769,7 +17907,7 @@ export async function pingchiApi(action: string, payload: any = {}) {
   
   if (!res.ok || !data) {
     if (data && data.message) return { ok: false, message: data.message, code: data.code };
-    return { ok: false, message: \Pingchi HTTP \: \\ };
+    return { ok: false, message: `Pingchi HTTP ${res.status}: ${responseSnippet(raw)}` };
   }
   
   return { ok: data.success, data: data.data, raw: data };
@@ -17793,17 +17931,18 @@ export async function provisionPingchiSale(
   });
   
   if (!res.ok) {
-    throw new Error(\Pingchi error: \\);
+    throw new Error(`Pingchi error: ${res.message}`);
   }
   
-  const service = res.data?.service || {};
+  const service = (res.data as any)?.service || {};
   const subUrl = service.subscription_url || "";
   const username = service.username || "";
   
   const configValue = subUrl || username || "No link provided";
   const deliveryPayload: DeliveryPayload = {
     type: "pingchi",
-    sub_url: subUrl,
+    subscriptionUrl: subUrl,
+    configLinks: subUrl ? [subUrl] : [],
     metadata: { username }
   };
   
