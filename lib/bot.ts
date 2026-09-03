@@ -2016,7 +2016,7 @@ async function startProductWizard(chatId: number, userId: number, mode: ProductW
     name: String(current.name || ""),
     productKind,
     sizeMb: Number.isFinite(currentSizeMb) ? currentSizeMb : 1024,
-    priceMode: "auto",
+    priceMode: productKind === "account" || productKind === "wireguard" ? "manual" : "auto",
     priceToman: Number(current.price_toman || 0) || null,
     sellMode: parseSellMode(String(current.sell_mode || "manual")),
     isInfinite: Boolean(current.is_infinite),
@@ -2253,7 +2253,7 @@ async function saveProductWizard(payload: Record<string, unknown>) {
   if (!name) return { ok: false, message: "نام محصول نمی‌تواند خالی باشد." };
   const useAutoPrice = String(payload.priceMode || "auto") === "auto";
   const manualPrice = Number(payload.priceToman || 0);
-  const price = useAutoPrice && productKind !== "account" ? await getProductPriceFromSizeMb(sizeMb) : manualPrice;
+  const price = useAutoPrice && productKind === "v2ray" ? await getProductPriceFromSizeMb(sizeMb) : manualPrice;
   if (!Number.isFinite(price) || price <= 0) return { ok: false, message: "قیمت محصول معتبر نیست." };
   const panelId = sellMode === "panel" ? Number(payload.panelId || 0) : null;
   if (sellMode === "panel" && (!Number.isFinite(panelId) || Number(panelId) <= 0)) {
@@ -2311,9 +2311,9 @@ async function saveProductWizard(payload: Record<string, unknown>) {
       ok: true,
       message:
         `محصول ذخیره شد ✅\n` +
-        `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice ? "خودکار" : "دلخواه"})\n` +
-        `حالت فروش: ${sellMode === "panel" ? "از پنل" : "دستی"}\n` +
-        `تحویل: ${panelDeliveryMode}`
+        `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice && productKind === "v2ray" ? "خودکار" : "دلخواه"})\n` +
+        `حالت فروش: ${sellMode === "panel" ? "از پنل" : sellMode === "pingchi" ? "پینگچی" : "دستی"}` +
+        (sellMode === "panel" ? `\nتحویل: ${panelDeliveryMode}` : "")
     };
   }
   const id = Number(payload.productId || 0);
@@ -2336,9 +2336,9 @@ async function saveProductWizard(payload: Record<string, unknown>) {
     ok: true,
     message:
       `محصول ویرایش شد ✅\n` +
-      `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice ? "خودکار" : "دلخواه"})\n` +
-      `حالت فروش: ${sellMode === "panel" ? "از پنل" : "دستی"}\n` +
-      `تحویل: ${panelDeliveryMode}`
+      `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice && productKind === "v2ray" ? "خودکار" : "دلخواه"})\n` +
+      `حالت فروش: ${sellMode === "panel" ? "از پنل" : sellMode === "pingchi" ? "پینگچی" : "دستی"}` +
+      (sellMode === "panel" ? `\nتحویل: ${panelDeliveryMode}` : "")
   };
 }
 
@@ -15278,7 +15278,7 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       await promptProductWizardStep(chatId, payload);
       return null;
     }
-    const payload = { ...state.payload, priceMode: "auto", step: "sell_mode" as ProductWizardStep };
+    const payload = { ...state.payload, priceMode: state.payload.productKind === "account" || state.payload.productKind === "wireguard" ? "manual" : "auto", step: "sell_mode" as ProductWizardStep };
     await setState(userId, "admin_product_wizard", payload);
     await promptProductWizardStep(chatId, payload);
     return null;
