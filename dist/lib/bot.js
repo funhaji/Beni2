@@ -950,6 +950,8 @@ function parseProductKind(raw) {
     const value = String(raw || "").trim().toLowerCase();
     if (value === "account" || value === "acc")
         return "account";
+    if (value === "wireguard" || value === "wg")
+        return "wireguard";
     return "v2ray";
 }
 function toJsonObject(value) {
@@ -7385,8 +7387,14 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         const plansReq = await pingchiApi("plans.list");
         if (plansReq.ok && Array.isArray(plansReq.data?.rows)) {
             const plans = plansReq.data.rows;
+            // Remove old Pingchi products that don't have orders
+            await sql `DELETE FROM products WHERE sell_mode = 'pingchi' AND id NOT IN (SELECT product_id FROM orders)`;
+            // Deactivate any remaining Pingchi products (which have orders)
+            await sql `UPDATE products SET is_active = false WHERE sell_mode = 'pingchi'`;
             let added = 0;
             for (const plan of plans) {
+                // Since we deleted unused ones, we just insert anew (if it didn't have orders).
+                // If it HAD orders, it wasn't deleted, so we just reactivate and update its name!
                 const existing = await sql `
           SELECT id FROM products 
           WHERE sell_mode = 'pingchi' 
@@ -7403,8 +7411,13 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
           `;
                     added++;
                 }
+                else {
+                    // We just update the name to match Pingchi, and leave it deactivated for the admin to re-price/activate.
+                    await sql `UPDATE products SET name = ${plan.name} WHERE id = ${existing[0].id}`;
+                    added++;
+                }
             }
-            await tg("sendMessage", { chat_id: chatId, text: `✅ تعداد ${added} پلن جدید از پینگچی دریافت و به عنوان محصول (غیرفعال با قیمت 0) اضافه شد.\n\nلطفاً از بخش "مدیریت وایرگارد" محصولات را قیمت‌گذاری و فعال کنید.` });
+            await tg("sendMessage", { chat_id: chatId, text: `✅ تعداد ${added} پلن از پینگچی دریافت و لیست محصولات وایرگارد به‌روزرسانی شد. محصولات قبلی حذف یا غیرفعال شدند.\n\nلطفاً از بخش "مدیریت وایرگارد" قیمت‌ها را مجدداً ثبت و محصولات را فعال کنید.` });
         }
         else {
             await tg("sendMessage", { chat_id: chatId, text: "⚠️ خطا در دریافت پلن‌ها از پینگچی. آیا کلید دسترسی صحیح است؟" });
