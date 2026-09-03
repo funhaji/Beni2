@@ -1862,9 +1862,20 @@ async function promptProductWizardStep(chatId, payload) {
     if (step === "name") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"} - 1 از 9\n` +
+            text: `محصول ${mode === "add" ? "جدید" : "ویرایش"}${mode === "edit" && productKind === "wireguard" ? " (وایرگارد)" : " - 1 از 9"}\n` +
                 `نام محصول را بفرستید.` +
                 (mode === "edit" ? `\nمقدار فعلی: ${String(payload.name || "-")}` : "") +
+                keepHint,
+            reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
+        });
+        return null;
+    }
+    if (step === "price_toman_wireguard") {
+        await tg("sendMessage", {
+            chat_id: chatId,
+            text: `ویرایش محصول وایرگارد\n` +
+                `قیمت را به تومان بفرستید.` +
+                (mode === "edit" ? `\nمقدار فعلی: ${String(payload.priceToman || "-")}` : "") +
                 keepHint,
             reply_markup: { inline_keyboard: [[cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]] }
         });
@@ -6327,9 +6338,28 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
                 return true;
             }
             state.payload.name = name;
-            state.payload.step = "product_kind";
+            if (mode === "edit" && state.payload.productKind === "wireguard") {
+                state.payload.step = "price_toman_wireguard";
+            }
+            else {
+                state.payload.step = "product_kind";
+            }
             await setState(userId, "admin_product_wizard", state.payload);
             await promptProductWizardStep(chatId, state.payload);
+            return true;
+        }
+        else if (step === "price_toman_wireguard") {
+            const priceToman = mode === "edit" && raw === "-" ? Number(state.payload.priceToman || 0) : Number(raw);
+            if (!Number.isFinite(priceToman) || priceToman <= 0) {
+                await tg("sendMessage", { chat_id: chatId, text: "قیمت معتبر بفرستید. مثال: 450000" });
+                return true;
+            }
+            state.payload.priceToman = Math.round(priceToman);
+            const result = await saveProductWizard(state.payload);
+            await clearState(userId);
+            await tg("sendMessage", { chat_id: chatId, text: result.message });
+            if (result.ok)
+                await listProductsForAdmin(chatId, userId, 0, "wireguard");
             return true;
         }
         else if (step === "size_mb") {
