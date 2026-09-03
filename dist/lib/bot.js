@@ -7353,8 +7353,8 @@ async function parseAndApplyState(chatId, userId, text, photoFileId, stickerFile
         await clearState(userId);
         await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی تنظیم شد ✅\nدر حال دریافت لیست پلن‌ها از پینگچی..." });
         const plansReq = await pingchiApi("plans.list");
-        if (plansReq.ok && Array.isArray(plansReq.data?.plans)) {
-            const plans = plansReq.data.plans;
+        if (plansReq.ok && Array.isArray(plansReq.data?.rows)) {
+            const plans = plansReq.data.rows;
             let added = 0;
             for (const plan of plans) {
                 const existing = await sql `

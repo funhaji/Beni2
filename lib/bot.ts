@@ -7823,8 +7823,8 @@ async function parseAndApplyState(
     await tg("sendMessage", { chat_id: chatId, text: "کلید دسترسی پینگچی تنظیم شد ✅\nدر حال دریافت لیست پلن‌ها از پینگچی..." });
     
     const plansReq = await pingchiApi("plans.list");
-    if (plansReq.ok && Array.isArray((plansReq.data as any)?.plans)) {
-      const plans = (plansReq.data as any).plans;
+    if (plansReq.ok && Array.isArray((plansReq.data as any)?.rows)) {
+      const plans = (plansReq.data as any).rows;
       let added = 0;
       for (const plan of plans) {
         const existing = await sql`
