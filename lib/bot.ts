@@ -12810,7 +12810,7 @@ async function finalizeOrder(orderId: number, decidedBy: number | null) {
       configLinks: allConfigLinks,
       subscriptionUrl: allSubscriptionUrls[0] || null,
       primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
-      metadata: { bulkCount: bulkQuantity }
+      metadata: { bulkCount: bulkQuantity, allSubscriptionUrls }
     };
     await notifyAdmins(
       buildAdminDeliverySummary({
@@ -18020,7 +18020,7 @@ export async function provisionPingchiSale(
   const deliveryPayload: DeliveryPayload = {
     type: "pingchi",
     subscriptionUrl: subUrl,
-    configLinks: subUrl ? [subUrl] : [],
+    configLinks: [],
     metadata: { username }
   };
   

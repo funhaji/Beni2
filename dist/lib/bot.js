@@ -12018,7 +12018,7 @@ async function finalizeOrder(orderId, decidedBy) {
             configLinks: allConfigLinks,
             subscriptionUrl: allSubscriptionUrls[0] || null,
             primaryText: allConfigLinks[0] || allSubscriptionUrls[0] || "",
-            metadata: { bulkCount: bulkQuantity }
+            metadata: { bulkCount: bulkQuantity, allSubscriptionUrls }
         };
         await notifyAdmins(buildAdminDeliverySummary({
             purchaseId: String(order.purchase_id),
@@ -17108,7 +17108,7 @@ export async function provisionPingchiSale(order, panelConfig) {
     const deliveryPayload = {
         type: "pingchi",
         subscriptionUrl: subUrl,
-        configLinks: subUrl ? [subUrl] : [],
+        configLinks: [],
         metadata: { username }
     };
     return { configValue, deliveryPayload };
