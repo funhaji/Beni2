@@ -4099,7 +4099,8 @@ async function provisionMarzbanSale(panel, order, panelConfig, overridePanelType
     if (!login.res.ok || !login.token) {
         throw new Error(`Marzban auth failed: ${login.res.status} ${responseSnippet(login.raw)}`);
     }
-    const days = parseMaybeNumber(panelConfig.expire_days || panelConfig.days) || 0;
+    const rawDays = parseMaybeNumber(panelConfig.expire_days ?? panelConfig.days);
+    const days = rawDays !== null && rawDays !== undefined ? rawDays : 30;
     const expireTime = days > 0 ? Date.now() + days * 24 * 60 * 60 * 1000 : 0;
     const dataLimitBytes = Math.max(0, Math.round((parseMaybeNumber(panelConfig.data_limit_mb) || Number(order.size_mb || 0)) * 1024 * 1024));
     // Use order's config_name if provided, otherwise generate with prefix + telegram_id + timestamp
@@ -4289,7 +4290,8 @@ async function provisionSanaeiSale(panel, order, panelConfig) {
     const protocol = String(inbound.protocol || "").toLowerCase();
     const sizeMbOverride = parseMaybeNumber(panelConfig.data_limit_mb) || Number(order.size_mb || 0);
     const dataLimitBytes = Math.max(0, Math.round(sizeMbOverride * 1024 * 1024));
-    const days = parseMaybeNumber(panelConfig.expire_days || panelConfig.days) || 0;
+    const rawDays = parseMaybeNumber(panelConfig.expire_days ?? panelConfig.days);
+    const days = rawDays !== null && rawDays !== undefined ? rawDays : 30;
     const expiryTime = days > 0 ? Date.now() + days * 24 * 60 * 60 * 1000 : 0;
     const clientId = randomUUID();
     const clientPassword = randomUUID().replaceAll("-", "");
@@ -10326,14 +10328,10 @@ export async function applyAdminSetExpiryOnMarzban(panel, username, expiryTimeMs
             : "";
     const status = ["active", "disabled", "on_hold"].includes(statusCandidate) ? statusCandidate : "active";
     const payload = {
+        ...user,
         username: String(user.username || username),
-        proxies: user.proxies || {},
-        inbounds: user.inbounds || {},
         expire: expiryTimeMs > 0 ? Math.floor(expiryTimeMs / 1000) : 0,
-        data_limit: Number(user.data_limit || 0),
-        data_limit_reset_strategy: String(user.data_limit_reset_strategy || "no_reset"),
-        status,
-        note: String(user.note || "")
+        status
     };
     const putRes = await fetchWithTimeout(`${baseUrl}/api/user/${encodeURIComponent(username)}`, {
         method: "PUT",
