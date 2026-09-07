@@ -1072,6 +1072,86 @@ function formatDeliveryModeLabel(mode: DeliveryMode) {
   return "فقط کانفیگ";
 }
 
+
+function parseExpiryInputToDays(input: unknown): number | null {
+  if (typeof input === "number") return input > 0 ? Math.round(input) : null;
+  if (!input || typeof input !== "string") return null;
+  let str = input.trim().toLowerCase();
+  str = str.replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)));
+  str = str.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+
+  if (str === "یک ماه" || str === "یکماه") return 30;
+  if (str === "دو ماه" || str === "دوماه") return 60;
+  if (str === "سه ماه" || str === "سهماه") return 90;
+  if (str === "شش ماه" || str === "ششماه") return 180;
+  if (str === "یک هفته" || str === "یک‌هفته" || str === "یکهفته") return 7;
+  if (str === "دو هفته" || str === "دوهفته") return 14;
+  if (str === "یک سال" || str === "یکسال") return 365;
+
+  const monthMatch = str.match(/^(\d+(?:\.\d+)?)\s*(?:ماه|months?|m)$/);
+  if (monthMatch) {
+    const m = parseFloat(monthMatch[1]);
+    return m > 0 ? Math.round(m * 30) : null;
+  }
+
+  const weekMatch = str.match(/^(\d+(?:\.\d+)?)\s*(?:هفته|weeks?|w)$/);
+  if (weekMatch) {
+    const w = parseFloat(weekMatch[1]);
+    return w > 0 ? Math.round(w * 7) : null;
+  }
+
+  const yearMatch = str.match(/^(\d+(?:\.\d+)?)\s*(?:سال|years?|y)$/);
+  if (yearMatch) {
+    const y = parseFloat(yearMatch[1]);
+    return y > 0 ? Math.round(y * 365) : null;
+  }
+
+  const dayMatch = str.match(/^(\d+(?:\.\d+)?)\s*(?:روز|days?|d)?$/);
+  if (dayMatch) {
+    const d = parseFloat(dayMatch[1]);
+    return d > 0 ? Math.round(d) : null;
+  }
+
+  return null;
+}
+
+function formatExpiryDaysLabel(days: number): string {
+  if (!days || days <= 0) return "نامشخص";
+  if (days === 7) return "۱ هفته (۷ روز)";
+  if (days === 14) return "۲ هفته (۱۴ روز)";
+  if (days < 30) return `${days} روز (هفتگی)`;
+  if (days === 30) return "۱ ماهه (۳۰ روز)";
+  if (days > 30 && days < 60) return `${days} روز (~۱ ماهه)`;
+  if (days === 60) return "۲ ماهه (۶۰ روز)";
+  if (days > 60 && days < 90) return `${days} روز (~۲ ماهه)`;
+  if (days === 90) return "۳ ماهه (۹۰ روز)";
+  if (days === 180) return "۶ ماهه (۱۸۰ روز)";
+  if (days === 365) return "۱ ساله (۳۶۵ روز)";
+  const months = Math.round(days / 30);
+  return `${months} ماهه (${days} روز)`;
+}
+
+function getProductExpiryDays(p: any): number {
+  const cfg = sanitizePanelConfig(p.panel_config);
+  return parseMaybeNumber(cfg.expire_days || cfg.days) ?? 30;
+}
+
+function getProductExpiryCategory(days: number): { key: string; label: string; order: number } {
+  if (days < 30) {
+    return { key: "weekly", label: "⚡️ هفتگی (زیر ۱ ماه)", order: 1 };
+  } else if (days < 60) {
+    return { key: "1m", label: "📅 ۱ ماهه (۳۰ روز)", order: 2 };
+  } else if (days < 90) {
+    return { key: "2m", label: "📅 ۲ ماهه (۶۰ روز)", order: 3 };
+  } else if (days < 180) {
+    return { key: "3m", label: "📅 ۳ ماهه (۹۰ روز)", order: 4 };
+  } else if (days < 365) {
+    return { key: "6m", label: "📅 ۶ ماهه", order: 5 };
+  } else {
+    return { key: "1y", label: "📅 ۱ ساله", order: 6 };
+  }
+}
+
 function parseProductKind(raw: unknown): ProductKind {
   const value = String(raw || "").trim().toLowerCase();
   if (value === "account" || value === "acc") return "account";
@@ -1915,10 +1995,23 @@ async function promptProductPanelWizardStep(chatId: number, payload: Record<stri
     return null;
   }
   if (step === "expire_days") {
+    const isQuick = Boolean(payload.quickMode);
+    const curr = parseMaybeNumber(payload.expireDays) ?? 30;
+    const kb = [
+      [cb("⚡️ ۷ روز (هفتگی)", "admin_product_panel_expire_7", "primary"), cb("📅 ۳۰ روز (۱ ماه)", "admin_product_panel_expire_30", "primary")],
+      [cb("📅 ۶۰ روز (۲ ماه)", "admin_product_panel_expire_60", "primary"), cb("📅 ۹۰ روز (۳ ماه)", "admin_product_panel_expire_90", "primary")],
+      [cb("📅 ۱۸۰ روز (۶ ماه)", "admin_product_panel_expire_180", "primary"), cb("📅 ۳۶۵ روز (۱ سال)", "admin_product_panel_expire_365", "primary")],
+      [cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]
+    ];
     await tg("sendMessage", {
       chat_id: chatId,
-      text: `تنظیم مرحله‌ای - 5 از 5\nexpire_days را بفرستید.\n- = مقدار فعلی (${payload.expireDays || 30})`,
-      reply_markup: { inline_keyboard: [[cancelButton(`admin_product_panel_wizard_cancel_${productId}`)]] }
+      text:
+        `${isQuick ? "⚡ تنظیم سریع فروش پنل" : "تنظیم مرحله‌ای - 5 از 5"}\n` +
+        `مدت زمان انقضا/اعتبار کانفیگ را مشخص کنید:\n` +
+        `می‌توانید یکی از دکمه‌ها را بزنید یا عدد/متن بفرستید.\n` +
+        `نمونه‌ها: 30 یا 1 ماه یا 7 روز یا 2 ماه\n` +
+        `مقدار فعلی: ${formatExpiryDaysLabel(curr)}`,
+      reply_markup: { inline_keyboard: kb }
     });
     return null;
   }
@@ -1984,6 +2077,7 @@ async function saveProductPanelWizard(payload: Record<string, unknown>, quickMod
       `تنظیم فروش پنل ذخیره شد ✅\n` +
       `محصول: ${product.name}\n` +
       `پنل: ${panelRows[0].name}\n` +
+      `مدت اعتبار: ${formatExpiryDaysLabel(expireDays)}\n` +
       `حالت تحویل: ${formatDeliveryModeLabel(panelDeliveryMode)}\n` +
       `سقف فروش: ${panelSellLimit === null ? "بدون سقف" : panelSellLimit}\n` +
       `protocol: ${protocol} | inbound_id: ${inboundId} | expire_days: ${expireDays} | data_limit_mb: ${dataLimitMb}`
@@ -2234,7 +2328,28 @@ async function promptProductWizardStep(chatId: number, payload: Record<string, u
     });
     return null;
   }
-  if (step === "inbound_id" || step === "protocol" || step === "expire_days" || step === "data_limit_mb") {
+  if (step === "expire_days") {
+    const curr = parseMaybeNumber(payload.expireDays) ?? 30;
+    const kb = [
+      [cb("⚡️ ۷ روز (هفتگی)", "admin_product_wizard_expire_7", "primary"), cb("📅 ۳۰ روز (۱ ماه)", "admin_product_wizard_expire_30", "primary")],
+      [cb("📅 ۶۰ روز (۲ ماه)", "admin_product_wizard_expire_60", "primary"), cb("📅 ۹۰ روز (۳ ماه)", "admin_product_wizard_expire_90", "primary")],
+      [cb("📅 ۱۸۰ روز (۶ ماه)", "admin_product_wizard_expire_180", "primary"), cb("📅 ۳۶۵ روز (۱ سال)", "admin_product_wizard_expire_365", "primary")],
+      [cancelButton(`admin_product_wizard_cancel_${productId || 0}`)]
+    ];
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        `محصول ${mode === "add" ? "جدید" : "ویرایش"}\n` +
+        `مدت زمان انقضا/اعتبار کانفیگ را مشخص کنید:\n` +
+        `می‌توانید یکی از دکمه‌ها را بزنید یا عدد/متن بفرستید.\n` +
+        `نمونه‌ها: 30 یا 1 ماه یا 7 روز یا 2 ماه\n` +
+        (mode === "edit" ? `\nمقدار فعلی: ${formatExpiryDaysLabel(curr)}` : "") +
+        keepHint,
+      reply_markup: { inline_keyboard: kb }
+    });
+    return null;
+  }
+  if (step === "inbound_id" || step === "protocol" || step === "data_limit_mb") {
     await tg("sendMessage", {
       chat_id: chatId,
       text: "این مرحله دیگر لازم نیست. تنظیمات پنل به‌صورت خودکار اعمال می‌شود."
@@ -2270,6 +2385,7 @@ async function saveProductWizard(payload: Record<string, unknown>) {
     const rows = await sql`SELECT panel_config FROM products WHERE id = ${Number(payload.productId)} LIMIT 1;`;
     currentConfig = rows.length ? sanitizePanelConfig(rows[0].panel_config) : {};
   }
+  const expireDays = parseMaybeNumber(payload.expireDays) ?? parseMaybeNumber(currentConfig.expire_days) ?? 30;
   const panelConfig =
     sellMode === "panel"
       ? sanitizePanelConfig(
@@ -2277,11 +2393,16 @@ async function saveProductWizard(payload: Record<string, unknown>) {
             product_kind: productKind,
             inbound_id: parseMaybeNumber(payload.inboundId) ?? 1,
             protocol: String(payload.protocol || "vless").trim() || "vless",
-            expire_days: parseMaybeNumber(payload.expireDays) ?? 30,
+            expire_days: expireDays,
             data_limit_mb: sizeMb
           })
         )
-      : sanitizePanelConfig(mergeDeep(currentConfig, { product_kind: productKind }));
+      : sanitizePanelConfig(
+          mergeDeep(currentConfig, {
+            product_kind: productKind,
+            expire_days: expireDays
+          })
+        );
   if (mode === "add") {
     await sql`
       INSERT INTO products (name, size_mb, price_toman, is_infinite, sell_mode, panel_id, panel_sell_limit, panel_delivery_mode, panel_config)
@@ -2312,6 +2433,7 @@ async function saveProductWizard(payload: Record<string, unknown>) {
       message:
         `محصول ذخیره شد ✅\n` +
         `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice && productKind === "v2ray" ? "خودکار" : "دلخواه"})\n` +
+        (productKind === "v2ray" ? `مدت اعتبار: ${formatExpiryDaysLabel(expireDays)}\n` : "") +
         `حالت فروش: ${sellMode === "panel" ? "از پنل" : sellMode === "pingchi" ? "پینگچی" : "دستی"}` +
         (sellMode === "panel" ? `\nتحویل: ${panelDeliveryMode}` : "")
     };
@@ -2337,6 +2459,7 @@ async function saveProductWizard(payload: Record<string, unknown>) {
     message:
       `محصول ویرایش شد ✅\n` +
       `قیمت: ${formatPriceToman(price)} تومان (${useAutoPrice && productKind === "v2ray" ? "خودکار" : "دلخواه"})\n` +
+      (productKind === "v2ray" ? `مدت اعتبار: ${formatExpiryDaysLabel(expireDays)}\n` : "") +
       `حالت فروش: ${sellMode === "panel" ? "از پنل" : sellMode === "pingchi" ? "پینگچی" : "دستی"}` +
       (sellMode === "panel" ? `\nتحویل: ${panelDeliveryMode}` : "")
   };
@@ -5405,7 +5528,7 @@ async function completeMigration(migrationId: number, decidedBy: number, targetC
   return { ok: true, reason: "done" };
 }
 
-async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = "") {
+async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = "", expiryCategory = "") {
   const globalInfinite = await getBoolSetting("global_infinite_mode", false);
   const customEnabled = forBuy ? await getBoolSetting("custom_v2ray_enabled", false) : false;
   const customProductId = customEnabled ? Number((await getSetting("custom_v2ray_product_id")) || 0) : 0;
@@ -5451,6 +5574,7 @@ async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = ""
       p.panel_id,
       p.panel_sell_limit,
       p.panel_delivery_mode,
+      p.panel_config,
       pnl.name AS panel_name,
       pnl.active AS panel_active,
       pnl.allow_new_sales AS panel_allow_new_sales,
@@ -5487,11 +5611,65 @@ async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = ""
   const standardRows = customEnabled && customProductId > 0 ? filteredRows.filter((p: any) => Number(p.id) !== customProductId) : filteredRows;
   const customRow = customEnabled && customProductId > 0 ? filteredRows.find((p: any) => Number(p.id) === customProductId) : null;
 
+  if (forBuy && kind === "v2ray") {
+    const categoriesMap = new Map<string, { key: string; label: string; order: number; count: number }>();
+    for (const p of standardRows) {
+      const days = getProductExpiryDays(p);
+      const cat = getProductExpiryCategory(days);
+      if (!categoriesMap.has(cat.key)) {
+        categoriesMap.set(cat.key, { ...cat, count: 1 });
+      } else {
+        categoriesMap.get(cat.key)!.count++;
+      }
+    }
+
+    if (!expiryCategory && categoriesMap.size > 1) {
+      const sortedCategories = Array.from(categoriesMap.values()).sort((a, b) => a.order - b.order);
+      const keyboard = sortedCategories.map((cat) => [
+        cb(`${cat.label} (${cat.count} محصول)`, `buy_cat_v2ray_exp_${cat.key}_0`, "primary")
+      ]);
+      if (customRow) {
+        keyboard.push([
+          cb(
+            `🎛 سفارشی | از ${formatPriceToman(minCustomPrice)} تومان`,
+            `buy_custom_v2ray_${customProductId}`,
+            "success"
+          )
+        ]);
+      }
+      keyboard.push([backButton("buy_menu")]);
+      keyboard.push([homeButton()]);
+
+      await tg("sendMessage", {
+        chat_id: chatId,
+        text: "⏱ مدت زمان سرویس V2Ray مورد نظر خود را انتخاب کنید:",
+        reply_markup: { inline_keyboard: keyboard }
+      });
+      return null;
+    }
+  }
+
+  let displayRows = standardRows;
+  let categoryLabel = "";
+  if (forBuy && kind === "v2ray") {
+    if (expiryCategory) {
+      displayRows = standardRows.filter((p: any) => {
+        const days = getProductExpiryDays(p);
+        return getProductExpiryCategory(days).key === expiryCategory;
+      });
+      const catDays = expiryCategory === "weekly" ? 7 : (expiryCategory === "1m" ? 30 : (expiryCategory === "2m" ? 60 : (expiryCategory === "3m" ? 90 : (expiryCategory === "6m" ? 180 : 365))));
+      categoryLabel = getProductExpiryCategory(catDays).label;
+    } else if (standardRows.length > 0) {
+      const days = getProductExpiryDays(standardRows[0]);
+      categoryLabel = getProductExpiryCategory(days).label;
+    }
+  }
+
   const pageSize = 15;
-  const totalPages = Math.ceil(standardRows.length / pageSize) || 1;
+  const totalPages = Math.ceil(displayRows.length / pageSize) || 1;
   const safePage = Math.max(0, Math.min(page, totalPages - 1));
   const start = safePage * pageSize;
-  const slice = standardRows.slice(start, start + pageSize);
+  const slice = displayRows.slice(start, start + pageSize);
 
   const keyboard = slice.map((p: any) => [
     cb(
@@ -5500,7 +5678,7 @@ async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = ""
       "primary"
     )
   ]);
-  if (forBuy && customRow) {
+  if (forBuy && customRow && (!expiryCategory || expiryCategory === "1m")) {
     keyboard.push([
       cb(
         `🎛 سفارشی | از ${formatPriceToman(minCustomPrice)} تومان`,
@@ -5512,17 +5690,34 @@ async function showProducts(chatId: number, forBuy: boolean, page = 0, kind = ""
   
   if (totalPages > 1) {
     const navRow: { text: string; callback_data: string }[] = [];
-    const pfx = forBuy ? (kind ? `buy_cat_${kind}_` : `buy_cat__`) : `admin_inv_`;
+    const pfx = forBuy
+      ? (kind
+          ? (expiryCategory ? `buy_cat_${kind}_exp_${expiryCategory}_` : `buy_cat_${kind}_`)
+          : `buy_cat__`)
+      : `admin_inv_`;
     if (safePage > 0) navRow.push({ text: "◀️ قبلی", callback_data: `${pfx}${safePage - 1}` });
     navRow.push({ text: `صفحه ${safePage + 1} از ${totalPages}`, callback_data: "noop" });
     if (safePage < totalPages - 1) navRow.push({ text: "بعدی ▶️", callback_data: `${pfx}${safePage + 1}` });
     keyboard.push(navRow);
   }
 
+  if (forBuy) {
+    if (kind === "v2ray" && expiryCategory) {
+      keyboard.push([backButton("buy_cat_v2ray_0")]);
+    } else {
+      keyboard.push([backButton("buy_menu")]);
+    }
+  }
   keyboard.push([homeButton()]);
+
+  let headerText = forBuy ? "🛍 محصول موردنظر را انتخاب کنید:" : "محصول برای مدیریت موجودی:";
+  if (forBuy && kind === "v2ray" && categoryLabel) {
+    headerText = `🛍 محصولات V2Ray (${categoryLabel}):`;
+  }
+
   await tg("sendMessage", {
     chat_id: chatId,
-    text: forBuy ? "🛍 محصول موردنظر را انتخاب کنید:" : "محصول برای مدیریت موجودی:",
+    text: headerText,
     reply_markup: { inline_keyboard: keyboard }
   });
 }
@@ -5541,6 +5736,7 @@ async function listProductsForAdmin(chatId: number, userId: number, page = 0, ki
       p.panel_id,
       p.panel_sell_limit,
       p.panel_delivery_mode,
+      p.panel_config,
       pnl.name AS panel_name
     FROM products p
     LEFT JOIN panels pnl ON pnl.id = p.panel_id
@@ -5555,28 +5751,41 @@ async function listProductsForAdmin(chatId: number, userId: number, page = 0, ki
   const start = safePage * pageSize;
   const slice = rows.slice(start, start + pageSize);
 
-  const keyboard = slice.flatMap((p: any) => [
-    [
-      {
-        text: `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`,
-        callback_data: `admin_edit_product_${p.id}`
-      }
-    ],
-    [
-      cb("ویرایش", `admin_edit_product_${p.id}`, "primary"),
-      cb(p.is_active ? "غیرفعال‌سازی" : "فعال‌سازی", `admin_toggle_product_${p.id}`, p.is_active ? "danger" : "success"),
-      cb(
-        parseSellMode(String(p.sell_mode || "")) === "panel" ? "فروش دستی" : "فروش از پنل",
-        `admin_toggle_product_sell_mode_${p.id}`,
-        "primary"
-      )
-    ],
-    [
-      cb(p.is_infinite ? "حذف ∞" : "∞", `admin_toggle_product_infinite_${p.id}`, "primary"),
-      cb("تنظیم فروش پنل", `admin_configure_product_panel_${p.id}`, "primary"),
-      cb("🗑 حذف", `admin_remove_product_${p.id}`, "danger")
-    ]
-  ]);
+  const keyboard = slice.flatMap((p: any) => {
+    const isV2Ray = !p.panel_config?.product_kind || p.panel_config?.product_kind === "v2ray";
+    const expDays = parseMaybeNumber(p.panel_config?.expire_days) ?? 30;
+    const titleText = isV2Ray
+      ? `${p.name} | ${formatExpiryDaysLabel(expDays)} | ${formatPriceToman(Number(p.price_toman))} تومان`
+      : `${p.name} | ${formatPriceToman(Number(p.price_toman))} تومان`;
+
+    const row2 = [
+      cb("ویرایش", `admin_edit_product_${p.id}`, "primary")
+    ];
+    if (isV2Ray) {
+      row2.push(cb("⏱ تغییر انقضا", `admin_product_set_expiry_${p.id}`, "primary"));
+    }
+    row2.push(cb(p.is_active ? "غیرفعال‌سازی" : "فعال‌سازی", `admin_toggle_product_${p.id}`, p.is_active ? "danger" : "success"));
+
+    return [
+      [
+        {
+          text: titleText,
+          callback_data: `admin_edit_product_${p.id}`
+        }
+      ],
+      row2,
+      [
+        cb(
+          parseSellMode(String(p.sell_mode || "")) === "panel" ? "فروش دستی" : "فروش از پنل",
+          `admin_toggle_product_sell_mode_${p.id}`,
+          "primary"
+        ),
+        cb(p.is_infinite ? "حذف ∞" : "∞", `admin_toggle_product_infinite_${p.id}`, "primary"),
+        cb("تنظیم فروش پنل", `admin_configure_product_panel_${p.id}`, "primary"),
+        cb("🗑 حذف", `admin_remove_product_${p.id}`, "danger")
+      ]
+    ];
+  });
   
   const kindSuffix = kindFilter || "all";
   if (totalPages > 1) {
@@ -6794,6 +7003,30 @@ async function parseAndApplyState(
     await tg("sendMessage", { chat_id: chatId, text: "نوع مدیا نامعتبر است. از تنظیمات دوباره شروع کن." });
     return true;
   }
+  if (state.state === "admin_product_quick_expiry") {
+    const productId = Number(state.payload.productId);
+    const parsed = parseExpiryInputToDays(text.trim());
+    if (parsed === null) {
+      await tg("sendMessage", { chat_id: chatId, text: "مدت زمان نامعتبر است. عدد بفرستید یا بنویسید مثلاً: 30 یا 2 ماه یا 7 روز" });
+      return true;
+    }
+    const rows = await sql`SELECT id, name, panel_config FROM products WHERE id = ${productId} LIMIT 1;`;
+    if (!rows.length) {
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
+      return true;
+    }
+    const currentConfig = sanitizePanelConfig(rows[0].panel_config);
+    currentConfig.expire_days = parsed;
+    await sql`UPDATE products SET panel_config = ${JSON.stringify(currentConfig)}::jsonb WHERE id = ${productId};`;
+    await clearState(userId);
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: `✅ مدت زمان اعتبار «${rows[0].name}» با موفقیت روی ${formatExpiryDaysLabel(parsed)} تنظیم شد.`
+    });
+    await listProductsForAdmin(chatId, userId, 0, "v2ray");
+    return true;
+  }
   if (state.state === "admin_product_wizard") {
     const mode = String(state.payload.mode || "add") as ProductWizardMode;
     const step = String(state.payload.step || "name") as ProductWizardStep;
@@ -6876,12 +7109,28 @@ async function parseAndApplyState(
       await setState(userId, "admin_product_wizard", state.payload);
       await promptProductWizardStep(chatId, state.payload);
       return true;
-    } else if (step === "inbound_id" || step === "protocol" || step === "expire_days" || step === "data_limit_mb") {
+    } else if (step === "expire_days") {
+      let expireDays = parseMaybeNumber(state.payload.expireDays) ?? 30;
+      if (!(mode === "edit" && raw === "-")) {
+        const parsed = parseExpiryInputToDays(raw);
+        if (parsed === null) {
+          await tg("sendMessage", { chat_id: chatId, text: "مدت زمان معتبر بفرستید. مثال: 30 یا 1 ماه یا 7 روز یا 2 ماه" });
+          return true;
+        }
+        expireDays = parsed;
+      }
+      const payload = { ...state.payload, expireDays };
+      const result = await saveProductWizard(payload);
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: result.message });
+      if (result.ok) await listProductsForAdmin(chatId, userId, 0, "v2ray");
+      return true;
+    } else if (step === "inbound_id" || step === "protocol" || step === "data_limit_mb") {
       const payload = { ...state.payload };
       const result = await saveProductWizard(payload);
       await clearState(userId);
       await tg("sendMessage", { chat_id: chatId, text: result.message });
-      if (result.ok) await listProductsForAdmin(chatId, userId);
+      if (result.ok) await listProductsForAdmin(chatId, userId, 0, "v2ray");
       return true;
     }
     await tg("sendMessage", { chat_id: chatId, text: "برای این مرحله از دکمه‌های پیام قبلی استفاده کنید." });
@@ -7438,12 +7687,23 @@ async function parseAndApplyState(
     if (step === "expire_days") {
       let expireDays = parseMaybeNumber(state.payload.expireDays) ?? 30;
       if (raw !== "-") {
-        const n = Number(raw);
-        if (!Number.isFinite(n) || n < 0) {
-          await tg("sendMessage", { chat_id: chatId, text: "expire_days باید عدد معتبر و صفر یا بیشتر باشد." });
+        const parsed = parseExpiryInputToDays(raw);
+        if (parsed === null) {
+          await tg("sendMessage", { chat_id: chatId, text: "مدت زمان معتبر بفرستید. مثال: 30 یا 1 ماه یا 7 روز یا 2 ماه" });
           return true;
         }
-        expireDays = Math.round(n);
+        expireDays = parsed;
+      }
+      const isQuick = Boolean(state.payload.quickMode);
+      if (isQuick) {
+        const payload = { ...state.payload, expireDays };
+        const result = await saveProductPanelWizard(payload, true);
+        await clearState(userId);
+        await tg("sendMessage", { chat_id: chatId, text: result.message });
+        if (result.ok) {
+          await listProductsForAdmin(chatId, userId, 0, "v2ray");
+        }
+        return true;
       }
       const payload = { ...state.payload, expireDays, step: "data_limit_mb" as ProductPanelWizardStep };
       await setState(userId, "admin_product_panel_wizard", payload);
@@ -13262,12 +13522,69 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
   if (data === "buy_menu" || data.startsWith("buy_cat_")) {
     let page = 0;
     let kind = "";
+    let expiryCategory = "";
     if (data.startsWith("buy_cat_")) {
-      const parts = data.replace("buy_cat_", "").split("_");
-      kind = parts[0];
-      page = Math.max(0, parseInt(parts[1], 10) || 0);
+      const rawRest = data.replace("buy_cat_", "");
+      const expMatch = rawRest.match(/^([a-zA-Z0-9]+)_exp_([a-zA-Z0-9]+)_(\d+)$/);
+      if (expMatch) {
+        kind = expMatch[1];
+        expiryCategory = expMatch[2];
+        page = Math.max(0, parseInt(expMatch[3], 10) || 0);
+      } else {
+        const parts = rawRest.split("_");
+        kind = parts[0];
+        page = Math.max(0, parseInt(parts[1], 10) || 0);
+      }
     }
-    await showProducts(chatId, true, page, kind);
+    await showProducts(chatId, true, page, kind, expiryCategory);
+    return null;
+  }
+  if (data.startsWith("admin_product_set_expiry_")) {
+    const productId = Number(data.replace("admin_product_set_expiry_", ""));
+    const rows = await sql`SELECT id, name, panel_config FROM products WHERE id = ${productId} LIMIT 1;`;
+    if (!rows.length) {
+      await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
+      return null;
+    }
+    const currentConfig = sanitizePanelConfig(rows[0].panel_config);
+    const currentDays = parseMaybeNumber(currentConfig.expire_days) ?? 30;
+    await setState(userId, "admin_product_quick_expiry", { productId, currentDays });
+    
+    const kb = [
+      [cb("⚡️ ۷ روز (هفتگی)", `admin_product_apply_expiry_${productId}_7`, "primary"), cb("📅 ۳۰ روز (۱ ماه)", `admin_product_apply_expiry_${productId}_30`, "primary")],
+      [cb("📅 ۶۰ روز (۲ ماه)", `admin_product_apply_expiry_${productId}_60`, "primary"), cb("📅 ۹۰ روز (۳ ماه)", `admin_product_apply_expiry_${productId}_90`, "primary")],
+      [cb("📅 ۱۸۰ روز (۶ ماه)", `admin_product_apply_expiry_${productId}_180`, "primary"), cb("📅 ۳۶۵ روز (۱ سال)", `admin_product_apply_expiry_${productId}_365`, "primary")],
+      [cancelButton(`admin_product_wizard_cancel_${productId}`)]
+    ];
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text:
+        `⏱ تنظیم مدت زمان اعتبار (انقضا) برای «${rows[0].name}»\n\n` +
+        `مقدار فعلی: ${formatExpiryDaysLabel(currentDays)}\n\n` +
+        `یکی از دکمه‌ها را انتخاب کنید یا عدد/متن بفرستید:\n` +
+        `نمونه‌ها: 30 یا 1 ماه یا 7 روز یا 2 ماه یا 60 روز`,
+      reply_markup: { inline_keyboard: kb }
+    });
+    return null;
+  }
+  if (data.startsWith("admin_product_apply_expiry_")) {
+    const parts = data.replace("admin_product_apply_expiry_", "").split("_");
+    const productId = Number(parts[0]);
+    const days = Number(parts[1]);
+    const rows = await sql`SELECT id, name, panel_config FROM products WHERE id = ${productId} LIMIT 1;`;
+    if (!rows.length) {
+      await tg("sendMessage", { chat_id: chatId, text: "محصول پیدا نشد." });
+      return null;
+    }
+    const currentConfig = sanitizePanelConfig(rows[0].panel_config);
+    currentConfig.expire_days = days;
+    await sql`UPDATE products SET panel_config = ${JSON.stringify(currentConfig)}::jsonb WHERE id = ${productId};`;
+    await clearState(userId);
+    await tg("sendMessage", {
+      chat_id: chatId,
+      text: `✅ مدت زمان اعتبار «${rows[0].name}» با موفقیت روی ${formatExpiryDaysLabel(days)} تنظیم شد.`
+    });
+    await listProductsForAdmin(chatId, userId, 0, "v2ray");
     return null;
   }
   if (data.startsWith("buy_custom_v2ray_")) {
@@ -15344,11 +15661,17 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
     const state = await getState(userId);
     if (!state || state.state !== "admin_product_wizard") return null;
     const isInfinite = data === "admin_product_wizard_infinite_yes";
-    const payload = { ...state.payload, isInfinite };
-    const result = await saveProductWizard(payload);
-    await clearState(userId);
-    await tg("sendMessage", { chat_id: chatId, text: result.message });
-    if (result.ok) await listProductsForAdmin(chatId, userId);
+    if (state.payload.productKind === "account" || state.payload.productKind === "wireguard") {
+      const payload = { ...state.payload, isInfinite };
+      const result = await saveProductWizard(payload);
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: result.message });
+      if (result.ok) await listProductsForAdmin(chatId, userId);
+      return null;
+    }
+    const payload = { ...state.payload, isInfinite, step: "expire_days" as ProductWizardStep };
+    await setState(userId, "admin_product_wizard", payload);
+    await promptProductWizardStep(chatId, payload);
     return null;
   }
   if (data.startsWith("admin_product_wizard_panel_")) {
@@ -15367,11 +15690,23 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       await tg("sendMessage", { chat_id: chatId, text: "جلسه افزودن/ویرایش محصول منقضی شده. دوباره از اول شروع کنید." });
       return null;
     }
-    const payload = { ...state.payload, panelDeliveryMode };
+    const payload = { ...state.payload, panelDeliveryMode, step: "expire_days" as ProductWizardStep };
+    await setState(userId, "admin_product_wizard", payload);
+    await promptProductWizardStep(chatId, payload);
+    return null;
+  }
+  if (data.startsWith("admin_product_wizard_expire_")) {
+    const days = Number(data.replace("admin_product_wizard_expire_", ""));
+    const state = await getState(userId);
+    if (!state || state.state !== "admin_product_wizard") {
+      await tg("sendMessage", { chat_id: chatId, text: "جلسه ثبت/ویرایش منقضی شده است." });
+      return null;
+    }
+    const payload = { ...state.payload, expireDays: days };
     const result = await saveProductWizard(payload);
     await clearState(userId);
     await tg("sendMessage", { chat_id: chatId, text: result.message });
-    if (result.ok) await listProductsForAdmin(chatId, userId);
+    if (result.ok) await listProductsForAdmin(chatId, userId, 0, "v2ray");
     return null;
   }
   if (data.startsWith("admin_product_wizard_protocol_")) {
@@ -15446,12 +15781,32 @@ async function handleCallback(update: TgUpdate["callback_query"]) {
       await tg("sendMessage", { chat_id: chatId, text: "جلسه تنظیم منقضی شده. دوباره تلاش کنید." });
       return null;
     }
-    const result = await saveProductPanelWizard(state.payload, true);
-    await clearState(userId);
-    await tg("sendMessage", { chat_id: chatId, text: result.message });
-    if (result.ok) {
-      await listProductsForAdmin(chatId, userId);
+    const payload = { ...state.payload, quickMode: true, step: "expire_days" as ProductPanelWizardStep };
+    await setState(userId, "admin_product_panel_wizard", payload);
+    await promptProductPanelWizardStep(chatId, payload);
+    return null;
+  }
+  if (data.startsWith("admin_product_panel_expire_")) {
+    const days = Number(data.replace("admin_product_panel_expire_", ""));
+    const state = await getState(userId);
+    if (!state || state.state !== "admin_product_panel_wizard") {
+      await tg("sendMessage", { chat_id: chatId, text: "جلسه تنظیم منقضی شده. دوباره تلاش کنید." });
+      return null;
     }
+    const isQuick = Boolean(state.payload.quickMode);
+    if (isQuick) {
+      const payload = { ...state.payload, expireDays: days };
+      const result = await saveProductPanelWizard(payload, true);
+      await clearState(userId);
+      await tg("sendMessage", { chat_id: chatId, text: result.message });
+      if (result.ok) {
+        await listProductsForAdmin(chatId, userId, 0, "v2ray");
+      }
+      return null;
+    }
+    const payload = { ...state.payload, expireDays: days, step: "data_limit_mb" as ProductPanelWizardStep };
+    await setState(userId, "admin_product_panel_wizard", payload);
+    await promptProductPanelWizardStep(chatId, payload);
     return null;
   }
   if (data === "admin_product_panel_custom") {
