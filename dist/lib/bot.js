@@ -2603,7 +2603,7 @@ async function mainMenuMarkup(userId) {
         [cb("👛 کیف پول", "wallet_menu", "success"), cb("🎁 دعوت دوستان", "referral_menu", "success")],
         [cb("🆘 پشتیبانی", "support", "primary")]
     ];
-    if (testEnabled) {
+    if (testEnabled || adminCheck) {
         rows.splice(2, 0, [cb("🆓 کانفیگ تست رایگان", "test_config_claim", "success")]);
     }
     if (adminCheck) {
@@ -9662,13 +9662,14 @@ async function getPurchaseSurcharge() {
     return Math.round(Math.random() * (maxSurcharge - minSurcharge) + minSurcharge);
 }
 async function grantTestConfig(userId, chatId) {
+    const admin = await isAdmin(userId);
     const [enabled, productIdRaw, testMbRaw, testHoursRaw] = await Promise.all([
         getBoolSetting("test_config_enabled", false),
         getSetting("test_config_product_id"),
         getNumberSetting("test_config_mb"),
         getNumberSetting("test_config_hours")
     ]);
-    if (!enabled) {
+    if (!enabled && !admin) {
         await tg("sendMessage", { chat_id: chatId, text: "❌ کانفیگ تست در حال حاضر فعال نیست." });
         return;
     }
@@ -9677,10 +9678,12 @@ async function grantTestConfig(userId, chatId) {
         await tg("sendMessage", { chat_id: chatId, text: "❌ کانفیگ تست هنوز پیکربندی نشده. لطفاً بعداً امتحان کنید." });
         return;
     }
-    const userRows = await sql `SELECT test_config_used_at FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
-    if (userRows.length && userRows[0].test_config_used_at) {
-        await tg("sendMessage", { chat_id: chatId, text: "⚠️ شما قبلاً از کانفیگ تست استفاده کرده‌اید.\nهر کاربر فقط یک بار می‌تواند کانفیگ تست دریافت کند." });
-        return;
+    if (!admin) {
+        const userRows = await sql `SELECT test_config_used_at FROM users WHERE telegram_id = ${userId} LIMIT 1;`;
+        if (userRows.length && userRows[0].test_config_used_at) {
+            await tg("sendMessage", { chat_id: chatId, text: "⚠️ شما قبلاً از کانفیگ تست استفاده کرده‌اید.\nهر کاربر فقط یک بار می‌تواند کانفیگ تست دریافت کند." });
+            return;
+        }
     }
     const productRows = await sql `
     SELECT p.id, p.name, p.size_mb, p.sell_mode, p.panel_id, p.panel_delivery_mode, p.panel_config, p.is_active,
@@ -9698,7 +9701,9 @@ async function grantTestConfig(userId, chatId) {
     const testMb = Math.max(1, Math.round(testMbRaw ?? 100));
     const testHours = Math.max(1, Math.round(testHoursRaw ?? 24));
     const testDays = Math.max(1, Math.round(testHours / 24));
-    await sql `UPDATE users SET test_config_used_at = NOW() WHERE telegram_id = ${userId};`;
+    if (!admin) {
+        await sql `UPDATE users SET test_config_used_at = NOW() WHERE telegram_id = ${userId};`;
+    }
     const panelConfigSnapshot = {
         ...sanitizePanelConfig(product.panel_config),
         data_limit_mb: testMb,
@@ -9726,13 +9731,17 @@ async function grantTestConfig(userId, chatId) {
         });
     }
     catch (err) {
-        await sql `UPDATE users SET test_config_used_at = NULL WHERE telegram_id = ${userId};`;
+        if (!admin) {
+            await sql `UPDATE users SET test_config_used_at = NULL WHERE telegram_id = ${userId};`;
+        }
         await tg("sendMessage", { chat_id: chatId, text: "❌ خطا در ثبت سفارش کانفیگ تست." });
         return;
     }
     const result = await finalizeOrder(orderId, null);
     if (!result.ok) {
-        await sql `UPDATE users SET test_config_used_at = NULL WHERE telegram_id = ${userId};`;
+        if (!admin) {
+            await sql `UPDATE users SET test_config_used_at = NULL WHERE telegram_id = ${userId};`;
+        }
         await sql `DELETE FROM orders WHERE id = ${orderId} AND payment_method = 'test_config' AND status IN ('pending', 'receipt_submitted');`;
         await tg("sendMessage", { chat_id: chatId, text: "❌ ساخت کانفیگ تست با خطا مواجه شد. لطفاً بعداً امتحان کنید." });
         return;
