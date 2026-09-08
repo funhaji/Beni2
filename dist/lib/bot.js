@@ -1388,11 +1388,12 @@ async function createCryptoWalletTopup(chatId, userId, amount, w) {
         text: `شارژ کیف پول ساخته شد ✅\n` +
             `مبلغ: ${formatPriceToman(amount)} تومان\n\n` +
             `⏰ مهلت پرداخت: 20 دقیقه\n` +
-            `🪙 ارز: ${String(w.currency)}\n` +
-            `🌐 شبکه: ${String(w.network)}\n` +
-            `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
-            `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
+            `🪙 ارز: ${escapeHtml(String(w.currency))}\n` +
+            `🌐 شبکه: ${escapeHtml(String(w.network))}\n` +
+            `☑️ مبلغ پرداختی: <code>${escapeHtml(String(cryptoAmount))}</code>\n\n` +
+            `📱 آدرس کیف پول:\n\n<code>${escapeHtml(String(w.address || "-"))}</code>\n\n` +
             `بعد از پرداخت، اسکرین‌شات/رسید پرداخت را همینجا ارسال کنید.`,
+        parse_mode: "HTML",
         reply_markup: { inline_keyboard: [[backButton("wallet_menu", "🔙 بازگشت")]] }
     });
 }
@@ -2327,7 +2328,10 @@ async function promptCardWizardStep(chatId, payload) {
     if (step === "card_number") {
         await tg("sendMessage", {
             chat_id: chatId,
-            text: `کارت ${mode === "add" ? "جدید" : "ویرایش"} - 2 از 4\nشماره کارت را بفرستید.` + (mode === "edit" ? `\nفعلی: ${payload.cardNumber || "-"}` : "") + keepHint,
+            text: `کارت ${mode === "add" ? "جدید" : "ویرایش"} - 2 از 4\nشماره کارت را بفرستید.` +
+                (mode === "edit" ? `\nفعلی: <code>${escapeHtml(String(payload.cardNumber || "-"))}</code>` : "") +
+                keepHint,
+            parse_mode: "HTML",
             reply_markup: cancel
         });
         return null;
@@ -9960,15 +9964,16 @@ async function createTopupCard2CardRequest(chatId, userId, inventoryId, mb) {
     await tg("sendMessage", {
         chat_id: chatId,
         text: `درخواست افزایش دیتا ساخته شد ✅\n` +
-            `شماره سفارش: ${purchaseId}\n` +
-            `مقدار: ${mb}MB\n` +
+            `شماره سفارش: ${escapeHtml(String(purchaseId))}\n` +
+            `مقدار: ${escapeHtml(String(mb))}MB\n` +
             `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
             `کارت مقصد:\n` +
-            `${selected.label}\n` +
-            `شماره کارت: ${selected.card_number}\n` +
-            `${selected.holder_name ? `صاحب کارت: ${selected.holder_name}\n` : ""}` +
-            `${selected.bank_name ? `بانک: ${selected.bank_name}\n` : ""}\n` +
+            `${escapeHtml(String(selected.label || ""))}\n` +
+            `شماره کارت: <code>${escapeHtml(String(selected.card_number || ""))}</code>\n` +
+            `${selected.holder_name ? `صاحب کارت: ${escapeHtml(String(selected.holder_name))}\n` : ""}` +
+            `${selected.bank_name ? `بانک: ${escapeHtml(String(selected.bank_name))}\n` : ""}\n` +
             `پس از پرداخت، عکس رسید را ارسال کنید.`,
+        parse_mode: "HTML",
         reply_markup: { inline_keyboard: [[homeButton()]] }
     });
 }
@@ -10873,18 +10878,19 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
             await tg("sendMessage", {
                 chat_id: chatId,
                 text: `سفارش شما ساخته شد ✅\n` +
-                    `شناسه خرید: ${purchaseId}\n` +
-                    `محصول: ${productNameSnapshot}\n` +
+                    `شناسه خرید: ${escapeHtml(String(purchaseId))}\n` +
+                    `محصول: ${escapeHtml(String(productNameSnapshot))}\n` +
                     `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
                     `کارت مقصد:\n` +
-                    `${selected.label}\n` +
-                    `شماره کارت: ${selected.card_number}\n` +
-                    `${selected.holder_name ? `صاحب کارت: ${selected.holder_name}\n` : ""}` +
-                    `${selected.bank_name ? `بانک: ${selected.bank_name}\n` : ""}\n` +
+                    `${escapeHtml(String(selected.label || ""))}\n` +
+                    `شماره کارت: <code>${escapeHtml(String(selected.card_number || ""))}</code>\n` +
+                    `${selected.holder_name ? `صاحب کارت: ${escapeHtml(String(selected.holder_name))}\n` : ""}` +
+                    `${selected.bank_name ? `بانک: ${escapeHtml(String(selected.bank_name))}\n` : ""}\n` +
                     `⚠️⚠️ هشدار مهم ⚠️⚠️\n` +
                     `لطفاً دقیقاً مبلغ ${formatPriceToman(finalPrice)} تومان را واریز کنید.\n` +
                     `در صورت واریز مبلغ اشتباه، سفارش شما تأیید نخواهد شد!\n\n` +
                     `بعد از انتقال، اسکرین‌شات رسید را به صورت عکس ارسال کنید.`,
+                parse_mode: "HTML",
                 reply_markup: {
                     inline_keyboard: [[homeButton()]]
                 }
@@ -10935,15 +10941,16 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         await tg("sendMessage", {
             chat_id: chatId,
             text: `سفارش شما ساخته شد ✅\n` +
-                `شناسه خرید: ${purchaseId}\n` +
-                `محصول: ${productNameSnapshot}\n` +
+                `شناسه خرید: ${escapeHtml(String(purchaseId))}\n` +
+                `محصول: ${escapeHtml(String(productNameSnapshot))}\n` +
                 `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
                 `کارت مقصد:\n` +
-                `${selected.label}\n` +
-                `شماره کارت: ${selected.card_number}\n` +
-                `${selected.holder_name ? `صاحب کارت: ${selected.holder_name}\n` : ""}` +
-                `${selected.bank_name ? `بانک: ${selected.bank_name}\n` : ""}\n` +
+                `${escapeHtml(String(selected.label || ""))}\n` +
+                `شماره کارت: <code>${escapeHtml(String(selected.card_number || ""))}</code>\n` +
+                `${selected.holder_name ? `صاحب کارت: ${escapeHtml(String(selected.holder_name))}\n` : ""}` +
+                `${selected.bank_name ? `بانک: ${escapeHtml(String(selected.bank_name))}\n` : ""}\n` +
                 `بعد از انتقال، اسکرین‌شات رسید را به صورت عکس ارسال کنید.`,
+            parse_mode: "HTML",
             reply_markup: {
                 inline_keyboard: [[homeButton()]]
             }
@@ -11042,18 +11049,19 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
             return null;
         }
         const cryptoText = `سفارش شما ساخته شد ✅\n` +
-            `شناسه خرید: ${purchaseId}\n` +
-            `محصول: ${productNameSnapshot}\n` +
+            `شناسه خرید: ${escapeHtml(String(purchaseId))}\n` +
+            `محصول: ${escapeHtml(String(productNameSnapshot))}\n` +
             `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
             `⏰ مهلت پرداخت: 20 دقیقه\n` +
-            `🪙 ارز: ${String(w.currency)}\n` +
-            `🌐 شبکه: ${String(w.network)}\n` +
-            `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
-            `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
+            `🪙 ارز: ${escapeHtml(String(w.currency))}\n` +
+            `🌐 شبکه: ${escapeHtml(String(w.network))}\n` +
+            `☑️ مبلغ پرداختی: <code>${escapeHtml(String(cryptoAmount))}</code>\n\n` +
+            `📱 آدرس کیف پول:\n\n<code>${escapeHtml(String(w.address || "-"))}</code>\n\n` +
             `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`;
         await tg("sendMessage", {
             chat_id: chatId,
             text: cryptoText,
+            parse_mode: "HTML",
             reply_markup: {
                 inline_keyboard: [
                     [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
@@ -11119,18 +11127,19 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
       );
     `;
         const cryptoText = `سفارش شما ساخته شد ✅\n` +
-            `شناسه خرید: ${purchaseId}\n` +
-            `محصول: ${productNameSnapshot}\n` +
+            `شناسه خرید: ${escapeHtml(String(purchaseId))}\n` +
+            `محصول: ${escapeHtml(String(productNameSnapshot))}\n` +
             `مبلغ: ${formatPriceToman(finalPrice)} تومان\n\n` +
             `⏰ مهلت پرداخت: 20 دقیقه\n` +
-            `🪙 ارز: ${String(w.currency)}\n` +
-            `🌐 شبکه: ${String(w.network)}\n` +
-            `☑️ مبلغ پرداختی: ${cryptoAmount}\n\n` +
-            `📱 آدرس کیف پول:\n\n${String(w.address || "-")}\n\n` +
+            `🪙 ارز: ${escapeHtml(String(w.currency))}\n` +
+            `🌐 شبکه: ${escapeHtml(String(w.network))}\n` +
+            `☑️ مبلغ پرداختی: <code>${escapeHtml(String(cryptoAmount))}</code>\n\n` +
+            `📱 آدرس کیف پول:\n\n<code>${escapeHtml(String(w.address || "-"))}</code>\n\n` +
             `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`;
         await tg("sendMessage", {
             chat_id: chatId,
             text: cryptoText,
+            parse_mode: "HTML",
             reply_markup: {
                 inline_keyboard: [
                     [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
@@ -11200,17 +11209,18 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
                 swapwalletStatus: "new",
                 walletTransactionDescription: `خرید محصول ${productNameSnapshot} (سفارش ${purchaseId})`
             }));
-            const exp = invoice.expiredAt ? `\n⏰ مهلت پرداخت: ${String(invoice.expiredAt)}` : "";
+            const exp = invoice.expiredAt ? `\n⏰ مهلت پرداخت: ${escapeHtml(String(invoice.expiredAt))}` : "";
             await tg("sendMessage", {
                 chat_id: chatId,
                 text: `سفارش شما ساخته شد ✅\n` +
-                    `شناسه خرید: ${purchaseId}\n` +
-                    `محصول: ${productNameSnapshot}\n` +
+                    `شناسه خرید: ${escapeHtml(String(purchaseId))}\n` +
+                    `محصول: ${escapeHtml(String(productNameSnapshot))}\n` +
                     `مبلغ: ${formatPriceToman(finalPrice)} تومان\n` +
-                    `روش: SwapWallet (${String(swapwalletToken)} / ${String(swapwalletNetwork)})\n\n` +
-                    `📱 آدرس کیف پول:\n\n${invoice.walletAddress}\n` +
+                    `روش: SwapWallet (${escapeHtml(String(swapwalletToken))} / ${escapeHtml(String(swapwalletNetwork))})\n\n` +
+                    `📱 آدرس کیف پول:\n\n<code>${escapeHtml(String(invoice.walletAddress))}</code>\n` +
                     exp +
                     `\n\nبعد از پرداخت، روی «بررسی پرداخت» بزنید.`,
+                parse_mode: "HTML",
                 reply_markup: {
                     inline_keyboard: [
                         ...links.slice(0, 2).map((l) => [{ text: l.name ? `💳 ${l.name}` : "💳 پرداخت", url: l.url }]),
@@ -12681,11 +12691,12 @@ async function handleCallback(update) {
             const topupId = Number(rows[0].id);
             await setState(userId, "await_wallet_receipt", { topupId });
             const cardsText = cards
-                .map(c => `💳 ${c.card_number}\n👤 ${c.holder_name || "نامشخص"} (${c.bank_name || "نامشخص"})`)
+                .map(c => `💳 <code>${escapeHtml(String(c.card_number))}</code>\n👤 ${escapeHtml(String(c.holder_name || "نامشخص"))} (${escapeHtml(String(c.bank_name || "نامشخص"))})`)
                 .join("\n\n");
             await tg("sendMessage", {
                 chat_id: chatId,
-                text: `مبلغ: ${formatPriceToman(amount)} تومان\n\nلطفاً مبلغ را به یکی از کارت‌های زیر واریز کنید:\n\n${cardsText}\n\nسپس تصویر رسید را همینجا ارسال کنید.`
+                text: `مبلغ: ${formatPriceToman(amount)} تومان\n\nلطفاً مبلغ را به یکی از کارت‌های زیر واریز کنید:\n\n${cardsText}\n\nسپس تصویر رسید را همینجا ارسال کنید.`,
+                parse_mode: "HTML"
             });
         }
         else {
@@ -16588,11 +16599,12 @@ async function handleCallback(update) {
         await tg("sendMessage", {
             chat_id: chatId,
             text: `تنظیم کیف پول:\n` +
-                `${cryptoWalletTitle(w)}\n` +
+                `${escapeHtml(cryptoWalletTitle(w))}\n` +
                 `وضعیت: ${w.active ? "فعال" : "غیرفعال"}\n` +
-                `آدرس: ${w.address || "-"}\n` +
-                `نرخ: ${rate}\n` +
+                `آدرس: <code>${escapeHtml(String(w.address || "-"))}</code>\n` +
+                `نرخ: ${escapeHtml(String(rate))}\n` +
                 `حاشیه: ${formatPriceToman(Number(w.extra_toman_per_unit || 0))} تومان`,
+            parse_mode: "HTML",
             reply_markup: {
                 inline_keyboard: [
                     [cb("✍️ تنظیم آدرس", `admin_crypto_wallet_set_address_${walletId}`, "primary")],
