@@ -6558,16 +6558,36 @@ async function parseAndApplyState(
       `آدرس: ${shortAddr(String(rows[0].crypto_address || ""))}`;
 
     for (const adminId of await getAdminIds()) {
-      await tg("sendPhoto", {
-        photo: photoFileId,
-        caption,
-        reply_markup: {
-          inline_keyboard: [
-            [confirmButton(`crypto_accept_${orderId}`, "✅ تایید")],
-            [cancelButton(`crypto_deny_${orderId}`, "❌ رد")]
-          ]
+      if (!adminId) continue;
+      try {
+        await tg("sendPhoto", {
+          chat_id: adminId,
+          photo: photoFileId,
+          caption,
+          reply_markup: {
+            inline_keyboard: [
+              [confirmButton(`crypto_accept_${orderId}`, "✅ تایید")],
+              [cancelButton(`crypto_deny_${orderId}`, "❌ رد")]
+            ]
+          }
+        });
+      } catch (err) {
+        logError("send_crypto_receipt_to_admin_failed", err, { adminId, orderId, userId });
+        try {
+          await tg("sendMessage", {
+            chat_id: adminId,
+            text: `${caption}\n\n⚠️ تصویر رسید ضمیمه نشد (خطا در ارسال تصویر مستقیم).`,
+            reply_markup: {
+              inline_keyboard: [
+                [confirmButton(`crypto_accept_${orderId}`, "✅ تایید")],
+                [cancelButton(`crypto_deny_${orderId}`, "❌ رد")]
+              ]
+            }
+          });
+        } catch (textErr) {
+          logError("send_crypto_receipt_fallback_failed", textErr, { adminId, orderId, userId });
         }
-      }).catch(() => {});
+      }
     }
     return true;
   }
@@ -11736,6 +11756,8 @@ async function createOrder(
       return null;
     }
 
+    await setState(userId, "await_crypto_receipt", { purchaseId });
+
     const cryptoText =
       `سفارش شما ساخته شد ✅\n` +
       `شناسه خرید: ${escapeHtml(String(purchaseId))}\n` +
@@ -11746,14 +11768,13 @@ async function createOrder(
       `🌐 شبکه: ${escapeHtml(String(w.network))}\n` +
       `☑️ مبلغ پرداختی: <code>${escapeHtml(String(cryptoAmount))}</code>\n\n` +
       `📱 آدرس کیف پول:\n\n<code>${escapeHtml(String(w.address || "-"))}</code>\n\n` +
-      `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`;
+      `بعد از پرداخت، تصویر رسید / اسکرین‌شات پرداخت را همینجا ارسال کنید.`;
     await tg("sendMessage", {
       chat_id: chatId,
       text: cryptoText,
       parse_mode: "HTML",
       reply_markup: {
         inline_keyboard: [
-          [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
           [homeButton()]
         ]
       }
@@ -11815,6 +11836,8 @@ async function createOrder(
       );
     `;
 
+    await setState(userId, "await_crypto_receipt", { purchaseId });
+
     const cryptoText =
       `سفارش شما ساخته شد ✅\n` +
       `شناسه خرید: ${escapeHtml(String(purchaseId))}\n` +
@@ -11825,14 +11848,13 @@ async function createOrder(
       `🌐 شبکه: ${escapeHtml(String(w.network))}\n` +
       `☑️ مبلغ پرداختی: <code>${escapeHtml(String(cryptoAmount))}</code>\n\n` +
       `📱 آدرس کیف پول:\n\n<code>${escapeHtml(String(w.address || "-"))}</code>\n\n` +
-      `بعد از پرداخت روی «بررسی پرداخت» بزنید و اسکرین‌شات پرداخت را ارسال کنید.`;
+      `بعد از پرداخت، تصویر رسید / اسکرین‌شات پرداخت را همینجا ارسال کنید.`;
     await tg("sendMessage", {
       chat_id: chatId,
       text: cryptoText,
       parse_mode: "HTML",
       reply_markup: {
         inline_keyboard: [
-          [cb("✅ بررسی پرداخت", `check_order_${purchaseId}`, "success")],
           [homeButton()]
         ]
       }
