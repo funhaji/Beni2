@@ -56,12 +56,12 @@ export async function getAdminIds() {
   const envIds = String(process.env.ADMIN_IDS || "")
     .split(",")
     .map((x) => Number(x.trim()))
-    .filter((x) => Number.isFinite(x));
+    .filter((x) => Number.isFinite(x) && x > 0);
   const adminSetting = (await getSetting("admin_ids")) || "";
   const settingIds = String(adminSetting)
     .split(/[,\s]+/)
     .map((x) => Number(x.trim()))
-    .filter((x) => Number.isFinite(x));
+    .filter((x) => Number.isFinite(x) && x > 0);
   return Array.from(new Set([...envIds, ...settingIds]));
 }
 

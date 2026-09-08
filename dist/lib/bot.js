@@ -10555,10 +10555,10 @@ async function createBulkOrders(chatId, userId, productId, paymentMethod, discou
     // Create a single order with total price
     const orderCreated = await createOrder(chatId, userId, productId, paymentMethod, discountInput, walletUsedParam, overrides);
     if (!orderCreated) {
-        await tg("sendMessage", {
-            chat_id: chatId,
-            text: `❌ خطا: نتوانستیم سفارش شما را ثبت کنیم. لطفاً دوباره تلاش کنید یا از پشتیبانی کمک بگیرید.`
-        });
+        const curState = await getState(userId);
+        if (curState?.state === "await_crypto_wallet_select" || curState?.state === "await_swapwallet_asset_select") {
+            return null;
+        }
         return null;
     }
     return orderCreated;
@@ -10973,8 +10973,18 @@ async function createOrder(chatId, userId, productId, paymentMethod, discountInp
         const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
         let tomanPerUnit = 0;
         if (w.rate_mode === "auto") {
-            const base = await getCryptoTomanPerUnitCached(String(w.currency || ""));
-            tomanPerUnit = base + Number(w.extra_toman_per_unit || 0);
+            try {
+                const base = await getCryptoTomanPerUnitCached(String(w.currency || ""));
+                tomanPerUnit = base + Number(w.extra_toman_per_unit || 0);
+            }
+            catch (err) {
+                logError("crypto_rate_fetch_failed", err, { currency: w.currency, walletId: w.id });
+                await tg("sendMessage", {
+                    chat_id: chatId,
+                    text: `⚠️ خطا در دریافت نرخ لحظه‌ای ${w.currency}. لطفاً چند لحظه دیگر تلاش کنید یا روش پرداخت دیگری را انتخاب نمایید.`
+                });
+                return null;
+            }
         }
         else {
             tomanPerUnit = Number(w.rate_toman_per_unit || 0) + Number(w.extra_toman_per_unit || 0);
